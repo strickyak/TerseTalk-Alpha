@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, MainActivity!</string>
+    <string name="app_name">AndyTerseTalk</string>
+    <string name="top">TOP</string>
+    <string name="help">HELP</string>
+    <string name="crash">CRASH</string>
+    <string name="forget">FORGET CHANGES</string>
+    <string name="saidWhat">SAID WHAT</string>
+
+</resources>

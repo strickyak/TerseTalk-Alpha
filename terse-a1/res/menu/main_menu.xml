@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/top_menu"
+          android:title="@string/top" />
+    <item android:id="@+id/help_menu"
+          android:title="@string/help" />
+    <item android:id="@+id/crash_menu"
+          android:title="@string/crash" />
+    <item android:id="@+id/forget_menu"
+          android:title="@string/forget" />
+    <item android:id="@+id/saidWhat_menu"
+          android:title="@string/saidWhat" />
+</menu>
