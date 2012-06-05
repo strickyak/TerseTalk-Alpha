@@ -4,3 +4,16 @@
 *.jar
 *.war
 *.ear
+
+# Products of Build & Run:
+terse-a1/bin/
+terse-a1/gen/
+bin/
+terse-web/__log_webterp.txt
+terse-web/w_web.txt
+
+# Products of make:
+terse-a1/res/raw/prelude.txt
+terse-wm/prelude.txt
+terse-a1/src/terse/a1/WrapAndy.java
+terse-vm/src/terse/vm/Wrap.java

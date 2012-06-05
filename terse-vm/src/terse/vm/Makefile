@@ -34,4 +34,5 @@ ANDY:
 	cp ../../../prelude.txt ../../../../terse-web/prelude.txt
 
 ../../../../terse-a1/res/raw/prelude.txt : ../../../prelude.txt
+	mkdir -p ../../../../terse-a1/res/raw
 	cp ../../../prelude.txt ../../../../terse-a1/res/raw/prelude.txt
