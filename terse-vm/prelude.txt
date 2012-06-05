@@ -1842,13 +1842,13 @@ meth GameFoo onEvent:at:
   x,y= b say.
   "pad= x / wid * hei."
 
-IF{AND {(a==0) ; (y > hei/2) ; (x<wid/2)}} THEN{
-  cx= cx - 1. 'cx is' say: cx.
-  }.
+  IF{AND {(a==0) ; (y > hei/2) ; (x<wid/2)}} THEN{
+    cx= cx - 1. 'cx is' say: cx.
+  }. "move left"
  
-IF{AND {(a==0) ; (y > hei/2) ; (x>wid/2)}} THEN{
-  cx= cx + 1. 'cx is' say: cx.
-  }.
+  IF{AND {(a==0) ; (y > hei/2) ; (x>wid/2)}} THEN{
+    cx= cx + 1. 'cx is' say: cx.
+  }. "move right"
 
 
 
