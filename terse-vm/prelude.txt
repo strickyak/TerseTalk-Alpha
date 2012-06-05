@@ -1793,7 +1793,7 @@ meth SubmitCreateSubclass wMid
 
 cls GameFoo LiveApp
 vars GameFoo
- zoo  cx cy 
+ zoo  cx cy wid hei
 meth gamefoo draw
  zoo = ( (-1,0); (0,0); (0,-1); (1,-1) );
        ( (-1,0); (0,0); (0,1); (1,1) );
@@ -1803,6 +1803,8 @@ meth gamefoo draw
        ( (-1,0); (0,0); (0,-1);  (-1,-1) );
        ( (-1,0); (0,0); (1,0);  (0,1) ).
  n = num rand: (zoo len).
+ wid = se scr width.
+ hei = se scr height.
  cx,cy = 8,8.
 
  t = Sys secs.
@@ -1839,12 +1841,14 @@ meth GameFoo eventBlk
 meth GameFoo onEvent:at:
   x,y= b say.
   "pad= x / wid * hei."
-  
-  IF{a == 0} THEN{
-     cy= cy + 1.
-     self red circ: (x,y) r: 10.
 
-   }.
+  IF{AND {(a==0) ; (y > hei/2) ; (x<wid/2)}} THEN{
+    cx= cx - 1. 'cx is' say: cx.
+  }. "move left"
+ 
+  IF{AND {(a==0) ; (y > hei/2) ; (x>wid/2)}} THEN{
+    cx= cx + 1. 'cx is' say: cx.
+  }. "move right"
 
 
 
