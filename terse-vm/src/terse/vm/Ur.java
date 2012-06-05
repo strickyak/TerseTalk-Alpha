@@ -1157,15 +1157,6 @@ public class Ur extends Static implements Comparable {
 		public boolean truth() {
 			return false;
 		}
-
-		static void addBuiltinMethodsForFal(final Terp terp) {
-			new JavaMeth(terp.wrap.clsSys, "frame", "",
-					"Return current stack frame.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					return f;
-				}
-			};
-		}
 	}
 
 	public final static class Blk extends Obj {
@@ -1550,49 +1541,23 @@ public class Ur extends Static implements Comparable {
 		}
 
 		public String toString() {
-			return fmt("~Buf~'%s'~", buf.toString());
+			return buf.toString();
 		}
 
-		static void addBuiltinMethodsForBuf(final Terp terp) {
-			terp.tBuf.addMethod(new JavaMeth(terp.tBuf, "str", "s",
-					"Get Str from Buf.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					assert args.length == 0;
-					Buf self = (Buf) r;
-					return terp.newStr(self.buf.toString());
-				}
-			});
-			terp.tBuf.addMethod(new JavaMeth(terp.tBuf, "append:", "ap:",
-					"Append the argument to the Buf, modifying self.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					assert args.length == 1;
-					Buf self = (Buf) r;
-					Str a = args[0].asStr();
-					if (a == null) {
-						toss("Argument of Buf>>ap: not a Str");
-					}
-					self.buf.append(a.str);
-					return r;
-				}
-			});
-			terp.tBufCls.addMethod(new JavaMeth(terp.tBufCls, "new", "",
-					"Create new empty Buf.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					assert args.length == 0;
-					return new Buf(terp);
-				}
-			});
-			terp.tBufCls.addMethod(new JavaMeth(terp.tBufCls, "append:", "ap:",
-					"Append the argument to the Buf, modifying self.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					assert args.length == 1;
-					Str a = args[0].asStr();
-					if (a == null) {
-						toss("Argument of Buf>>ap: not a Str");
-					}
-					return new Buf(terp, a.str);
-				}
-			});
+		// =meth Buf "access" append:,ap:
+		public Buf append_(Obj a) {
+			this.buf.append(a.toString());
+			return this;
+		}
+
+		// =meth BufCls "new" new
+		public static Buf cls_new(Terp t) {
+			return new Buf(t);
+		}
+
+		// =meth BufCls "new" append:,ap:
+		public static Buf cls_append_(Terp t, Obj a) {
+			return new Buf(t, a.toString());
 		}
 	}
 
@@ -2052,37 +2017,31 @@ public class Ur extends Static implements Comparable {
 			}
 		}
 
+		// =meth Vec "control" doWithEach:,do:
+		// "Iterate the block with one argument, for each item in self."
+		public Undefined doWithEach_(Blk b) {
+			int n = this.vec.size();
+			for (int i = 0; i < n; i++) {
+				b.evalWith1Arg(this.vec.get(i));
+			}
+			return terp().instNil;
+			
+		}
+
+		// =meth VecCls "access" new "create a new, empty Vec"
+		public static Vec cls_new(Terp terp) {
+			return new Vec(terp);
+		}
+
+
+		// =meth VecCls "access" append:,ap: "add element to a new Vec"
+		public static Vec cls_append_(Terp terp, Ur a) {
+			Vec z = new Vec(terp);
+			z.vec.add(a);
+			return z;
+		}
+
 		static void addBuiltinMethodsForVec(final Terp terp) {
-			terp.tVec.addMethod(new JavaMeth(terp.tVec, "doWithEach:", "do:",
-					"Iterate the block with one argument, "
-							+ "for each item in the Vec.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					Vec vec = r.asVec();
-					assert args.length == 1;
-					Blk blk = args[0].asBlk();
-					int stop = vec.vec.size();
-					for (int i = 0; i < stop; i++) {
-						blk.evalWith1Arg(vec.vec.get(i));
-					}
-					return terp.instNil;
-				}
-			});
-			terp.tVecCls.addMethod(new JavaMeth(terp.tVecCls, "new", "",
-					"Create a new empty Vec object.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					return new Vec(terp);
-				}
-			});
-			terp.tVecCls.addMethod(new JavaMeth(terp.tVecCls, "append:", "ap:",
-					"Create a new Vec of length 1 with the given item in it."
-							+ "  Same as 'new append:'.") {
-				// Shortcut for "new append:"
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					Vec vec = new Vec(terp);
-					vec.vec.add(args[0]);
-					return vec;
-				}
-			});
 		}
 	}
 

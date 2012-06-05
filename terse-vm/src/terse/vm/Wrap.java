@@ -1392,6 +1392,38 @@ public class Wrap extends Static {
       }
     };
 
+    // CMD meth Buf "access" append:,ap: TYPE Buf NAME append_ PARAMS {Obj a}
+    // CLS Buf GROUP "access" METH append:,ap: REMARK ""
+
+    new JavaMeth(terp.wrap.clsBuf, "append:", "ap:") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+      Buf self = (Buf) me;
+        Obj a = (Obj) args[0];
+        return self.append_ (a);
+      }
+    };
+
+    // CMD meth BufCls "new" new TYPE Buf NAME cls_new PARAMS {Terp t}
+    // CLS BufCls GROUP "new" METH new REMARK ""
+
+    new JavaMeth(terp.wrap.clsBufCls, "new", "") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+        Cls self = terp.wrap.clsBufCls;
+        return Buf.cls_new (terp);
+      }
+    };
+
+    // CMD meth BufCls "new" append:,ap: TYPE Buf NAME cls_append_ PARAMS {Terp t} { Obj a}
+    // CLS BufCls GROUP "new" METH append:,ap: REMARK ""
+
+    new JavaMeth(terp.wrap.clsBufCls, "append:", "ap:") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+        Cls self = terp.wrap.clsBufCls;
+        Obj a = (Obj) args[0];
+        return Buf.cls_append_ (terp,a);
+      }
+    };
+
     // CMD meth Str "access" applySubstitutions "" TYPE Str NAME applySubstitutions PARAMS 
     // CLS Str GROUP "access" METH applySubstitutions REMARK ""
 
@@ -1518,6 +1550,38 @@ public class Wrap extends Static {
       public Ur apply(Frame frame, Ur me, Ur[] args) {
       Vec self = (Vec) me;
         return self.implode ();
+      }
+    };
+
+    // CMD meth Vec "control" doWithEach:,do:  "Iterate the block with one argument, for each item in self." TYPE Undefined NAME doWithEach_ PARAMS {Blk b}
+    // CLS Vec GROUP "control" METH doWithEach:,do: REMARK "Iterate the block with one argument, for each item in self."
+
+    new JavaMeth(terp.wrap.clsVec, "doWithEach:", "do:") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+      Vec self = (Vec) me;
+        Blk a = (Blk) args[0];
+        return self.doWithEach_ (a);
+      }
+    };
+
+    // CMD meth VecCls "access" new "create a new, empty Vec" TYPE Vec NAME cls_new PARAMS {Terp terp}
+    // CLS VecCls GROUP "access" METH new REMARK "create a new, empty Vec"
+
+    new JavaMeth(terp.wrap.clsVecCls, "new", "") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+        Cls self = terp.wrap.clsVecCls;
+        return Vec.cls_new (terp);
+      }
+    };
+
+    // CMD meth VecCls "access" append:,ap: "add element to a new Vec" TYPE Vec NAME cls_append_ PARAMS {Terp terp} { Ur a}
+    // CLS VecCls GROUP "access" METH append:,ap: REMARK "add element to a new Vec"
+
+    new JavaMeth(terp.wrap.clsVecCls, "append:", "ap:") {
+      public Ur apply(Frame frame, Ur me, Ur[] args) {
+        Cls self = terp.wrap.clsVecCls;
+        Ur a = (Ur) args[0];
+        return Vec.cls_append_ (terp,a);
       }
     };
 

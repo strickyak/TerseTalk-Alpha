@@ -206,9 +206,7 @@ public abstract class Terp extends Static {
 
 		// TODO: Convert all methods to "wrap" style, and get rid of all these
 		// static inits.
-		Buf.addBuiltinMethodsForBuf(this);
 		Str.addBuiltinMethodsForStr(this);
-		Vec.addBuiltinMethodsForVec(this);
 		Dict.addBuiltinMethodsForDict(this);
 
 		tolerateNullClass = true;

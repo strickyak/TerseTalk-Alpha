@@ -175,6 +175,7 @@ meth Top handle:query:
     'type' , 'list';
     'title' , 'TOP';
     'value' , VEC{
+      '/GameFoo';
       '/GamePong';
       '/GameTroids';
       '/EVAL CODE (DoIt, PrintIt)';
@@ -357,6 +358,28 @@ meth SubmitMethod handle:query:
   'Browse returns=' say: z.
   z.
 
+cls HelloName App
+meth HelloName handle:query:
+  DICT(
+    'type', 'edit';
+    'title', 'What''s Your Name?';
+    'value', '';
+    'action', '/SubmitHelloName';
+  ).
+cls SubmitHelloName App
+meth SubmitHelloName nonMain
+meth SubmitHelloName handle:query:
+  
+  z= b at: 'text'.
+
+  DICT(
+    'type', 'text';
+    'title', 'I know your name!';
+    'value', ('Your name is ', z, '!') jam;
+  ).
+
+
+ 
 
 cls Eval App
 meth Eval handle:query:
@@ -1765,6 +1788,64 @@ meth SubmitCreateSubclass wMid
   HT link: subc name to: (('/BrowseClass', subc name) join: '.').
 
 
+
+cls GameFoo LiveApp
+vars GameFoo
+ zoo  cx cy 
+meth gamefoo draw
+ zoo = ( (-1,0); (0,0); (0,-1); (1,-1) );
+       ( (-1,0); (0,0); (0,1); (1,1) );
+       ( (-1,0); (0,0); (1,0);  (2,0) );
+       ( (-1,0); (0,0); (0,1);  (0,2) );
+       ( (1,0); (0,0); (0,1);  (0,2) );
+       ( (-1,0); (0,0); (0,-1);  (-1,-1) );
+       ( (-1,0); (0,0); (1,0);  (0,1) ).
+ n = num rand: (zoo len).
+ cx,cy = 8,8.
+
+ t = Sys secs.
+ WHILE{1} DO{
+   self clear: 312.
+   FOR{x,y: zoo at: n} DO{
+     self square: (cx+x,cy+y) ink: self green }.
+   self showZoo.
+   self post.
+   IF{ t + 1 < Sys secs }THEN{
+     cy = cy + 1.
+     t = Sys secs.
+   }
+ }
+
+meth GameFoo showZoo
+  i= 0.
+  FOR(shape: zoo) DO (
+    i=i+40.
+    FOR(x,y: shape) DO (
+      self white rect: (x*10+i, y*10+i) to: (x*10+i+8, y*10+i+8).
+    ).
+  ).
+      
+meth GameFoo square:ink:
+ x,y= a.
+ b rect: (30*x, 30*y) to: (30*x+25, 30*y+25).
+
+
+meth GameFoo eventBlk
+  [kind: xy:
+   self onEvent: kind at: xy]
+
+meth GameFoo onEvent:at:
+  x,y= b say.
+  "pad= x / wid * hei."
+  
+  IF{a == 0} THEN{
+     cy= cy + 1.
+     self red circ: (x,y) r: 10.
+
+   }.
+
+
+
 ############################
 cls GamePong LiveApp
 vars GamePong
@@ -1846,8 +1927,9 @@ meth GamePong eventBlk
    self onEvent: kind at: xy]
 
 meth GamePong onEvent:at:
-  x,y= b.
-  pad= x / wid * hei.
+  x,y= b say.
+  "pad= x / wid * hei."
+  pad= y.
 
 ############################
 cls GameTroids LiveApp
