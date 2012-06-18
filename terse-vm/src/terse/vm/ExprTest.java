@@ -119,11 +119,11 @@ public class ExprTest extends TestCase {
         assertEquals(-56.0, eval(top).asNum().num);
     }
     public void testVec() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a= Vec(0, 0, 0, 0, 0). a at: 3 p: 33 . a at: 3 ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a= Vec(0, 0, 0, 0, 0). a at: 3 put: 33 . a at: 3 ");
         assertEquals(33.0, eval(top).asNum().num);
     }
     public void testDict() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a= Dict new . a at: 'foo' p: 333 . a at: 'foo' ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a= Dict new . a at: 'foo' put: 333 . a at: 'foo' ");
         assertEquals(333.0, eval(top).asNum().num);
     }
     public void testEq() {
@@ -271,5 +271,9 @@ public class ExprTest extends TestCase {
     public void testTryCatch() {
 		Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "x=3. TRY(x=4. x=5/0 - 7/0.) CATCH(e: x='got:' ap: e).");
         assertEquals("got:IsInfinite", evalExpectingExceptionsWhileProcessing(top).toString().split("\n")[0]);
+    }
+    public void testAt() {
+		Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a,b,c= 1 + 1 @ 2 * 2 @ 4 - 1. a + c - b");
+        assertEquals("1", eval(top).toString());
     }
 }

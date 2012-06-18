@@ -349,7 +349,7 @@ public class Parser extends Obj {
 	}
 
 	private Expr parseBinary3(Expr receiver) {
-		receiver = parseBinary2(receiver);
+		receiver = parseBinary25(receiver);
 		Expr e = receiver;
 		while (lex.isBinop3()) {
 			String front = lex.front; String white = lex.white;
@@ -357,14 +357,39 @@ public class Parser extends Obj {
 			int[] locs = ints(lex.frontLocation());
 			lex.advance();
 			Expr unary = parseUnary();
-			Expr a = parseBinary2(unary);
+			Expr a = parseBinary25(unary);
 			e = new Expr.Send(e, op, exprs(a), locs);
 			e.front = front; e.white = white;
 			e.rest = lex.rest;
 		}
 		return e;
 	}
-
+	private Expr parseBinary25(Expr receiver) {
+		receiver = parseBinary2(receiver);
+		Expr[] v = null;  // Be lazy.
+		int[] locs = null;
+		String front = lex.front; String white = lex.white;
+		while (lex.w.equals("@")) {
+			if (v == null) {  // Catch up for laziness.
+				v = exprs(receiver);
+				locs = ints();
+			}
+			locs = append(locs, lex.frontLocation());
+			lex.advance();
+			Expr unary = parseUnary();
+			Expr a = parseBinary2(unary);
+			v = append(v, a);
+		}
+		if (v != null) {
+			Expr z = new Expr.MakeVec(terp, v, '@');
+			z.front = front; z.white = white;
+			z.rest = lex.rest;
+			return z;
+		} else {
+			// It's not a tuple at all.
+			return receiver;
+		}
+	}
 	private Expr parseBinary2(Expr receiver) {
 		receiver = parseBinary1(receiver);
 		Expr e = receiver;
