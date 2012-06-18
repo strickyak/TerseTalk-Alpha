@@ -2120,47 +2120,32 @@ public class Ur extends Static implements Comparable {
 			Arrays.sort(z);
 			return z;
 		}
-
-		static void addBuiltinMethodsForDict(final Terp terp) {
-			terp.tDict.addMethod(new JavaMeth(terp.tDict, "len", "",
-					"Number of entries in the Dict.") {
-				public Num apply(Frame f, Ur r, Ur[] args) {
-					return new Num(terp, r.asDict().dict.size());
-				}
-			});
-			terp.tDict.addMethod(new JavaMeth(terp.tDict, "dir", "",
-					"Number of entries in the Dict.") {
-				public Vec apply(Frame f, Ur r, Ur[] args) {
-					Vec z = terp.newVec(new Vec[0]);
-					for (Vec aa : r.asDict().sortedAssocs()) {
-						z.vec.add(aa.vec.get(0));
-					}
-					return z;
-				}
-			});
-			terp.tDict
-					.addMethod(new JavaMeth(terp.tDict, "at:", "",
-							"Return the value stored at the given key, or Nil if it is missing.") {
-						public Ur apply(Frame f, Ur r, Ur[] args) {
-							Dict self = r.asDict();
-							Ur z = self.dict.get(args[0]);
-							return terp.nullToNil(z);
-						}
-					});
-			terp.tDict.addMethod(new JavaMeth(terp.tDict, "at:put:", "at:p:",
-					"") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					Dict self = r.asDict();
-					self.dict.put(args[0], args[1]);
-					return r;
-				}
-			});
-			terp.tDictCls.addMethod(new JavaMeth(terp.tDictCls, "new", "",
-					"Create a new empty Dict object.") {
-				public Ur apply(Frame f, Ur r, Ur[] args) {
-					return new Dict(terp);
-				}
-			});
+		
+		// =meth Dict "access" len "number of entries in the Dict"
+		public int _len() {
+			return dict.size(); 
+		}
+		
+		// =meth Dict "access" dir "list keys in the Dict"
+		public Vec _dir() {
+			Vec z = new Vec(terp());
+			for (Vec aa : this.asDict().sortedAssocs()) {
+				z.vec.add(aa.vec.get(0));
+			}
+			return z;
+		}
+		// =meth Dict "access" at:
+		public Ur at_(Ur key) {
+			Ur z = dict.get(key);
+			return terp().nullToNil(z);
+		}
+		// =meth Dict "access" at:put:
+		public void at_put_(Ur key, Ur value) {
+			dict.put(key,  value);
+		}
+		// =meth DictCls "new" new
+		public static Dict _new(Terp t) {
+			return new Dict(t);
 		}
 	}
 
