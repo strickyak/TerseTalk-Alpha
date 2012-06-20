@@ -95,6 +95,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -134,6 +136,10 @@ public class TerseActivity extends Activity {
 
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		if (savedInstanceState != null
 				&& savedInstanceState.containsKey("TerseActivity")) {
@@ -223,24 +229,28 @@ public class TerseActivity extends Activity {
 	}
 
 	public static class Motion extends Obj {
+		private View v;
 		private MotionEvent ev;
 		private Blk block;
 
 		// =cls "Android" Motion Obj
-		public Motion(AndyTerp t, MotionEvent ev, Blk block) {
+		public Motion(AndyTerp t, View v, MotionEvent ev, Blk block) {
 			super(t.wrapandy.clsMotion);
+			this.v = v;
 			this.ev = ev;
 			this.block = block;
 		}
 
 		// =meth Motion "access" x
 		public double _x() {
-			return ev.getX();
+			// return ev.getX();
+			return ev.getRawX() - v.getLeft();
 		}
 
 		// =meth Motion "access" y
 		public double _y() {
-			return ev.getY();
+			// return ev.getY();
+			return ev.getRawY() - v.getTop();
 		}
 
 		// =meth Motion "access" action
@@ -742,6 +752,8 @@ public class TerseActivity extends Activity {
 					setContentView(dv);
 					return;
 				} else if (type.str.equals("live")) {
+					
+					
 					Blk blk = value.mustBlk();
 					Blk event = Static.urAt(d, "event").asBlk();
 					TerseSurfView tsv = new TerseSurfView(this, blk, event);
@@ -1208,32 +1220,13 @@ public class TerseActivity extends Activity {
 					@Override
 					public boolean onTouch(View v, MotionEvent event) {
 						int action = event.getAction();
-						if (true || action == MotionEvent.ACTION_UP) {
-							// NOT IN 2.1: int flags = event.getFlags();
-							// float x = event.getX();
-							// float y = event.getY();
-							// terp.say("TOUCH: %s (%s,%s)", action, x, y);
-							// if (true) {
-							Motion mot = new Motion(terp, event, eventBlk);
+						if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+							Motion mot = new Motion(terp, TerseSurfView.this, event, eventBlk);
 							boolean ok = terp.eventQueue.offer(mot);
 							if (!ok) {
 								terp.say("eventQ.offer refused");
 							}
 							return true;
-							// } else {
-							// terp.say("ACTION_UP: %s %s %s", action, x, y);
-							// final Vec xy = terp.newVec(Static.urs(
-							// terp.newNum(x), terp.newNum(y)));
-							// final Num act = terp.newNum(action);
-							// terp.runOnWorkThread(new Runnable() {
-							// @Override
-							// public void run() {
-							// eventBlk.evalWith2Args(act, xy);
-							// }
-							// });
-							//
-							// return true;
-							// }
 						}
 						return false;
 					}
@@ -1245,6 +1238,7 @@ public class TerseActivity extends Activity {
 		public void surfaceChanged(final SurfaceHolder holder, int arg1,
 				final int width, final int height) {
 			terp.say("surfaceChanged <%d w=%d h=%d>", arg1, width, height);
+			terp.say(".............. <getLeft=%d getTop=%d>", getLeft(), getTop());
 
 			terp.runOnWorkThread(new Runnable() {
 				@Override

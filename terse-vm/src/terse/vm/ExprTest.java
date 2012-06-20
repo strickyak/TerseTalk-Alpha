@@ -276,4 +276,14 @@ public class ExprTest extends TestCase {
 		Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "a,b,c= 1 + 1 @ 2 * 2 @ 4 - 1. a + c - b");
         assertEquals("1", eval(top).toString());
     }
+    public void testFailTwoLiterals() {
+    	String err = null;
+    	t.expectingTerseException = 1;
+    	try {
+    		Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " 23 42 ");
+    	} catch (RuntimeException e) {
+    		err = e.toString();
+    	}
+        assert(err.matches("Leftover word after parsing"));
+    }
 }

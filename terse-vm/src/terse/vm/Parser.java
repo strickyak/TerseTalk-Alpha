@@ -172,23 +172,27 @@ public class Parser extends Obj {
 		return sb.toString();
 	}
 
-	private void skipStmtEnders() { // i.e. dots & semicolons
+	private boolean skipStmtEndersReturningTrueIfMissing() { // i.e. dots & semicolons
+		boolean missing = true;
 		while (lex.endsStmt()) {
 			lex.advance();
+			missing = false;
 		}
+		return missing;
 	}
 
 	private Expr parseExpr() {
 		String front = lex.front; String white = lex.white;
 		Expr[] v = emptyExprs;
-		skipStmtEnders();
+		skipStmtEndersReturningTrueIfMissing();
 		while (lex.t != null) {
 			if (lex.closesBlock() || lex.closesParen())
 				break;
 
 			Expr s = parseStmt();
 			v = append(v, s);
-			skipStmtEnders();
+			if (skipStmtEndersReturningTrueIfMissing())
+				break;
 		}
 		if (v.length == 0) {
 			Expr z = new Expr.EmptyExprList(terp); // Special case.
