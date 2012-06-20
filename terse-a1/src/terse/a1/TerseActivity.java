@@ -168,6 +168,7 @@ public class TerseActivity extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		glSurfaceView = null;  // Forget gl on new activity.
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -1260,6 +1261,8 @@ public class TerseActivity extends Activity {
 		    }
 
 			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+				TerseActivity.this.glSurfaceView = FnordView.this;
+				
 				// Set the background frame color
 				gl.glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
 
