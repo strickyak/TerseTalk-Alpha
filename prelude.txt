@@ -783,6 +783,15 @@ meth DemoLissajous step
   ).
   numPoints = numPoints + 40.
 
+cls FnordApp App
+meth fnordApp handle:query:
+  DICT(
+    'type', 'fnord';
+    'value', [x: nil];
+    'event', [e:xy: nil]).
+  
+
+
 cls LiveApp App
 vars LiveApp
   scr red blue green white black

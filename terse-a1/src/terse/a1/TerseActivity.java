@@ -77,6 +77,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
@@ -112,6 +113,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
 public class TerseActivity extends Activity {
 
 	public static Thread singleWorkThread;
@@ -127,6 +131,8 @@ public class TerseActivity extends Activity {
 	HashMap<String, String> taQuery;
 	boolean taGotLongClick = false;
 
+	GLSurfaceView glSurfaceView;
+
 	static Pattern LINK_P = Pattern
 			.compile("[|]link[|](/[-A-Za-z_0-9.:]*)[|]([^|]+)[|](.*)");
 
@@ -134,12 +140,36 @@ public class TerseActivity extends Activity {
 		return this;
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		// The following call pauses the rendering thread.
+		// If your OpenGL application is memory intensive,
+		// you should consider de-allocating objects that
+		// consume significant memory here.
+		if (glSurfaceView != null) {
+			glSurfaceView.onPause();
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// The following call resumes a paused rendering thread.
+		// If you de-allocated graphic objects for onPause()
+		// this is a good place to re-allocate them.
+		if (glSurfaceView != null) {
+			glSurfaceView.onResume();
+		}
+	}
+
+	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
-                                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		if (savedInstanceState != null
 				&& savedInstanceState.containsKey("TerseActivity")) {
@@ -193,7 +223,8 @@ public class TerseActivity extends Activity {
 			@Override
 			public void run() {
 				// terp.say("ThenBgThenFg: Running BG for %s", name);
-				if (bg!=null) bg.run();
+				if (bg != null)
+					bg.run();
 				// terp.say("ThenBgThenFg: Scheduling FG in UI for %s", name);
 				runOnUiThread(fg);
 			}
@@ -494,14 +525,15 @@ public class TerseActivity extends Activity {
 		final LayoutParams widgetParams = new LayoutParams(
 				ViewGroup.LayoutParams.FILL_PARENT,
 				ViewGroup.LayoutParams.FILL_PARENT, 1.0f);
-		
+
 		TextView splash = new TextView(TerseActivity.this);
-		splash.setText("Launching\n\n" + taPath + "\n\n" + Static.hashMapToMultiLineString(taQuery));
+		splash.setText("Launching\n\n" + taPath + "\n\n"
+				+ Static.hashMapToMultiLineString(taQuery));
 		splash.setTextAppearance(this, R.style.teletype);
 		splash.setBackgroundColor(Color.BLACK);
 		splash.setTextColor(Color.DKGRAY);
 		splash.setTextSize(24);
-		
+
 		Runnable bg = new Runnable() {
 			@Override
 			public void run() {
@@ -512,8 +544,8 @@ public class TerseActivity extends Activity {
 				}
 			}
 		};
-		
-		Runnable fg = new Runnable() {	
+
+		Runnable fg = new Runnable() {
 			@Override
 			public void run() {
 				viewPath9display(taPath, widgetParams);
@@ -752,12 +784,16 @@ public class TerseActivity extends Activity {
 					setContentView(dv);
 					return;
 				} else if (type.str.equals("live")) {
-					
-					
 					Blk blk = value.mustBlk();
 					Blk event = Static.urAt(d, "event").asBlk();
 					TerseSurfView tsv = new TerseSurfView(this, blk, event);
 					setContentView(tsv);
+					return;
+				} else if (type.str.equals("fnord")) {
+					Blk blk = value.mustBlk();
+					Blk event = Static.urAt(d, "event").asBlk();
+					FnordView fnord = new FnordView(this, blk, event);
+					setContentView(fnord);
 					return;
 				} else if (type.str.equals("world") && value instanceof Str) {
 					String newWorld = value.toString();
@@ -795,19 +831,20 @@ public class TerseActivity extends Activity {
 							terp.say("WebView UrlLoading: getQuery=%s",
 									uri.getQuery());
 
-//							Toast.makeText(getApplicationContext(),
-//									uri.toASCIIString(), Toast.LENGTH_SHORT)
-//									.show();
-//							webview.invalidate();
-//
-//							TextView quick = new TextView(TerseActivity.this);
-//							quick.setText(uri.toASCIIString());
-//							quick.setBackgroundColor(Color.BLACK);
-//							quick.setTextColor(Color.WHITE);
-//							setContentView(quick);
+							// Toast.makeText(getApplicationContext(),
+							// uri.toASCIIString(), Toast.LENGTH_SHORT)
+							// .show();
+							// webview.invalidate();
+							//
+							// TextView quick = new
+							// TextView(TerseActivity.this);
+							// quick.setText(uri.toASCIIString());
+							// quick.setBackgroundColor(Color.BLACK);
+							// quick.setTextColor(Color.WHITE);
+							// setContentView(quick);
 
 							startTerseActivity(uri.getPath(), uri.getQuery());
-							
+
 							return true;
 						}
 					});
@@ -881,9 +918,9 @@ public class TerseActivity extends Activity {
 	void SetContentViewWithHomeButtonAndScroll(View v) {
 		Button btn = new Button(this);
 		btn.setText("[HOME]");
-//		btn.setTextSize(15);
-//		btn.setHeight(25);
-//		btn.setMaxHeight(25);
+		// btn.setTextSize(15);
+		// btn.setHeight(25);
+		// btn.setMaxHeight(25);
 		btn.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				// Perform action on clicks
@@ -969,8 +1006,8 @@ public class TerseActivity extends Activity {
 						String nextPath = stringAt(dict, "url");
 						// Otherwise, use the same path.
 						nextPath = nextPath == null ? taPath : nextPath;
-						startTerseActivity(nextPath, taQueryStr, "action", "up",
-								"ex", Float.toString(x), "ey",
+						startTerseActivity(nextPath, taQueryStr, "action",
+								"up", "ex", Float.toString(x), "ey",
 								Float.toString(y));
 						return true;
 					}
@@ -1034,6 +1071,7 @@ public class TerseActivity extends Activity {
 			}
 			return canv;
 		}
+
 		// =meth Screen "draw" fps
 		public Obj _fps() {
 			if (numPosts > 1) {
@@ -1187,6 +1225,34 @@ public class TerseActivity extends Activity {
 
 	}
 
+	public class FnordView extends GLSurfaceView {
+
+		public FnordView(Context context, Blk blk, Blk eventBlk) {
+			super(context);
+
+			// Set the Renderer for drawing on the GLSurfaceView
+			setRenderer(new FnordRenderer());
+		}
+
+		public class FnordRenderer implements GLSurfaceView.Renderer {
+
+			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+				// Set the background frame color
+				gl.glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
+			}
+
+			public void onDrawFrame(GL10 gl) {
+				// Redraw background color
+				gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+			}
+
+			public void onSurfaceChanged(GL10 gl, int width, int height) {
+				gl.glViewport(0, 0, width, height);
+			}
+
+		}
+	}
+
 	public class TerseSurfView extends SurfaceView implements Callback {
 		public SurfaceHolder holder0;
 		public Context context;
@@ -1220,8 +1286,10 @@ public class TerseActivity extends Activity {
 					@Override
 					public boolean onTouch(View v, MotionEvent event) {
 						int action = event.getAction();
-						if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-							Motion mot = new Motion(terp, TerseSurfView.this, event, eventBlk);
+						if (action == MotionEvent.ACTION_DOWN
+								|| action == MotionEvent.ACTION_MOVE) {
+							Motion mot = new Motion(terp, TerseSurfView.this,
+									event, eventBlk);
 							boolean ok = terp.eventQueue.offer(mot);
 							if (!ok) {
 								terp.say("eventQ.offer refused");
@@ -1238,7 +1306,8 @@ public class TerseActivity extends Activity {
 		public void surfaceChanged(final SurfaceHolder holder, int arg1,
 				final int width, final int height) {
 			terp.say("surfaceChanged <%d w=%d h=%d>", arg1, width, height);
-			terp.say(".............. <getLeft=%d getTop=%d>", getLeft(), getTop());
+			terp.say(".............. <getLeft=%d getTop=%d>", getLeft(),
+					getTop());
 
 			terp.runOnWorkThread(new Runnable() {
 				@Override
