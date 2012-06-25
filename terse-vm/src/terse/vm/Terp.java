@@ -585,7 +585,7 @@ public abstract class Terp extends Static {
 						}
 					}
 					
-					say("COMMAND: %s", line);
+					//say("COMMAND: %s", line);
 
 					// Store the command line in words[] and command.
 					String[] words = line.trim().split("\\s+");
@@ -632,7 +632,7 @@ public abstract class Terp extends Static {
 
 					try {
 						int ca0 = command.charAt(0);
-						say("Char At 0 == %d; cmd=%s; words=%s", ca0, command, mkStrVec(words));
+						//say("Char At 0 == %d; cmd=%s; words=%s", ca0, command, mkStrVec(words));
 						if (command.charAt(0) == ')') {
 							// NOP.
 						} else if (command.equals("meth")) {

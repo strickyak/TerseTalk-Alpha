@@ -187,6 +187,7 @@ meth Top handle:query:
     'type' , 'list';
     'title' , 'TOP';
     'value' , VEC{
+      '/FnordApp';
       '/GameFoo';
       '/GamePong';
       '/GameTroids';

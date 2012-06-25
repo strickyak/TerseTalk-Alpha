@@ -49,6 +49,18 @@ public class Static {
 		return s.replace("&", "&amp;").replace("<", "&lt;")
 				.replace(">", "&gt;").replace("\"", "&quot;");
 	}
+	
+	public static String describe(Throwable ex) {
+		StringBuilder sb = new StringBuilder("EXCEPTION: " + ex
+				+ "\n\n");
+		StackTraceElement[] st = ex.getStackTrace();
+		for (int i = 0; i < st.length; i++) {
+			sb.append("  * ");
+			sb.append(st[i]);
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 
 	public static String arrayToString(Expr[] a) {
 		StringBuilder z = new StringBuilder();

@@ -80,8 +80,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLU;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -168,7 +170,7 @@ public class TerseActivity extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		glSurfaceView = null;  // Forget gl on new activity.
+		glSurfaceView = null; // Forget gl on new activity.
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -875,15 +877,7 @@ public class TerseActivity extends Activity {
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				StringBuilder sb = new StringBuilder("CAUGHT Exception: " + ex
-						+ "\n\n");
-				StackTraceElement[] st = ex.getStackTrace();
-				for (int i = 0; i < st.length; i++) {
-					sb.append("  * ");
-					sb.append(st[i]);
-					sb.append("\n");
-				}
-				explain = sb.toString();
+				explain = Static.describe(ex);
 			}
 		}
 
@@ -892,6 +886,17 @@ public class TerseActivity extends Activity {
 		explainv.setBackgroundColor(Color.BLACK);
 		explainv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
 		explainv.setTextColor(Color.YELLOW);
+
+		SetContentViewWithHomeButtonAndScroll(explainv);
+	}
+
+	private void postMortem(Throwable ex) {
+		String explain = Static.describe(ex);
+		TextView explainv = new TextView(this);
+		explainv.setText(explain);
+		explainv.setBackgroundColor(Color.BLACK);
+		explainv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+		explainv.setTextColor(Color.RED);
 
 		SetContentViewWithHomeButtonAndScroll(explainv);
 	}
@@ -1239,52 +1244,135 @@ public class TerseActivity extends Activity {
 		}
 
 		public class FnordRenderer implements GLSurfaceView.Renderer {
-			private FloatBuffer triangleVB;
-			private void initShapes(){
-			    
-		        float triangleCoords[] = {
-		            // X, Y, Z
-		            -0.5f, -0.25f, 0,
-		             0.5f, -0.25f, 0,
-		             0.0f,  0.559016994f, 0
-		        }; 
-		        
-		        // initialize vertex Buffer for triangle  
-		        ByteBuffer vbb = ByteBuffer.allocateDirect(
-		                // (# of coordinate values * 4 bytes per float)
-		                triangleCoords.length * 4); 
-		        vbb.order(ByteOrder.nativeOrder());// use the device hardware's native byte order
-		        triangleVB = vbb.asFloatBuffer();  // create a floating point buffer from the ByteBuffer
-		        triangleVB.put(triangleCoords);    // add the coordinates to the FloatBuffer
-		        triangleVB.position(0);            // set the buffer to read the first coordinate
-		    
-		    }
+			private FloatBuffer triVCB = null;
+			private FloatBuffer axesVCB = null;
+			int width = 0;
+			int height = 0;
+			int frameCount = 0;
+			float angle = 0.0f;
+			
+			FloatBuffer newFloatBuffer(float[] a) {
+				ByteBuffer bb = ByteBuffer.allocateDirect(a.length * 4);
+				bb.order(ByteOrder.nativeOrder());
+				FloatBuffer zz = bb.asFloatBuffer();
+				zz.put(a);
+				zz.position(0);
+				return zz;
+			}
+
+			private void initShapes() {
+				float triangleCoords[] = {
+						// X, Y, Z
+						0.1f, 0.1f, 0, /**/ 0.3f, 0.3f, 0, 1,
+						0.1f, 0.9f, 0, /**/ 0.3f, 0.3f, 0, 1,
+						0.9f, 0.1f, 0, /**/ 0.3f, 0.3f, 0, 1,
+						// X, Y, Z
+						0, 0.1f, 0.1f, /**/ 0, 0.3f, 0.3f, 1,
+						0, 0.9f, 0.1f, /**/ 0, 0.3f, 0.3f, 1,
+						0, 0.1f, 0.9f, /**/ 0, 0.3f, 0.3f, 1,
+						// X, Y, Z
+						0.1f, 0, 0.1f, /**/ 0.3f, 0, 0.3f, 1,
+						0.1f, 0, 0.9f, /**/ 0.3f, 0, 0.3f, 1,
+						0.9f, 0, 0.1f, /**/ 0.3f, 0, 0.3f, 1,
+						};//
+				
+				float refVertexAndColor[] = {
+						0, 0, 0, /**/ 1, 0, 0, 1, //  X axis, red.
+						1, 0, 0, /**/ 1, 0, 0, 1, //
+						
+						0, 0, 0, /**/ 0, 1, 0, 1, //  Y axis, green.
+						0, 1, 0, /**/ 0, 1, 0, 1, //
+						
+						0, 0, 0, /**/ 0, 0, 1, 1, //  Z axis, blue.
+						0, 0, 1, /**/ 0, 0, 1, 1//
+				};
+
+				triVCB = newFloatBuffer(triangleCoords);
+				axesVCB = newFloatBuffer(refVertexAndColor);
+			}
 
 			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-				TerseActivity.this.glSurfaceView = FnordView.this;
-				
-				// Set the background frame color
-				gl.glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
+				try {
+					terp.say("FNORD onSurfaceCreated");
+					TerseActivity.this.glSurfaceView = FnordView.this;
+					gl.glEnable (GL10.GL_AMBIENT_AND_DIFFUSE); // 
+					// Set the background frame color
+					gl.glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
 
-		        // initialize the triangle vertex array
-		        initShapes();
-		        
-		        // Enable use of vertex arrays
-		        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+					// initialize the triangle vertex array
+					initShapes();
+
+					// Enable use of vertex arrays
+					gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+				} catch (Exception e) {
+					terp.say("FnordRenderer::onSurfaceCreated CAUGHT %s",
+							Static.describe(e));
+					postMortem(e);
+				}
 			}
 
 			public void onDrawFrame(GL10 gl) {
-				// Redraw background color
-				gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-				
-				// Draw the triangle
-		        gl.glColor4f(0.63671875f, 0.76953125f, 0.22265625f, 0.0f);
-		        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, triangleVB);
-		        gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 3);
+				try {
+					// TODO
+					if (frameCount < 5) {
+					  terp.say("FNORD onDrawFrame #" + frameCount);
+					}
+					/////////terp.say("bomb %d", 100 / frameCount);
+					++frameCount;
+					
+					// Redraw background color
+					gl.glClear(GL10.GL_COLOR_BUFFER_BIT
+							| GL10.GL_DEPTH_BUFFER_BIT);
+					gl.glViewport(0, 0, width, height);
+					gl.glMatrixMode(GL10.GL_PROJECTION);
+					gl.glLoadIdentity();
+					float h_over_w = height / width;
+					gl.glFrustumf(-1, 1, -h_over_w, h_over_w, -1, 1);
+
+					gl.glMatrixMode(GL10.GL_MODELVIEW);
+					gl.glLoadIdentity();
+					gl.glEnable(GL10.GL_DEPTH_TEST);
+					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+					
+					angle = angle + 0.2f;
+					gl.glRotatef(angle, 1, 0, 0);
+					gl.glRotatef(angle/3, 0, 1, 0);
+					gl.glRotatef(angle/10, 0, 0, 1);
+
+					int stride = 4 /*bytes per float*/ * (3 + 4) /*floats per vertex*/;
+					
+					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+					triVCB.position(0);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, stride, triVCB);
+					triVCB.position(3);
+					gl.glColorPointer(4, GL10.GL_FLOAT, stride, triVCB);
+					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 9);
+
+					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+					axesVCB.position(0);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, stride, axesVCB);
+					axesVCB.position(3);
+					gl.glColorPointer(4, GL10.GL_FLOAT, stride, axesVCB);
+					gl.glDrawArrays(GL10.GL_LINES, 0, 6);
+					
+				} catch (Exception e) {
+					terp.say("FnordRenderer::onDrawFrame CAUGHT %s",
+							Static.describe(e));
+					postMortem(e);
+				}
 			}
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {
-				gl.glViewport(0, 0, width, height);
+				try {
+					terp.say("FNORD onSurfaceChanged(", width, ",", height, ")");
+					this.width = width;
+					this.height = height;
+					gl.glViewport(0, 0, width, height);
+				} catch (Exception e) {
+					terp.say("FnordRenderer::onSurfaceChanged CAUGHT %s",
+							Static.describe(e));
+					postMortem(e);
+				}
 			}
 
 		}
