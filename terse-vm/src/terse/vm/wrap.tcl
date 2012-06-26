@@ -277,6 +277,11 @@ if {$CLASS == "WrapAndy"} {
   import terse.a1.TerseActivity.Ink;
   import terse.a1.TerseActivity.Motion;
   import terse.a1.TerseActivity.Screen;
+  import terse.a1.TerseActivity.GObj;
+  import terse.a1.TerseActivity.GPrim;
+  import terse.a1.TerseActivity.GVec;
+  import terse.a1.TerseActivity.GStrip;
+  import terse.a1.TerseActivity.GFan;
 "
 } else {
   puts "package terse.vm;"

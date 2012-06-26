@@ -384,6 +384,14 @@ public abstract class Terp extends Static {
 		return z;
 	}
 
+	final public Vec mkFloatVec(float...a) {
+		Vec z = new Vec(this);
+		for (int i = 0; i < a.length; ++i) {
+			z.vec.add(newNum(a[i]));
+		}
+		return z;
+	}
+
 	final public Vec mkStrVec(String... strs) {
 		Ur[] arr = new Ur[strs.length];
 		for (int i = 0; i < strs.length; i++) {

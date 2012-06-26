@@ -192,6 +192,10 @@ public class Static {
 		return z;
 	}
 
+	public static float[] floats(float... floats) {
+		return floats;
+	}
+
 	public static int[] ints(int... ints) {
 		return ints;
 	}
@@ -269,6 +273,13 @@ public class Static {
 		if (!(x instanceof Num))
 			return dflt;
 		return ((Num) x).num;
+	}
+
+	public static Ur urAt(Ur p, int i) {
+		if (!(p instanceof Vec))
+			return p.terp().instNil;
+		Vec v = (Vec) p;
+		return v.vec.get(i);
 	}
 
 	public static Ur urAt(Ur p, String i) {

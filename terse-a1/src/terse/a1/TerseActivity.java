@@ -1233,6 +1233,15 @@ public class TerseActivity extends Activity {
 
 	}
 
+	static FloatBuffer newFloatBuffer(float[] a) {
+		ByteBuffer bb = ByteBuffer.allocateDirect(a.length * 4);
+		bb.order(ByteOrder.nativeOrder());
+		FloatBuffer zz = bb.asFloatBuffer();
+		zz.put(a);
+		zz.position(0);
+		return zz;
+	}
+
 	public class FnordView extends GLSurfaceView {
 		// http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
 
@@ -1242,7 +1251,7 @@ public class TerseActivity extends Activity {
 			// Set the Renderer for drawing on the GLSurfaceView
 			setRenderer(new FnordRenderer());
 		}
-
+		
 		public class FnordRenderer implements GLSurfaceView.Renderer {
 			private FloatBuffer triVCB = null;
 			private FloatBuffer axesVCB = null;
@@ -1251,14 +1260,6 @@ public class TerseActivity extends Activity {
 			int frameCount = 0;
 			float angle = 0.0f;
 			
-			FloatBuffer newFloatBuffer(float[] a) {
-				ByteBuffer bb = ByteBuffer.allocateDirect(a.length * 4);
-				bb.order(ByteOrder.nativeOrder());
-				FloatBuffer zz = bb.asFloatBuffer();
-				zz.put(a);
-				zz.position(0);
-				return zz;
-			}
 
 			private void initShapes() {
 				float triangleCoords[] = {
@@ -1297,7 +1298,7 @@ public class TerseActivity extends Activity {
 					TerseActivity.this.glSurfaceView = FnordView.this;
 					gl.glEnable (GL10.GL_AMBIENT_AND_DIFFUSE); // 
 					// Set the background frame color
-					gl.glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
+					gl.glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
 
 					// initialize the triangle vertex array
 					initShapes();
@@ -1375,6 +1376,160 @@ public class TerseActivity extends Activity {
 				}
 			}
 
+		}
+		class GRender extends GVisitor {
+			GL10 gl;
+			GRender(GL10 gl) {
+				this.gl = gl;
+			}
+			void render(GObj top) {
+				gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+				top.visit(this);
+			}
+			@Override
+			void visitGPrim(GPrim a) {
+				gl.glPushMatrix();
+				applyTransform(a);
+
+				a.fbuf.position(0);
+				gl.glVertexPointer(3, GL10.GL_FLOAT, 0, a.fbuf);
+				gl.glDrawArrays(a.mode, 0, a.sz);
+				
+				gl.glPopMatrix();
+			}
+			@Override
+			void visitGVec(GVec a) {
+				gl.glPushMatrix();
+				applyTransform(a);
+				int sz = a.vec.vec.size();
+				for (int i = 0; i < sz; i++) {
+					GObj x = (GObj) a.vec.vec.get(i);
+					x.visit(this);
+				}
+				gl.glPopMatrix();
+			}
+			void applyTransform(GObj a) {
+				gl.glRotatef(a.rz, 0, 0, 1);
+				gl.glRotatef(a.ry, 0, 1, 0);
+				gl.glRotatef(a.rx, 1, 0, 0);
+				gl.glScalef(a.sx, a.sy, a.sz);
+				gl.glTranslatef(a.px, a.py, a.pz);
+			}
+		}
+	}
+
+	public static abstract class GVisitor {
+		abstract void visitGPrim(GPrim obj);
+		abstract void visitGVec(GVec vec);
+	}
+	public static abstract class GObj extends Obj {
+		float px = 0, py = 0, pz = 0;  // Translation
+		float sx = 1, sy = 1, sz = 1;  // Scale
+		float rx = 0, ry = 0, rz = 0;  // Rot (Euclid)
+		Vec color = null;
+		// =cls "GL" GObj  Obj
+		GObj(Cls cls) {
+			super(cls);
+		}
+		// =meth GObj "access" pos:
+		public void pos_(Vec a) {
+			px = Static.floatAt(a, 0);
+			py = Static.floatAt(a, 1);
+			pz = Static.floatAt(a, 2);
+		}
+		// =meth GObj "access" scale:
+		public void scale_(Vec a) {
+			sx = Static.floatAt(a, 0);
+			sy = Static.floatAt(a, 1);
+			sz = Static.floatAt(a, 2);
+		}
+		// =meth GObj "access" rot:
+		public void rot_(Vec a) {
+			rx = Static.floatAt(a, 0);
+			ry = Static.floatAt(a, 1);
+			rz = Static.floatAt(a, 2);
+		}
+		// =meth GObj "access" color:
+		public void color_(Vec a) {
+			color = a;
+		}
+		// =meth GObj "access" pos
+		public Vec _pos() {
+			return terp.mkFloatVec(px, py, pz);
+		}
+		// =meth GObj "access" sca
+		public Vec _sca() {
+			return terp.mkFloatVec(sx, sy, sz);
+		}
+		// =meth GObj "access" rot
+		public Vec _rot() {
+			return terp.mkFloatVec(rx, ry, rz);
+		}
+		abstract void visit(GVisitor gv);
+	}
+	
+	public static class GPrim extends GObj {
+		FloatBuffer fbuf = null;
+		int sz = 0;
+		int mode = GL10.GL_TRIANGLES;
+		// =cls  "GL" GPrim  GObj
+		GPrim(Cls cls) {
+			super(cls);
+		}
+
+		// =meth GPrim "access" mesh:
+		public void mesh_(Vec a) {
+			sz = a.vec.size();
+			float[] ff = new float[sz * 3];
+			for (int i = 0; i < sz; i++) {
+				Vec xyz = Static.urAt(a, i).mustVec();
+				ff[i * 3 + 0] = Static.floatAt(xyz, 0);
+				ff[i * 3 + 1] = Static.floatAt(xyz, 1);
+				ff[i * 3 + 2] = Static.floatAt(xyz, 2);
+			}
+			fbuf = newFloatBuffer(ff);
+		}
+
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitGPrim(this);
+		}
+	}
+	
+	public static class GVec extends GObj {
+		Vec vec;
+		// =cls  "GL" GVec  GObj
+		GVec(Cls cls) {
+			super(cls);
+		}
+
+		// =meth GVec "access" vec
+		public Vec _vec() {
+			return vec;
+		}
+		// =meth GVec "access" vec:
+		public void vec_(Vec a) {
+			this.vec = a;
+		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitGVec(this);
+		}
+	}
+	
+	public static class GFan extends GPrim {
+		// =cls  "GL" GFan GPrim
+		GFan(Cls cls) {
+			super(cls);
+			this.mode = GL10.GL_TRIANGLE_FAN;
+		}
+	}
+	
+	public static class GStrip extends GPrim {
+		// =cls  "GL" GStrip GPrim
+		GStrip(Cls cls) {
+			super(cls);
+			this.mode = GL10.GL_TRIANGLE_STRIP;
 		}
 	}
 
