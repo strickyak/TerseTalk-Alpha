@@ -795,8 +795,8 @@ public class TerseActivity extends Activity {
 					setContentView(tsv);
 					return;
 				} else if (type.str.equals("fnord")) {
-					Blk blk = value.mustBlk();
-					Blk event = Static.urAt(d, "event").asBlk();
+					Obj blk = value;
+					Obj event = Static.urAt(d, "event").asObj();
 					FnordView fnord = new FnordView(this, blk, event);
 					setContentView(fnord);
 					return;
@@ -1245,7 +1245,7 @@ public class TerseActivity extends Activity {
 	public class FnordView extends GLSurfaceView {
 		// http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
 
-		public FnordView(Context context, Blk blk, Blk eventBlk) {
+		public FnordView(Context context, Obj blk, Obj eventBlk) {
 			super(context);
 
 			// Set the Renderer for drawing on the GLSurfaceView
@@ -1407,6 +1407,28 @@ public class TerseActivity extends Activity {
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {
 				try {
+					
+					{
+						setOnTouchListener(new OnTouchListener() {
+							@Override
+							public boolean onTouch(View v, MotionEvent event) {
+								int action = event.getAction();
+								if (action == MotionEvent.ACTION_DOWN
+										|| action == MotionEvent.ACTION_MOVE) {
+									Motion mot = new Motion(terp, FnordView.this,
+											event, eventBlk);
+									boolean ok = terp.eventQueue.offer(mot);
+									if (!ok) {
+										terp.say("eventQ.offer refused");
+									}
+									return true;
+								}
+								return false;
+							}
+						});
+					}
+					
+					
 					terp.say("FNORD onSurfaceChanged(", width, ",", height, ")");
 					this.width = width;
 					this.height = height;

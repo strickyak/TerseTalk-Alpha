@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import terse.vm.Cls.JavaMeth;
+import terse.vm.Cls.Meth;
 import terse.vm.Expr.Seq;
 import terse.vm.Terp.Frame;
 import terse.vm.Usr.UsrCls;
@@ -313,6 +314,14 @@ public class Ur extends Static implements Comparable {
 		}
 		int i = (int) Math.floor(num.num + 0.5); // closest int
 		return i;
+	}
+	
+	// =meth Ur "access" does:
+	public boolean does_(String a) {
+		Meth meth = Expr.Send.findMeth(this, a, false);
+		if (meth == null) return false;
+		// TODO: consider empty and "just self" meths false.
+		return true;
 	}
 
 	/** Special marker object, for message to super. */

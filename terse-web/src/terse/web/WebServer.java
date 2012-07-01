@@ -360,7 +360,8 @@ public class WebServer extends Static {
 					// New Style
 					String s = elem.toString();
 					if (s.charAt(0) == '/') {
-						Html.tag(cols, "td", null, Html.tag(null, "a", strs("href", s), s));
+						String url = s.split(" ")[0];
+						Html.tag(cols, "td", null, Html.tag(null, "a", strs("href", url), s));
 					} else {
 						Html.tag(cols, "td", null, s);
 					}
