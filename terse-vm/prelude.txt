@@ -785,12 +785,20 @@ meth DemoLissajous step
   numPoints = numPoints + 40.
 
 cls FnordApp App
-meth fnordApp handle:query:
+meth FnordApp handle:query:
   DICT(
     'type', 'fnord';
-    'value', [x: nil];
-    'event', [e:xy: nil]).
-  
+    'value', se model;
+  ). 
+meth FnordApp model
+  GVec new vec: (
+    GPrim new
+      $ pos: -1 @ -1 @ -1,
+    GPrim new
+      $ pos: 0 @ 0 @ 0,
+    GPrim new
+      $ pos: 1 @ 1 @ 1,
+  )
 
 
 cls LiveApp App

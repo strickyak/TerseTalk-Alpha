@@ -75,7 +75,7 @@ proc WrapMarkedItemsInJavaFile {file} {
             break
           }
         }
-        if [regexp {\s*public\s+(abstract\s+)?(static\s+)?(synchronized\s+)?(\w+)\s+(\w+)\s*[(]([^{}]*)[)]} $decl - abstract static sync type name params] {
+        if [regexp {^\s*public\s+(abstract\s+)?(static\s+)?(synchronized\s+)?(\w+)\s+(\w+)\s*[(]([^{}]*)[)]} $decl - abstract static sync type name params] {
            set pp [split $params ","]
            set lpp [llength $pp]
            puts "    // CMD $cmd TYPE $type NAME $name PARAMS $pp"

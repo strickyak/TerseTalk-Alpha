@@ -138,6 +138,15 @@ public class Ur extends Static implements Comparable {
 		return null;
 	}
 
+	public final Obj mustObj() {
+		try {
+			return (Obj) this;
+		} catch (Exception ex) {
+			return (Obj) toss("Should have been an Obj, but wasn't: <%s#%s>",
+					this.cls, this);
+		}
+	}
+
 	public final Str mustStr() {
 		try {
 			return (Str) this;

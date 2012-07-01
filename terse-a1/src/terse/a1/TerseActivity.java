@@ -795,9 +795,8 @@ public class TerseActivity extends Activity {
 					setContentView(tsv);
 					return;
 				} else if (type.str.equals("fnord")) {
-					Blk blk = value.mustBlk();
-					Blk event = Static.urAt(d, "event").asBlk();
-					FnordView fnord = new FnordView(this, blk, event);
+					Obj model = value.mustObj();
+					FnordView fnord = new FnordView(this, model);
 					setContentView(fnord);
 					return;
 				} else if (type.str.equals("world") && value instanceof Str) {
@@ -1244,24 +1243,84 @@ public class TerseActivity extends Activity {
 
 	public class FnordView extends GLSurfaceView {
 		// http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
+//		Blk blk;
+//		Blk eventBlk;
+		GObj model = null;
 
-		public FnordView(Context context, Blk blk, Blk eventBlk) {
+		public FnordView(Context context, Obj model) {
 			super(context);
+			this.model = (GObj) model;
 
 			// Set the Renderer for drawing on the GLSurfaceView
 			setRenderer(new FnordRenderer());
 		}
 		
 		public class FnordRenderer implements GLSurfaceView.Renderer {
+			final static float RADIUS = 2.5f;
+			
+			private FloatBuffer cubeVCB = null;
 			private FloatBuffer triVCB = null;
 			private FloatBuffer axesVCB = null;
 			int width = 0;
 			int height = 0;
 			int frameCount = 0;
 			float angle = 0.0f;
-			
 
 			private void initShapes() {
+				float unitCubeCoords[] = {
+						// X, Y, Z
+						-0.5f, -0.5f, -0.5f, 0, 0, -1,
+						-0.5f, +0.5f, -0.5f, 0, 0, -1,
+						+0.5f, -0.5f, -0.5f, 0, 0, -1,
+						// X, Y, Z
+						-0.5f, -0.5f, -0.5f, -1, 0, 0,
+						-0.5f, +0.5f, -0.5f, -1, 0, 0,
+						-0.5f, -0.5f, +0.5f, -1, 0, 0,
+						// X, Y, Z
+						-0.5f, -0.5f, -0.5f, 0, -1, 0,
+						-0.5f, -0.5f, +0.5f, 0, -1, 0,
+						+0.5f, -0.5f, -0.5f, 0, -1, 0,
+
+						// X, Y, Z
+						+0.5f, +0.5f, -0.5f, 0, 0, -1,
+						-0.5f, +0.5f, -0.5f, 0, 0, -1,
+						+0.5f, -0.5f, -0.5f, 0, 0, -1,
+						// X, Y, Z
+						-0.5f, +0.5f, +0.5f, -1, 0, 0,
+						-0.5f, +0.5f, -0.5f, -1, 0, 0,
+						-0.5f, -0.5f, +0.5f, -1, 0, 0,
+						// X, Y, Z
+						+0.5f, -0.5f, +0.5f, 0, -1, 0,
+						-0.5f, -0.5f, +0.5f, 0, -1, 0,
+						+0.5f, -0.5f, -0.5f, 0, -1, 0,
+
+						// X, Y, Z
+						-0.5f, -0.5f, +0.5f, 0, 0, +1,
+						-0.5f, +0.5f, +0.5f, 0, 0, +1,
+						+0.5f, -0.5f, +0.5f, 0, 0, +1,
+						// X, Y, Z
+						+0.5f, -0.5f, -0.5f, +1, 0, 0,
+						+0.5f, +0.5f, -0.5f, +1, 0, 0,
+						+0.5f, -0.5f, +0.5f, +1, 0, 0,
+						// X, Y, Z
+						-0.5f, +0.5f, -0.5f, 0, +1, 0,
+						-0.5f, +0.5f, +0.5f, 0, +1, 0,
+						+0.5f, +0.5f, -0.5f, 0, +1, 0,
+
+						// X, Y, Z
+						+0.5f, +0.5f, +0.5f, 0, 0, +1,
+						-0.5f, +0.5f, +0.5f, 0, 0, +1,
+						+0.5f, -0.5f, +0.5f, 0, 0, +1,
+						// X, Y, Z
+						+0.5f, +0.5f, +0.5f, +1, 0, 0,
+						+0.5f, +0.5f, -0.5f, +1, 0, 0,
+						+0.5f, -0.5f, +0.5f, +1, 0, 0,
+						// X, Y, Z
+						+0.5f, +0.5f, +0.5f, 0, +1, 0,
+						-0.5f, +0.5f, +0.5f, 0, +1, 0,
+						+0.5f, +0.5f, -0.5f, 0, +1, 0,
+						};//
+				
 				float triangleCoords[] = {
 						// X, Y, Z
 						0.1f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
@@ -1328,6 +1387,7 @@ public class TerseActivity extends Activity {
 						
 				};
 
+				cubeVCB = newFloatBuffer(unitCubeCoords);
 				triVCB = newFloatBuffer(triangleCoords);
 				axesVCB = newFloatBuffer(refVertexAndColor);
 			}
@@ -1336,9 +1396,15 @@ public class TerseActivity extends Activity {
 				try {
 					terp.say("FNORD onSurfaceCreated");
 					TerseActivity.this.glSurfaceView = FnordView.this;
-					gl.glEnable (GL10.GL_AMBIENT_AND_DIFFUSE); // 
+					gl.glEnable(GL10.GL_LIGHTING);
+					gl.glEnable(GL10.GL_LIGHT0);
+					gl.glEnable(GL10.GL_DEPTH_TEST);
+					gl.glEnable(GL10.GL_ALPHA_TEST);
+					gl.glEnable(GL10.GL_AMBIENT_AND_DIFFUSE); // 
+					gl.glEnable (GL10.GL_BLEND);
+					gl.glBlendFunc (GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					// Set the background frame color
-					gl.glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
+					gl.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 					// initialize the triangle vertex array
 					initShapes();
@@ -1364,45 +1430,101 @@ public class TerseActivity extends Activity {
 					// Redraw background color
 					gl.glClear(GL10.GL_COLOR_BUFFER_BIT
 							| GL10.GL_DEPTH_BUFFER_BIT);
+
+					
 					gl.glViewport(0, 0, width, height);
 					gl.glMatrixMode(GL10.GL_PROJECTION);
 					gl.glLoadIdentity();
 					float h_over_w = height / width;
-					gl.glFrustumf(-1.5f, 1.5f, -h_over_w * 1.5f, h_over_w * 1.5f, -1.5f, 1.5f);
+					gl.glFrustumf(-RADIUS, RADIUS, -h_over_w * RADIUS, h_over_w * RADIUS, -RADIUS, RADIUS);
+					
 
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
 					gl.glEnable(GL10.GL_DEPTH_TEST);
 					//gl.glCullFace(GL10.GL_FRONT_AND_BACK);
 					gl.glCullFace(GL10.GL_FRONT);
+					gl.glColor4f(0.8f, 0.8f, 0.8f, 0.7f);
+	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+	                gl.glShadeModel(GL10.GL_SMOOTH);
+
+					{ // Lighting.
+						// http://code.google.com/p/android-gl/source/browse/trunk/AndroidGL/src/edu/union/GLTutorialEleven.java?r=26
+
+				        float lightAmbient[] = new float[] { 0.2f, 0.3f, 0.3f, 1.0f };
+				        float lightDiffuse[] = new float[] { 0.6f, 0.1f, 0.1f, 1.0f };
+				        lightDiffuse = new float[] { 1f, 1f, 1f, 1.0f };
+				        float[] lightPos = new float[] {5,5,5,1};
+				        lightPos = new float[] {2, 2, -10, 1};
+				        
+				        float matAmbient[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
+				        float matDiffuse[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
+				        
+//						float white[] = new float[] { 1f, 1f, 1f, 1.0f};
+//				        float trans[] = new float[] { 1f, 1f, 1f, 0.3f};
+				        
+
+		                gl.glEnable(GL10.GL_LIGHTING);
+		                gl.glEnable(GL10.GL_LIGHT0);
+		                gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
+		                gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
+		                
+		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
+		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuse,     0);
+		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
+					}
 					
+					gl.glPushMatrix();
+
 					angle = angle + 0.2f;
 					gl.glScalef(0.6f, 0.6f, -0.6f);
 					gl.glRotatef(angle, 1, 0, 0);
 					gl.glRotatef(angle/3, 0, 1, 0);
 					gl.glRotatef(angle/10, 0, 0, 1);
 
-					int stride = 4 /*bytes per float*/ * (3 + 4) /*floats per vertex*/;
-					
-					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
-					triVCB.position(0);
-					gl.glVertexPointer(3, GL10.GL_FLOAT, stride, triVCB);
-					triVCB.position(3);
-					gl.glColorPointer(4, GL10.GL_FLOAT, stride, triVCB);
-					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
+					if (model == null) {
+						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
+						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+						gl.glEnable(GL10.GL_NORMALIZE);
+						gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
+						cubeVCB.position(0);
+						gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+						cubeVCB.position(3);
+						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
+					} else {
+						new GRender(gl, this).render(model);
+					}
 
-					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+					int strideOverColor = 4 /*bytes per float*/ * (3 + 4) /*floats per vertex*/;
+
+				    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
+					gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 					axesVCB.position(0);
-					gl.glVertexPointer(3, GL10.GL_FLOAT, stride, axesVCB);
+					gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverColor, axesVCB);
 					axesVCB.position(3);
-					gl.glColorPointer(4, GL10.GL_FLOAT, stride, axesVCB);
+					gl.glColorPointer(4, GL10.GL_FLOAT, strideOverColor, axesVCB);
 					gl.glDrawArrays(GL10.GL_LINES, 0, 6);
+					
+					gl.glPopMatrix();
 					
 				} catch (Exception e) {
 					terp.say("FnordRenderer::onDrawFrame CAUGHT %s",
 							Static.describe(e));
 					postMortem(e);
 				}
+			}
+			
+			void drawCube(GL10 gl) {
+				int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
+				gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+			    gl.glEnable(GL10.GL_NORMALIZE);
+			    gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
+				cubeVCB.position(0);
+				gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+				cubeVCB.position(3);
+				gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+				gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
 			}
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -1421,21 +1543,21 @@ public class TerseActivity extends Activity {
 		}
 		class GRender extends GVisitor {
 			GL10 gl;
-			GRender(GL10 gl) {
+			FnordRenderer rend;
+			GRender(GL10 gl, FnordRenderer rend) {
 				this.gl = gl;
+				this.rend = rend;
 			}
 			void render(GObj top) {
-				gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+				gl.glColor4f(0.3f, 0.8f, 0.3f, 1.0f);  // Some default color, greenish.  TODO.
 				top.visit(this);
 			}
 			@Override
 			void visitGPrim(GPrim a) {
 				gl.glPushMatrix();
 				applyTransform(a);
-
-				a.fbuf.position(0);
-				gl.glVertexPointer(3, GL10.GL_FLOAT, 0, a.fbuf);
-				gl.glDrawArrays(a.mode, 0, a.sz);
+				// TODO: the Prim should do its drawing, not this hardwired drawCube().
+				rend.drawCube(gl);
 				
 				gl.glPopMatrix();
 			}
@@ -1518,19 +1640,24 @@ public class TerseActivity extends Activity {
 		GPrim(Cls cls) {
 			super(cls);
 		}
-
-		// =meth GPrim "access" mesh:
-		public void mesh_(Vec a) {
-			sz = a.vec.size();
-			float[] ff = new float[sz * 3];
-			for (int i = 0; i < sz; i++) {
-				Vec xyz = Static.urAt(a, i).mustVec();
-				ff[i * 3 + 0] = Static.floatAt(xyz, 0);
-				ff[i * 3 + 1] = Static.floatAt(xyz, 1);
-				ff[i * 3 + 2] = Static.floatAt(xyz, 2);
-			}
-			fbuf = newFloatBuffer(ff);
+		// =meth GPrimCls "new" new
+		public static GPrim _new(Terp t) {
+			AndyTerp terp = (AndyTerp) t;
+			return new GPrim(terp.wrapandy.clsGPrim);
 		}
+
+//		// =meth GPrim "access" mesh:
+//		public void mesh_(Vec a) {
+//			sz = a.vec.size();
+//			float[] ff = new float[sz * 3];
+//			for (int i = 0; i < sz; i++) {
+//				Vec xyz = Static.urAt(a, i).mustVec();
+//				ff[i * 3 + 0] = Static.floatAt(xyz, 0);
+//				ff[i * 3 + 1] = Static.floatAt(xyz, 1);
+//				ff[i * 3 + 2] = Static.floatAt(xyz, 2);
+//			}
+//			fbuf = newFloatBuffer(ff);
+//		}
 
 		@Override
 		void visit(GVisitor gv) {
@@ -1543,6 +1670,11 @@ public class TerseActivity extends Activity {
 		// =cls  "GL" GVec  GObj
 		GVec(Cls cls) {
 			super(cls);
+		}
+		// =meth GVecCls "new" new
+		public static GVec _new(Terp t) {
+			AndyTerp terp = (AndyTerp) t;
+			return new GVec(terp.wrapandy.clsGVec);
 		}
 
 		// =meth GVec "access" vec
