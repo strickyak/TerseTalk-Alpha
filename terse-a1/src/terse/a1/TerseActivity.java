@@ -1264,17 +1264,56 @@ public class TerseActivity extends Activity {
 			private void initShapes() {
 				float triangleCoords[] = {
 						// X, Y, Z
-						0.1f, 0.1f, 0, /**/ 0.3f, 0.3f, 0, 1,
-						0.1f, 0.9f, 0, /**/ 0.3f, 0.3f, 0, 1,
-						0.9f, 0.1f, 0, /**/ 0.3f, 0.3f, 0, 1,
+						0.1f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
+						0.1f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
+						0.9f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
 						// X, Y, Z
-						0, 0.1f, 0.1f, /**/ 0, 0.3f, 0.3f, 1,
-						0, 0.9f, 0.1f, /**/ 0, 0.3f, 0.3f, 1,
-						0, 0.1f, 0.9f, /**/ 0, 0.3f, 0.3f, 1,
+						0, 0.1f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
+						0, 0.9f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
+						0, 0.1f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
 						// X, Y, Z
-						0.1f, 0, 0.1f, /**/ 0.3f, 0, 0.3f, 1,
-						0.1f, 0, 0.9f, /**/ 0.3f, 0, 0.3f, 1,
-						0.9f, 0, 0.1f, /**/ 0.3f, 0, 0.3f, 1,
+						0.1f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
+						0.1f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
+						0.9f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
+
+						// X, Y, Z
+						0.9f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
+						0.1f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
+						0.9f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
+						// X, Y, Z
+						0, 0.9f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
+						0, 0.9f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
+						0, 0.1f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
+						// X, Y, Z
+						0.9f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
+						0.1f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
+						0.9f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
+
+						// X, Y, Z
+						0.1f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						0.1f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						0.9f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						// X, Y, Z
+						1, 0.1f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
+						1, 0.9f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
+						1, 0.1f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
+						// X, Y, Z
+						0.1f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
+						0.1f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
+						0.9f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
+
+						// X, Y, Z
+						0.9f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						0.1f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						0.9f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
+						// X, Y, Z
+						1, 0.9f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
+						1, 0.9f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
+						1, 0.1f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
+						// X, Y, Z
+						0.9f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
+						0.1f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
+						0.9f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
 						};//
 				
 				float refVertexAndColor[] = {
@@ -1285,7 +1324,8 @@ public class TerseActivity extends Activity {
 						0, 1, 0, /**/ 0, 1, 0, 1, //
 						
 						0, 0, 0, /**/ 0, 0, 1, 1, //  Z axis, blue.
-						0, 0, 1, /**/ 0, 0, 1, 1//
+						0, 0, 1, /**/ 0, 0, 1, 1,//
+						
 				};
 
 				triVCB = newFloatBuffer(triangleCoords);
@@ -1328,14 +1368,16 @@ public class TerseActivity extends Activity {
 					gl.glMatrixMode(GL10.GL_PROJECTION);
 					gl.glLoadIdentity();
 					float h_over_w = height / width;
-					gl.glFrustumf(-1, 1, -h_over_w, h_over_w, -1, 1);
+					gl.glFrustumf(-1.5f, 1.5f, -h_over_w * 1.5f, h_over_w * 1.5f, -1.5f, 1.5f);
 
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
 					gl.glEnable(GL10.GL_DEPTH_TEST);
-					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+					//gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+					gl.glCullFace(GL10.GL_FRONT);
 					
 					angle = angle + 0.2f;
+					gl.glScalef(0.6f, 0.6f, -0.6f);
 					gl.glRotatef(angle, 1, 0, 0);
 					gl.glRotatef(angle/3, 0, 1, 0);
 					gl.glRotatef(angle/10, 0, 0, 1);
@@ -1347,7 +1389,7 @@ public class TerseActivity extends Activity {
 					gl.glVertexPointer(3, GL10.GL_FLOAT, stride, triVCB);
 					triVCB.position(3);
 					gl.glColorPointer(4, GL10.GL_FLOAT, stride, triVCB);
-					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 9);
+					gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
 
 					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 					axesVCB.position(0);
