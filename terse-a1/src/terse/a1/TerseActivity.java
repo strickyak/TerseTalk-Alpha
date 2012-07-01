@@ -1529,6 +1529,28 @@ public class TerseActivity extends Activity {
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {
 				try {
+					
+					{
+						setOnTouchListener(new OnTouchListener() {
+							@Override
+							public boolean onTouch(View v, MotionEvent event) {
+								int action = event.getAction();
+								if (action == MotionEvent.ACTION_DOWN
+										|| action == MotionEvent.ACTION_MOVE) {
+									Motion mot = new Motion(terp, FnordView.this,
+											event, eventBlk);
+									boolean ok = terp.eventQueue.offer(mot);
+									if (!ok) {
+										terp.say("eventQ.offer refused");
+									}
+									return true;
+								}
+								return false;
+							}
+						});
+					}
+					
+					
 					terp.say("FNORD onSurfaceChanged(", width, ",", height, ")");
 					this.width = width;
 					this.height = height;
