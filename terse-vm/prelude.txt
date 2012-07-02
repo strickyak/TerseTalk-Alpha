@@ -785,12 +785,27 @@ meth DemoLissajous step
   numPoints = numPoints + 40.
 
 cls FnordApp App
+vars FnordApp
+  gl
 meth FnordApp handle:query:
   DICT(
     'type', 'fnord';
-    'value', se model;
+    'value', self;
   ). 
+meth FnordApp run:
+  self say: 'FnordApp--run:'.
+  gl = a.
+  self init.
+  while(1) do(self step).
+meth FnordApp init
+  self say: 'FnordApp--init'.
+  self.
+meth FnordApp step
+  self say: 'FnordApp--step'.
+  gl post: se model.
+
 meth FnordApp model
+  self say: 'FnordApp--model'.
   GVec new vec: (
     GPrim new
       $ pos: -1 @ -1 @ -1,

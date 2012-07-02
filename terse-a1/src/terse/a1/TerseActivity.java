@@ -795,8 +795,8 @@ public class TerseActivity extends Activity {
 					setContentView(tsv);
 					return;
 				} else if (type.str.equals("fnord")) {
-					Obj model = value.mustObj();
-					FnordView fnord = new FnordView(this, model);
+					Obj app = value.mustObj();
+					FnordView fnord = new FnordView(this, app);
 					setContentView(fnord);
 					return;
 				} else if (type.str.equals("world") && value instanceof Str) {
@@ -1240,19 +1240,52 @@ public class TerseActivity extends Activity {
 		zz.position(0);
 		return zz;
 	}
+	
 
 	public class FnordView extends GLSurfaceView {
-		// http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
-//		Blk blk;
-//		Blk eventBlk;
+		// Thanks http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
+		final Obj app;
 		GObj model = null;
+		GLSurfaceView.Renderer renderer;
+		GGl ggl;
+		AndyTerp terp;
 
-		public FnordView(Context context, Obj model) {
+		public FnordView(Context context, final Obj app) {
 			super(context);
-			this.model = (GObj) model;
+			this.app = app;
+			this.model = null;
+			this.terp = (AndyTerp) app.cls.terp;
+			this.ggl = new GGl(terp.wrapandy.clsGGl);
+			this.renderer = new FnordRenderer();
 
 			// Set the Renderer for drawing on the GLSurfaceView
-			setRenderer(new FnordRenderer());
+			setRenderer(renderer);
+			
+			Runnable runTheApp = new Runnable() {
+				@Override
+				public void run() {
+					terp.say("Run Fnord App app=%s ggl=%s", app, ggl);
+					try {
+						app.eval("[x: self run: x]", ggl);
+					} catch (Throwable ex) {
+						terp.say("Caught Fnord App ex=%s", ex);
+					}
+					terp.say("Finished Fnord App app=%s", app);
+				}
+			};
+			terp.runOnWorkThread(runTheApp, "RunFnordApp");
+		}
+		
+		public class GGl extends Obj {
+			// =cls "GL" GGl  Obj
+			public GGl(Cls cls) {
+				super(cls);
+			}
+			// =meth GGl "gl" post:
+			public void post_(GObj model) {
+				FnordView.this.model = model;
+			}
+			
 		}
 		
 		public class FnordRenderer implements GLSurfaceView.Renderer {
@@ -1265,6 +1298,8 @@ public class TerseActivity extends Activity {
 			int height = 0;
 			int frameCount = 0;
 			float angle = 0.0f;
+			float touchX = 0;
+			float touchY = 0;
 
 			private void initShapes() {
 				float unitCubeCoords[] = {
@@ -1529,27 +1564,20 @@ public class TerseActivity extends Activity {
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {
 				try {
-					
-					{
-						setOnTouchListener(new OnTouchListener() {
+					setOnTouchListener(new OnTouchListener() {
 							@Override
 							public boolean onTouch(View v, MotionEvent event) {
 								int action = event.getAction();
 								if (action == MotionEvent.ACTION_DOWN
 										|| action == MotionEvent.ACTION_MOVE) {
-									Motion mot = new Motion(terp, FnordView.this,
-											event, eventBlk);
-									boolean ok = terp.eventQueue.offer(mot);
-									if (!ok) {
-										terp.say("eventQ.offer refused");
-									}
+									// Just save the X and Y points, for now.
+									touchX = event.getRawX();
+									touchY = event.getRawY();
 									return true;
 								}
 								return false;
 							}
-						});
-					}
-					
+					});
 					
 					terp.say("FNORD onSurfaceChanged(", width, ",", height, ")");
 					this.width = width;
