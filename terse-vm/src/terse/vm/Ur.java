@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import terse.vm.Cls.JavaMeth;
 import terse.vm.Cls.Meth;
+import terse.vm.Cls.UsrMeth;
 import terse.vm.Expr.Seq;
 import terse.vm.Terp.Frame;
 import terse.vm.Usr.UsrCls;
@@ -761,6 +762,17 @@ public class Ur extends Static implements Comparable {
 				}
 			}
 			return new Ht(terp(), Html.tag(null, tag, params, body));
+		}
+
+		// =meth Obj "eval" apply:args:
+		public Ur apply_args_(String msg, Ur[] args) {
+			Meth meth = Expr.Send.findMeth(this, msg, false);
+			if (meth == null) {
+				return toss("Cannot send %s to %d", msg, this);
+			}
+			UsrMeth m = (UsrMeth) meth;
+			Frame f = terp().newFrame(null, this, m._top());
+			return meth.apply(f, this, args);
 		}
 
 		// =meth Obj "eval" eval: "Evaluate a string as code in this receiver."

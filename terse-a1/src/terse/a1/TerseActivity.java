@@ -1266,7 +1266,7 @@ public class TerseActivity extends Activity {
 				public void run() {
 					terp.say("Run Fnord App app=%s ggl=%s", app, ggl);
 					try {
-						app.eval("[x: self run: x]", ggl);
+						app.eval("self run: a", ggl);
 					} catch (Throwable ex) {
 						terp.say("Caught Fnord App ex=%s", ex);
 					}
