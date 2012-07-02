@@ -811,10 +811,10 @@ meth FnordApp model
     "GPrim new $ pos: 0 @ 0 @ 0,"
     GPrim new $ pos: 1 @ 1 @ 1,
   ).
-  for(i: 5) do(i= (i - 3) / 3.
-    for (j: 5) do(j= (j - 3) / 3.
-      for (k: 5) do(k= (k - 3) / 3.
-        v1 = v1 ap: (
+  for(i: 5) do(i= (i - 2) / 4.
+    for (j: 5) do(j= (j - 2) / 4.
+      for (k: 5) do(k= (k - 2) / 4.
+        v1 ap: (
 	  GPrim new 
 	    $ pos: (i @ j @ k ) say
 	    $ scale: 0.1 @ 0.2 @ 0.3
