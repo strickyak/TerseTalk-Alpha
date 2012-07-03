@@ -191,6 +191,7 @@ meth Top handle:query:
       '/GameFoo';
       '/GamePong';
       '/GameTroids';
+      '/SnapshotWorld';
       '/EVAL CODE (DoIt, PrintIt)';
       '/BROWSE & EDIT CODE (old)';
       '/BrowseClasses (new)';
@@ -227,12 +228,18 @@ meth BrowseFiles handle:query:
 cls BrowseFile App
 meth BrowseFile handle:query:
   ww= a split: '.' .
-  name= (ww at: 1) ap: '.txt'.
-  c= File read: name.
-  v= TAG('pre', c).
+  fn= (ww at: 1) ap: '.txt'.
+  c= File read: fn.
+  url= ('/EditFile.', fn)jam.
+  v= HT(
+    TAG('pre', c);
+    TAG('p');
+    TAG('hr');
+    TAG('a'; 'href', url; '[EDIT]');
+  ).
   DICT(
     'type', 'html';
-    'title', 'BrowseFile: ' ap: name;
+    'title', 'BrowseFile: ' ap: fn;
     'value', v;
   )
 
@@ -416,6 +423,30 @@ meth SubmitEval handle:query:
     'type', 'text';
     'title', 'doit: ' ap: (b at: 'text');
     'value', z str;
+  ).
+
+cls EditFile App
+meth EditFile handle:query:
+  fn= (a split: '.' $at: 1, '.txt')jam.
+  DICT(
+    'type', 'edit';
+    'title', 'Eval Form';
+    'value', File read: fn;
+    'action', ('/SubmitEditFile.', fn)jam;
+  ).
+
+
+cls SubmitEditFile App
+meth SubmitEditFile nonMain
+meth SubmitEditFile handle:query:
+  fn= (a split: '.' $at: 1, '.txt')jam.
+  x= b at: 'text'.
+  File write: fn value: x.
+  
+  DICT(
+    'type', 'text';
+    'title', fn;
+    'value', ('Saved ', fn, ', ', x len, ' bytes.')jam
   ).
 
 
@@ -673,7 +704,7 @@ meth SwitchWorld handle:query:
 
 
   form = Tag(
-    'form'; 'method', 'post'; 'action', '/SwitchWorldSubmit';
+    'form'; 'method', 'get'; 'action', '/SwitchWorldSubmit';
     'Switch to a differnt world: '; i1; br;
     s).
 
@@ -784,46 +815,6 @@ meth DemoLissajous step
   ).
   numPoints = numPoints + 40.
 
-cls FnordApp App
-vars FnordApp
-  gl
-meth FnordApp handle:query:
-  DICT(
-    'type', 'fnord';
-    'value', self;
-  ). 
-meth FnordApp run:
-  self say: 'FnordApp--run:'.
-  gl = a.
-  self init.
-  while(1) do(self step).
-meth FnordApp init
-  self say: 'FnordApp--init'.
-  self.
-meth FnordApp step
-  self say: 'FnordApp--step'.
-  gl post: se model.
-
-meth FnordApp model
-  self say: 'FnordApp--model'.
-  v1 = (
-    GPrim new $ pos: -1 @ -1 @ -1,
-    "GPrim new $ pos: 0 @ 0 @ 0,"
-    GPrim new $ pos: 1 @ 1 @ 1,
-  ).
-  for(i: 5) do(i= (i - 2) / 4.
-    for (j: 5) do(j= (j - 2) / 4.
-      for (k: 5) do(k= (k - 2) / 4.
-        v1 ap: (
-	  GPrim new 
-	    $ pos: (i @ j @ k ) say
-	    $ scale: 0.1 @ 0.2 @ 0.3
-	)
-      )
-    )
-  ).
-  GVec new vec: v1.
-
 
 cls LiveApp App
 vars LiveApp
@@ -910,6 +901,36 @@ meth DemoLiveLissajousSimple draw
         i / 7 $ sin * h + h.
     self white line: prev to: xy.
     prev= xy.
+    self post.
+  ).
+
+cls DemoLiveHappyRect LiveApp
+meth DemoLiveHappyRect draw
+  w= se scr width.
+  h= se scr height.
+  self clear: 0.
+  WHILE(1) DO(
+    c = Num rand: 1000.
+    x1 = Num rand: w.
+    x2 = Num rand: w.
+    y1 = Num rand: h.
+    y2 = Num rand: h.
+    self newInk: c $ rect: x1@y1 to: x2@y2.
+    self post.
+  ).
+
+cls DemoLiveHappyLine LiveApp
+meth DemoLiveHappyLine draw
+  w= se scr width.
+  h= se scr height.
+  self clear: 0.
+  WHILE(1) DO(
+    c = Num rand: 1000.
+    x1 = Num rand: w.
+    x2 = Num rand: w.
+    y1 = Num rand: h.
+    y2 = Num rand: h.
+    self newInk: c $ line: x1@y1 to: x2@y2.
     self post.
   ).
 
@@ -1611,6 +1632,19 @@ meth Config save
   File write: 'c_config.txt' value: d repr.
 
 
+cls SnapshotWorld WebApp
+vars SnapshotWorld
+  snap
+meth SnapshotWorld wTitle
+  snap = ('w_zzz', (Sys secs % 999 $floor), '.txt')jam.
+  snap.
+meth SnapshotWorld wMid
+  x= File read: ('w_', Sys worldname, '.txt')jam lower.
+  File write: snap value: x.
+  HT('ok ', snap).
+  
+
+
 cls BrowseWorlds WebApp
 vars BrowseWorlds
   cfg
@@ -1689,8 +1723,8 @@ meth BrowseLocalWorld wMid
   }.
 
   HT{
-    Ht linkLabelPairs: (p,).
-    TAG{'p'}.
+    Ht linkLabelPairs: (p,);
+    TAG{'p'};
     "dict change world?"
   }.
 
@@ -1750,6 +1784,7 @@ meth WorldShareUp wMid
     TAG{'p'};
     Ht linkLabelPairs: (p,);
   }
+
 
 cls WorldSyncUp WebApp
 meth WorldSyncUp wTitle
@@ -2190,4 +2225,69 @@ meth TroidsAster draw:
   }
 
 
-##END #1xxx
+cls FnordApp App
+vars FnordApp
+  gl
+meth FnordApp gl
+  gl
+meth FnordApp handle:query:
+  DICT(
+    'type', 'fnord';
+    'value', self;
+  ). 
+meth FnordApp run:
+  self say: 'FnordApp--run:'.
+  gl = a.
+  self init.
+  while(1) do(self step).
+meth FnordApp init
+  self.
+meth FnordApp step
+  gl post: se model.
+
+meth FnordApp model
+  v1 = ().
+  for(i: 5) do(i= (i - 2) / 1.5.
+    for (j: 5) do(j= (j - 2) / 1.5.
+      for (k: 5) do(k= (k - 2) / 1.5.
+        v1 ap: (
+	  GPrim new 
+	    $ pos: (i @ j @ k )
+	    $ scale: 0.5 @ 0.3 @ 0.1
+	    $ rot: i*10 @ j*10 @ k*10
+	    $ color: i cos @ j cos @ k cos @ 1
+	)
+      )
+    )
+  ).
+  GVec new vec: v1.
+
+cls FnordRandom FnordApp
+meth FnordApp model
+  v1 = ().
+  for(i: 5) do(i= (i - 2) / 1.5.
+    for (j: 5) do(j= (j - 2) / 1.5.
+      for (k: 5) do(k= (k - 2) / 1.5.
+        v1 ap: (
+	  GPrim new 
+	    $ pos: Num rand @ Num rand @ Num rand
+	    $ scale: Num rand @ Num rand @ Num rand
+	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
+	)
+      )
+    )
+  ).
+  GVec new vec: v1.
+
+cls FnordRandom1 FnordRandom
+vars FnordRandom1
+  model
+meth FnordRandom1 step
+  "Only make the model once."
+  IF(model equals: nil) THEN(
+    model = se model.
+  ).
+  se gl post: model.
+
+
+##END

@@ -39,6 +39,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
@@ -1289,7 +1290,7 @@ public class TerseActivity extends Activity {
 		}
 		
 		public class FnordRenderer implements GLSurfaceView.Renderer {
-			final static float RADIUS = 2.5f;
+			final static float RADIUS = 8f;
 			
 			private FloatBuffer cubeVCB = null;
 			private FloatBuffer triVCB = null;
@@ -1297,9 +1298,9 @@ public class TerseActivity extends Activity {
 			int width = 0;
 			int height = 0;
 			int frameCount = 0;
-			float angle = 0.0f;
-			float touchX = 0;
-			float touchY = 0;
+			float theta = 0.0f;
+			float touchX = -1;
+			float touchY = -1;
 
 			private void initShapes() {
 				float unitCubeCoords[] = {
@@ -1343,15 +1344,15 @@ public class TerseActivity extends Activity {
 						+0.5f, +0.5f, -0.5f, 0, +1, 0,
 
 						// X, Y, Z
-						+0.5f, +0.5f, +0.5f, 0, 0, +1,
+						+0.4f, +0.4f, +0.4f, 0, 0, +1,
 						-0.5f, +0.5f, +0.5f, 0, 0, +1,
 						+0.5f, -0.5f, +0.5f, 0, 0, +1,
 						// X, Y, Z
-						+0.5f, +0.5f, +0.5f, +1, 0, 0,
+						+0.4f, +0.4f, +0.4f, +1, 0, 0,
 						+0.5f, +0.5f, -0.5f, +1, 0, 0,
 						+0.5f, -0.5f, +0.5f, +1, 0, 0,
 						// X, Y, Z
-						+0.5f, +0.5f, +0.5f, 0, +1, 0,
+						+0.4f, +0.4f, +0.4f, 0, +1, 0,
 						-0.5f, +0.5f, +0.5f, 0, +1, 0,
 						+0.5f, +0.5f, -0.5f, 0, +1, 0,
 						};//
@@ -1439,7 +1440,8 @@ public class TerseActivity extends Activity {
 					gl.glEnable (GL10.GL_BLEND);
 					gl.glBlendFunc (GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					// Set the background frame color
-					gl.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+					gl.glClearColor(0.1f, 0.1f, 0.4f, 1.0f);  // blue sky
+					gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // black
 
 					// initialize the triangle vertex array
 					initShapes();
@@ -1456,7 +1458,7 @@ public class TerseActivity extends Activity {
 			public void onDrawFrame(GL10 gl) {
 				try {
 					// TODO
-					if (frameCount < 5) {
+					if (frameCount < 3) {
 					  terp.say("FNORD onDrawFrame #" + frameCount);
 					}
 					/////////terp.say("bomb %d", 100 / frameCount);
@@ -1468,7 +1470,8 @@ public class TerseActivity extends Activity {
 
 					
 					gl.glViewport(0, 0, width, height);
-					gl.glMatrixMode(GL10.GL_PROJECTION);
+					//gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
+					gl.glMatrixMode(GL10.GL_MODELVIEW);  // But changing to this.   Frestrum doesn't care?
 					gl.glLoadIdentity();
 					float h_over_w = height / width;
 					gl.glFrustumf(-RADIUS, RADIUS, -h_over_w * RADIUS, h_over_w * RADIUS, -RADIUS, RADIUS);
@@ -1478,31 +1481,30 @@ public class TerseActivity extends Activity {
 					gl.glLoadIdentity();
 					gl.glEnable(GL10.GL_DEPTH_TEST);
 					//gl.glCullFace(GL10.GL_FRONT_AND_BACK);
-					gl.glCullFace(GL10.GL_FRONT);
+					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
 					gl.glColor4f(0.8f, 0.8f, 0.8f, 0.7f);
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 	                gl.glShadeModel(GL10.GL_SMOOTH);
 
+	               
+//	                float lightAmbient[] = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
+//	                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
+
 					{ // Lighting.
 						// http://code.google.com/p/android-gl/source/browse/trunk/AndroidGL/src/edu/union/GLTutorialEleven.java?r=26
 
-				        float lightAmbient[] = new float[] { 0.2f, 0.3f, 0.3f, 1.0f };
-				        float lightDiffuse[] = new float[] { 0.6f, 0.1f, 0.1f, 1.0f };
-				        lightDiffuse = new float[] { 1f, 1f, 1f, 1.0f };
+				        float lightAmbient[] = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
+				        float lightDiffuse[] = new float[] { 0.8f, 0.2f, 0.8f, 1.0f };
 				        float[] lightPos = new float[] {5,5,5,1};
 				        lightPos = new float[] {2, 2, -10, 1};
 				        
 				        float matAmbient[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
 				        float matDiffuse[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
 				        
-//						float white[] = new float[] { 1f, 1f, 1f, 1.0f};
-//				        float trans[] = new float[] { 1f, 1f, 1f, 0.3f};
-				        
-
 		                gl.glEnable(GL10.GL_LIGHTING);
 		                gl.glEnable(GL10.GL_LIGHT0);
-		                gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
-		                gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
+		                //gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
+		                //gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
 		                
 		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
 		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuse,     0);
@@ -1511,12 +1513,16 @@ public class TerseActivity extends Activity {
 					
 					gl.glPushMatrix();
 
-					angle = angle + 0.2f;
 					gl.glScalef(0.6f, 0.6f, -0.6f);
-					gl.glRotatef(angle, 1, 0, 0);
-					gl.glRotatef(angle/3, 0, 1, 0);
-					gl.glRotatef(angle/10, 0, 0, 1);
-
+					if (touchX < 0) {
+						theta = theta + 0.2f;
+						gl.glRotatef(theta, 1, 0, 0);
+						gl.glRotatef(theta / 3, 0, 1, 0);
+						gl.glRotatef(theta / 10, 0, 0, 1);
+					} else {
+						gl.glRotatef((touchX * 360f/ width), 1, 0, 0);
+						gl.glRotatef((touchY * 360f / height), 0, 1, 0);
+					}
 					if (model == null) {
 						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
 						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
@@ -1534,7 +1540,7 @@ public class TerseActivity extends Activity {
 					int strideOverColor = 4 /*bytes per float*/ * (3 + 4) /*floats per vertex*/;
 
 				    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
-					gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 					axesVCB.position(0);
 					gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverColor, axesVCB);
 					axesVCB.position(3);
@@ -1594,40 +1600,51 @@ public class TerseActivity extends Activity {
 		class GRender extends GVisitor {
 			GL10 gl;
 			FnordRenderer rend;
+			Stack<Obj> colors = new Stack<Obj>();
 			GRender(GL10 gl, FnordRenderer rend) {
 				this.gl = gl;
 				this.rend = rend;
 			}
 			void render(GObj top) {
-				gl.glColor4f(0.3f, 0.8f, 0.3f, 1.0f);  // Some default color, greenish.  TODO.
+				colors.push(terp.newVec(Static.ints(1, 1, 1, 1))); // White
+//				gl.glColor4f(0.5f, 1.0f, 0.5f, 1.0f);  // Greenish.
 				top.visit(this);
 			}
 			@Override
 			void visitGPrim(GPrim a) {
-				gl.glPushMatrix();
-				applyTransform(a);
+				pushTransform(a);
 				// TODO: the Prim should do its drawing, not this hardwired drawCube().
 				rend.drawCube(gl);
-				
-				gl.glPopMatrix();
+				popTransform();
 			}
 			@Override
 			void visitGVec(GVec a) {
-				gl.glPushMatrix();
-				applyTransform(a);
+				pushTransform(a);
 				int sz = a.vec.vec.size();
 				for (int i = 0; i < sz; i++) {
 					GObj x = (GObj) a.vec.vec.get(i);
 					x.visit(this);
 				}
+				popTransform();
+			}
+			void popTransform() {
+				colors.pop();
 				gl.glPopMatrix();
 			}
-			void applyTransform(GObj a) {
+			void pushTransform(GObj a) {
+				gl.glPushMatrix();
+				gl.glTranslatef(a.px, a.py, a.pz);
+				gl.glScalef(a.sx, a.sy, a.sz);
 				gl.glRotatef(a.rz, 0, 0, 1);
 				gl.glRotatef(a.ry, 0, 1, 0);
 				gl.glRotatef(a.rx, 1, 0, 0);
-				gl.glScalef(a.sx, a.sy, a.sz);
-				gl.glTranslatef(a.px, a.py, a.pz);
+				if (a.color == terp.instNil) {
+					colors.push(colors.peek()); // dup
+				} else {
+					colors.push(a.color);
+				}
+				Vec color = colors.peek().mustVec();
+				gl.glColor4f(Static.floatAt(color, 0), Static.floatAt(color, 1), Static.floatAt(color, 2), Static.floatAt(color, 3));
 			}
 		}
 	}
@@ -1640,7 +1657,7 @@ public class TerseActivity extends Activity {
 		float px = 0, py = 0, pz = 0;  // Translation
 		float sx = 1, sy = 1, sz = 1;  // Scale
 		float rx = 0, ry = 0, rz = 0;  // Rot (Euclid)
-		Vec color = null;
+		Obj color = terp().instNil;  // Vec or nil
 		// =cls "GL" GObj  Obj
 		GObj(Cls cls) {
 			super(cls);
@@ -1664,7 +1681,7 @@ public class TerseActivity extends Activity {
 			rz = Static.floatAt(a, 2);
 		}
 		// =meth GObj "access" color:
-		public void color_(Vec a) {
+		public void color_(Obj a) {
 			color = a;
 		}
 		// =meth GObj "access" pos
@@ -1678,6 +1695,10 @@ public class TerseActivity extends Activity {
 		// =meth GObj "access" rot
 		public Vec _rot() {
 			return terp.mkFloatVec(rx, ry, rz);
+		}
+		// =meth GObj "access" color
+		public Obj _color() {
+			return color;
 		}
 		abstract void visit(GVisitor gv);
 	}
