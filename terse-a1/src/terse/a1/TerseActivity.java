@@ -1250,6 +1250,8 @@ public class TerseActivity extends Activity {
 		GLSurfaceView.Renderer renderer;
 		GGl ggl;
 		AndyTerp terp;
+		public GObj eye = null;
+		public Vec lighting = null;
 
 		public FnordView(Context context, final Obj app) {
 			super(context);
@@ -1279,18 +1281,24 @@ public class TerseActivity extends Activity {
 		
 		public class GGl extends Obj {
 			// =cls "GL" GGl  Obj
-			public GGl(Cls cls) {
-				super(cls);
+			public GGl(Cls a) {
+				super(a);
 			}
 			// =meth GGl "gl" post:
-			public void post_(GObj model) {
-				FnordView.this.model = model;
+			public void post_(GObj a) {
+				FnordView.this.model = a;
 			}
-			
+			// =meth GGl "gl" eye:
+			public void eye_(GObj a) {
+				FnordView.this.eye = a;
+			}
+			// =meth GGl "gl" light:
+			public void light_(Vec a) {
+				FnordView.this.lighting = a;
+			}
 		}
 		
 		public class FnordRenderer implements GLSurfaceView.Renderer {
-			final static float RADIUS = 8f;
 			
 			private FloatBuffer cubeVCB = null;
 			private FloatBuffer triVCB = null;
@@ -1435,7 +1443,6 @@ public class TerseActivity extends Activity {
 					gl.glEnable(GL10.GL_LIGHTING);
 					gl.glEnable(GL10.GL_LIGHT0);
 					gl.glEnable(GL10.GL_DEPTH_TEST);
-					gl.glEnable(GL10.GL_ALPHA_TEST);
 					gl.glEnable(GL10.GL_AMBIENT_AND_DIFFUSE); // 
 					gl.glEnable (GL10.GL_BLEND);
 					gl.glBlendFunc (GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
@@ -1470,48 +1477,49 @@ public class TerseActivity extends Activity {
 
 					
 					gl.glViewport(0, 0, width, height);
-					//gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
-					gl.glMatrixMode(GL10.GL_MODELVIEW);  // But changing to this.   Frestrum doesn't care?
+					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
 					gl.glLoadIdentity();
-					float h_over_w = height / width;
-					gl.glFrustumf(-RADIUS, RADIUS, -h_over_w * RADIUS, h_over_w * RADIUS, -RADIUS, RADIUS);
 					
+					if (eye != null) {
+						new GRender(gl, this).justTransform(eye);
+					}
+					//gl.glScalef(0.33f, 0.33f, 0.33f);  // 0.33 makes image smaller.
+					
+					//final float RADIUS = 32f; // 8f;
+					//float tall = RADIUS * height / width;
+					//gl.glFrustumf(-RADIUS, RADIUS, -tall, tall, -RADIUS, RADIUS);  // Why this does nothing?
 
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
 					gl.glEnable(GL10.GL_DEPTH_TEST);
-					//gl.glCullFace(GL10.GL_FRONT_AND_BACK);
 					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
-					gl.glColor4f(0.8f, 0.8f, 0.8f, 0.7f);
+					gl.glColor4f(0.5f, 0.5f, 0.5f, 1);
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-	                gl.glShadeModel(GL10.GL_SMOOTH);
 
-	               
-//	                float lightAmbient[] = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
-//	                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
-
-					{ // Lighting.
+					if (lighting != null) {
 						// http://code.google.com/p/android-gl/source/browse/trunk/AndroidGL/src/edu/union/GLTutorialEleven.java?r=26
 
-				        float lightAmbient[] = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
-				        float lightDiffuse[] = new float[] { 0.8f, 0.2f, 0.8f, 1.0f };
-				        float[] lightPos = new float[] {5,5,5,1};
-				        lightPos = new float[] {2, 2, -10, 1};
+				        float[] lightAmbient = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
+				        float[] lightDiffuse = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
+				        float[] lightPos = new float[] {2, 2, -10, 1};
 				        
-				        float matAmbient[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
-				        float matDiffuse[] = new float[] { 0.6f, 0.6f, 0.6f, 1.0f };
+				        float matAmbient[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
+				        float matDiffuse[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
 				        
 		                gl.glEnable(GL10.GL_LIGHTING);
 		                gl.glEnable(GL10.GL_LIGHT0);
-		                //gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, matAmbient, 0);
-		                //gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, matDiffuse, 0);
 		                
 		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
 		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuse,     0);
 		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
+		                gl.glShadeModel(GL10.GL_SMOOTH);
+					} else {
+		                gl.glDisable(GL10.GL_LIGHTING);
+		                gl.glDisable(GL10.GL_LIGHT0);
 					}
 					
 					gl.glPushMatrix();
+
 
 					gl.glScalef(0.6f, 0.6f, -0.6f);
 					if (touchX < 0) {
@@ -1524,21 +1532,32 @@ public class TerseActivity extends Activity {
 						gl.glRotatef((touchY * 360f / height), 0, 1, 0);
 					}
 					if (model == null) {
-						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
-						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
-						gl.glEnable(GL10.GL_NORMALIZE);
-						gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
-						cubeVCB.position(0);
-						gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
-						cubeVCB.position(3);
-						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
-						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
+						gl.glClearColor(1f, 0.1f, 0.1f, 1);  // ON null, Red.
+						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+						
+//						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
+//						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+//						gl.glEnable(GL10.GL_NORMALIZE);
+//						gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
+//						cubeVCB.position(0);
+//						gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+//						cubeVCB.position(3);
+//						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+//						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
 					} else {
+						gl.glClearColor(0, 0, 0, 1);  // Black background.
+						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+						
 						new GRender(gl, this).render(model);
 					}
 
+					// DRAW UNIT AXES
 					int strideOverColor = 4 /*bytes per float*/ * (3 + 4) /*floats per vertex*/;
 
+	                gl.glDisable(GL10.GL_LIGHTING);
+	                gl.glDisable(GL10.GL_LIGHT0);
+					gl.glDisable(GL10.GL_DEPTH_TEST);
+	                
 				    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 					axesVCB.position(0);
@@ -1601,25 +1620,25 @@ public class TerseActivity extends Activity {
 			GL10 gl;
 			FnordRenderer rend;
 			Stack<Obj> colors = new Stack<Obj>();
+	        float material[] = new float[4];  // for transient reuse
+	        
 			GRender(GL10 gl, FnordRenderer rend) {
 				this.gl = gl;
 				this.rend = rend;
+				colors.push(terp.newVec(Static.ints(1, 1, 1, 1))); // Initially White
 			}
 			void render(GObj top) {
-				colors.push(terp.newVec(Static.ints(1, 1, 1, 1))); // White
-//				gl.glColor4f(0.5f, 1.0f, 0.5f, 1.0f);  // Greenish.
 				top.visit(this);
 			}
 			@Override
 			void visitGPrim(GPrim a) {
-				pushTransform(a);
-				// TODO: the Prim should do its drawing, not this hardwired drawCube().
+				pushTransformAndColor(a);
 				rend.drawCube(gl);
 				popTransform();
 			}
 			@Override
 			void visitGVec(GVec a) {
-				pushTransform(a);
+				pushTransformAndColor(a);
 				int sz = a.vec.vec.size();
 				for (int i = 0; i < sz; i++) {
 					GObj x = (GObj) a.vec.vec.get(i);
@@ -1631,20 +1650,39 @@ public class TerseActivity extends Activity {
 				colors.pop();
 				gl.glPopMatrix();
 			}
-			void pushTransform(GObj a) {
+			void pushTransformAndColor(GObj a) {
 				gl.glPushMatrix();
-				gl.glTranslatef(a.px, a.py, a.pz);
-				gl.glScalef(a.sx, a.sy, a.sz);
-				gl.glRotatef(a.rz, 0, 0, 1);
-				gl.glRotatef(a.ry, 0, 1, 0);
-				gl.glRotatef(a.rx, 1, 0, 0);
+				justTransform(a);
 				if (a.color == terp.instNil) {
 					colors.push(colors.peek()); // dup
 				} else {
 					colors.push(a.color);
 				}
 				Vec color = colors.peek().mustVec();
-				gl.glColor4f(Static.floatAt(color, 0), Static.floatAt(color, 1), Static.floatAt(color, 2), Static.floatAt(color, 3));
+				float r = color.vec.size() > 0 ? Static.floatAt(color, 0) : 1;
+				float g = color.vec.size() > 0 ? Static.floatAt(color, 1) : 1;
+				float b = color.vec.size() > 0 ? Static.floatAt(color, 2) : 1;
+				float alpha = color.vec.size() > 0 ? Static.floatAt(color, 3) : 1;
+				if (lighting == null) {
+					gl.glColor4f(r, g, b, alpha);
+				} else {
+					material[0] = r;
+					material[1] = g;
+					material[2] = b;
+					material[3] = alpha;
+					gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT,
+							material, 0);
+					gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE,
+							material, 0);
+				}
+			}
+			void justTransform(GObj a) {
+				gl.glTranslatef(a.px, a.py, a.pz);
+				gl.glScalef(a.sx, a.sy, a.sz);
+				//terp.say("LOC %f, %f, %f", a.px, a.py, a.pz);
+				gl.glRotatef(a.rz, 0, 0, 1);
+				gl.glRotatef(a.ry, 0, 1, 0);
+				gl.glRotatef(a.rx, 1, 0, 0);	
 			}
 		}
 	}

@@ -94,6 +94,15 @@ equals 26
 equals 26
 	x; y = 3, 4.   x * x + y * y $ + 1.
 
+meth Vec a0
+  self at: 0
+meth Vec a1
+  self at: 1
+meth Vec a2
+  self at: 2
+meth Vec a3
+  self at: 3
+
 meth Vec eq:
   (a cls name equals: 'Vec')
     n: ['Vec.== expected Vec argument, but got' err: VEC(a, a cls, a cls name, a cls name equals: 'Vec') ]
@@ -187,14 +196,17 @@ meth Top handle:query:
     'type' , 'list';
     'title' , 'TOP';
     'value' , VEC{
+      '/BrowseCLASSES (NEW)';
       '/FnordApp';
+      '/FnordTwo';
+      '/FnordRandom1';
+      '/FnordRandom2';
       '/GameFoo';
       '/GamePong';
       '/GameTroids';
       '/SnapshotWorld';
       '/EVAL CODE (DoIt, PrintIt)';
       '/BROWSE & EDIT CODE (old)';
-      '/BrowseClasses (new)';
       '/BrowseWorlds (broken)';
       '/BrowseFiles';
       '/BrowseHub';
@@ -2247,32 +2259,53 @@ meth FnordApp step
 
 meth FnordApp model
   v1 = ().
-  for(i: 5) do(i= (i - 2) / 1.5.
-    for (j: 5) do(j= (j - 2) / 1.5.
-      for (k: 5) do(k= (k - 2) / 1.5.
+  for(i: 5) do(ii= (i - 2) / 1.5.
+    for (j: 5) do(jj= (j - 2) / 1.5.
+      for (k: 5) do(kk= (k - 2) / 1.5.
         v1 ap: (
 	  GPrim new 
-	    $ pos: (i @ j @ k )
+	    $ pos: (ii @ jj @ kk )
 	    $ scale: 0.5 @ 0.3 @ 0.1
-	    $ rot: i*10 @ j*10 @ k*10
-	    $ color: i cos @ j cos @ k cos @ 1
+	    $ rot: ii*10 @ jj*10 @ kk*10
+	    $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
 	)
       )
     )
   ).
   GVec new vec: v1.
 
+cls FnordTwo FnordApp
+meth FnordTwo init
+  super init.
+  self gl eye: (GPrim new scale: 0.02 @ 0.02 @ 0.02).
+meth FnordTwo model
+  v1 = ().
+  for(i: 12) do(  ii = i - 6.
+    for (j: 12) do(  jj = j - 6.
+        v1 ap: (
+	  GPrim new 
+	    $ pos: 10*ii @ 10*jj @ 0
+	    $ scale: 9 @ 9 @ 1
+	    $ color: 0.08*(i+1) @ 0.1 @ 0.08*(j+1) @ 1.0
+	)
+    )
+  ).
+  GVec new vec: v1.
+
 cls FnordRandom FnordApp
-meth FnordApp model
+meth FnordRandom init
+  su init.
+meth FnordRandom model
   v1 = ().
   for(i: 5) do(i= (i - 2) / 1.5.
     for (j: 5) do(j= (j - 2) / 1.5.
       for (k: 5) do(k= (k - 2) / 1.5.
         v1 ap: (
 	  GPrim new 
-	    $ pos: Num rand @ Num rand @ Num rand
+	    $ pos: Num rand * 2 - 1 @ Num rand * 2 - 1 @ Num rand * 2 - 1
 	    $ scale: Num rand @ Num rand @ Num rand
 	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
+	    $ color: Num rand @ Num rand @ Num rand @ 1
 	)
       )
     )
@@ -2289,5 +2322,9 @@ meth FnordRandom1 step
   ).
   se gl post: model.
 
+cls FnordRandom2 FnordRandom1
+meth FnordRandom2 init
+  se.
+  se gl light: 1 @ 1 @ 1.
 
 ##END
