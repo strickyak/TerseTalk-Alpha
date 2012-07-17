@@ -1252,6 +1252,7 @@ public class TerseActivity extends Activity {
 		AndyTerp terp;
 		public GObj eye = null;
 		public Vec lighting = null;
+		public boolean wires = false;
 
 		public FnordView(Context context, final Obj app) {
 			super(context);
@@ -1295,6 +1296,10 @@ public class TerseActivity extends Activity {
 			// =meth GGl "gl" light:
 			public void light_(Vec a) {
 				FnordView.this.lighting = a;
+			}
+			// =meth GGl "gl" wires:
+			public void wires_(boolean a) {
+				wires = a;
 			}
 		}
 		
@@ -1535,15 +1540,15 @@ public class TerseActivity extends Activity {
 						gl.glClearColor(1f, 0.1f, 0.1f, 1);  // ON null, Red.
 						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 						
-//						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
-//						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
-//						gl.glEnable(GL10.GL_NORMALIZE);
-//						gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
-//						cubeVCB.position(0);
-//						gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
-//						cubeVCB.position(3);
-//						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
-//						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
+						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
+						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+						gl.glEnable(GL10.GL_NORMALIZE);
+						gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
+						cubeVCB.position(0);
+						gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+						cubeVCB.position(3);
+						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
+						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
 					} else {
 						gl.glClearColor(0, 0, 0, 1);  // Black background.
 						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
@@ -1584,7 +1589,7 @@ public class TerseActivity extends Activity {
 				gl.glVertexPointer(3, GL10.GL_FLOAT, strideOverNormal, cubeVCB);
 				cubeVCB.position(3);
 				gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
-				gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
+				gl.glDrawArrays(wires ? GL10.GL_LINE_LOOP : GL10.GL_TRIANGLES, 0, 36);
 			}
 
 			public void onSurfaceChanged(GL10 gl, int width, int height) {

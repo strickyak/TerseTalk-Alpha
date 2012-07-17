@@ -199,8 +199,7 @@ meth Top handle:query:
       '/BrowseCLASSES (NEW)';
       '/FnordApp';
       '/FnordTwo';
-      '/FnordRandom1';
-      '/FnordRandom2';
+      '/FnordMotherShip';
       '/GameFoo';
       '/GamePong';
       '/GameTroids';
@@ -2253,7 +2252,7 @@ meth FnordApp run:
   self init.
   while(1) do(self step).
 meth FnordApp init
-  self.
+  se gl light: 0.8 @ 0.8 @ 0.8.
 meth FnordApp step
   gl post: se model.
 
@@ -2312,19 +2311,14 @@ meth FnordRandom model
   ).
   GVec new vec: v1.
 
-cls FnordRandom1 FnordRandom
-vars FnordRandom1
+cls FnordMotherShip FnordRandom
+vars FnordMotherShip
   model
-meth FnordRandom1 step
+meth FnordMotherShip step
   "Only make the model once."
   IF(model equals: nil) THEN(
     model = se model.
   ).
   se gl post: model.
-
-cls FnordRandom2 FnordRandom1
-meth FnordRandom2 init
-  se.
-  se gl light: 1 @ 1 @ 1.
 
 ##END
