@@ -80,9 +80,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
+import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -1265,6 +1267,8 @@ public class TerseActivity extends Activity {
 		int width = 0;
 		int height = 0;
 		int hectare = 0;  // Num pixels per User's measure of 100.
+		int uiWidth = 0;
+		int uiHeight = 0;
 		int frameCount = 0;
 
 		float touchRawX = -1;
@@ -1303,6 +1307,22 @@ public class TerseActivity extends Activity {
 			// =cls "GL" GGl  Obj
 			public GGl(Cls a) {
 				super(a);
+			}
+			// =meth GGl "gl" uiWid
+			public float _uiWid() {
+				return uiWidth;
+			}
+			// =meth GGl "gl" uiHei
+			public float _uiHei() {
+				return uiHeight;
+			}
+			// =meth GGl "gl" uiWid
+			public float _glWid() {
+				return width * 100 / (float)hectare;
+			}
+			// =meth GGl "gl" uiHei
+			public float _glHei() {
+				return height * 100 / (float)hectare;
 			}
 			// =meth GGl "gl" ex
 			public float _ex() {
@@ -1615,11 +1635,58 @@ public class TerseActivity extends Activity {
 				gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
 				gl.glDrawArrays(wires ? GL10.GL_LINE_LOOP : GL10.GL_TRIANGLES, 0, 36);
 			}
+			
+			void drawText(GL10 gl) {  // TODO -- figure out how to complete.
+				// StackOverflow 1339136 JVitela Dec 2 '010 at 15:35
+				Bitmap bm = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_4444);
+				Canvas cvs = new Canvas(bm);
+				bm.eraseColor(0);
+				
+				// Get a background image from resources
+				// note image format must match bitmap format.
+//				Context context = TerseActivity.this;
+//				Drawable bg = context.getResources().getDrawable(R.drawable.background); // ??
+//				bg.setBounds(0, 0, 256, 256);
+//				bg.draw(cvs);
+				
+				//Draw the text
+				Paint textPaint = new Paint();
+				textPaint.setTextSize(32);
+				textPaint.setAntiAlias(true);
+				textPaint.setARGB(0xff, 0, 0, 0);
+				cvs.drawText("Hello World", 16, 112, textPaint);
+				
+				// Generate one texture pointer...
+				int[] textures = {0};
+				gl.glGenTextures(1, textures, 0);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+				
+				// Create Nearest Filtered Texture
+				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+				
+				// Could also GL_CLAMP_TO_EDGE
+				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_REPEAT);
+				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_REPEAT);
+				
+				// Use the Android GLUtils to specify a 2d texture image from our bitmap
+				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bm, 0);
+				
+				// Clean up.
+				bm.recycle();
+			}
 
 			public void onSurfaceChanged(GL10 gl, int wid, int hei) {
 				width = wid;
 				height = hei;
 				hectare = (hei < wid) ? hei : wid;
+				if (hei < wid) {
+					uiHeight = hei;
+					uiWidth = wid - hei;
+				} else {
+					uiWidth = wid;
+					uiHeight = hei - wid;
+				}
 				try {
 					setOnTouchListener(new OnTouchListener() {
 							@Override
