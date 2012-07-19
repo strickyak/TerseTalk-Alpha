@@ -2276,16 +2276,17 @@ meth FnordApp model
 cls FnordTwo FnordApp
 meth FnordTwo init
   super init.
-  self gl eye: (GPrim new scale: 0.02 @ 0.02 @ 0.02).
+  "self gl eye: (GPrim new scale: 0.02 @ 0.02 @ 0.02)."
 meth FnordTwo model
   v1 = ().
-  for(i: 12) do(  ii = i - 6.
-    for (j: 12) do(  jj = j - 6.
+  for(i: 10) do(
+    for (j: 10) do(
         v1 ap: (
 	  GPrim new 
-	    $ pos: 10*ii @ 10*jj @ 0
-	    $ scale: 9 @ 9 @ 1
-	    $ color: 0.08*(i+1) @ 0.1 @ 0.08*(j+1) @ 1.0
+	    $ rot: 10*i + 5 @ 10*j + 5 @ 0
+	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
+	    $ scale: 8 @ 8 @ 1
+	    $ color: i / 10 + 0.05 @ 0.2 @ i / 10 + 0.05 @ 1
 	)
     )
   ).

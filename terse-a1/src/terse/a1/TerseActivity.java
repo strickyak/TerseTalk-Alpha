@@ -1452,8 +1452,7 @@ public class TerseActivity extends Activity {
 					gl.glEnable (GL10.GL_BLEND);
 					gl.glBlendFunc (GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					// Set the background frame color
-					gl.glClearColor(0.1f, 0.1f, 0.4f, 1.0f);  // blue sky
-					gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // black
+					gl.glClearColor(0.1f, 0.1f, 0.4f, 1.0f);  // blue sky // WHY
 
 					// initialize the triangle vertex array
 					initShapes();
@@ -1477,27 +1476,35 @@ public class TerseActivity extends Activity {
 					++frameCount;
 					
 					// Redraw background color
+					if (model == null) {
+						gl.glClearColor(1, 0, 0, 1);  // Red sky if no model.
+					} else {
+						gl.glClearColor(0, 0, 0, 1);  // Black sky.
+					}
 					gl.glClear(GL10.GL_COLOR_BUFFER_BIT
 							| GL10.GL_DEPTH_BUFFER_BIT);
-
 					
 					gl.glViewport(0, 0, width, height);
 					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
 					gl.glLoadIdentity();
-					
-					if (eye != null) {
-						new GRender(gl, this).justTransform(eye);
-					}
-					//gl.glScalef(0.33f, 0.33f, 0.33f);  // 0.33 makes image smaller.
-					
-					//final float RADIUS = 32f; // 8f;
-					//float tall = RADIUS * height / width;
-					//gl.glFrustumf(-RADIUS, RADIUS, -tall, tall, -RADIUS, RADIUS);  // Why this does nothing?
+					GLU.gluPerspective(gl, 45.0f, // FieldOfView angle in degrees
+							(float) width / (float) height,  // aspect ratio
+							0.1f, // distance to near clipping plane
+							200.0f);  // distance to far clipping plane
+
+					float centerX = (touchX / width) * 100;
+					float centerY = (touchY / height) * 100;
+					float centerZ = 0;
+					GLU.gluLookAt(gl, 50, 50, 100, centerX, centerY, centerZ, 0, 1, 0);
+//					if (eye != null) {
+//						new GRender(gl, this).justTransform(eye);
+//					}
 
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
 					gl.glEnable(GL10.GL_DEPTH_TEST);
 					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+					
 					gl.glColor4f(0.5f, 0.5f, 0.5f, 1);
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1506,7 +1513,7 @@ public class TerseActivity extends Activity {
 
 				        float[] lightAmbient = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
 				        float[] lightDiffuse = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
-				        float[] lightPos = new float[] {2, 2, -10, 1};
+				        float[] lightPos = new float[] {100, 100, 100, 1}; // 2, 2, -10, 1;
 				        
 				        float matAmbient[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
 				        float matDiffuse[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
@@ -1526,20 +1533,18 @@ public class TerseActivity extends Activity {
 					gl.glPushMatrix();
 
 
-					gl.glScalef(0.6f, 0.6f, -0.6f);
-					if (touchX < 0) {
-						theta = theta + 0.2f;
-						gl.glRotatef(theta, 1, 0, 0);
-						gl.glRotatef(theta / 3, 0, 1, 0);
-						gl.glRotatef(theta / 10, 0, 0, 1);
-					} else {
-						gl.glRotatef((touchX * 360f/ width), 1, 0, 0);
-						gl.glRotatef((touchY * 360f / height), 0, 1, 0);
-					}
+					// WHY // gl.glScalef(0.6f, 0.6f, -0.6f);
+					
+//					if (touchX < 0) {
+//						theta = theta + 0.2f;
+//						gl.glRotatef(theta, 1, 0, 0);
+//						gl.glRotatef(theta / 3, 0, 1, 0);
+//						gl.glRotatef(theta / 10, 0, 0, 1);
+//					} else {
+//						gl.glRotatef((touchY * 360f/ width), 1, 0, 0);
+//						gl.glRotatef((touchX * 360f / height), 0, 1, 0);
+//					}
 					if (model == null) {
-						gl.glClearColor(1f, 0.1f, 0.1f, 1);  // ON null, Red.
-						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-						
 						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
 						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 						gl.glEnable(GL10.GL_NORMALIZE);
@@ -1550,9 +1555,6 @@ public class TerseActivity extends Activity {
 						gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
 						gl.glDrawArrays(GL10.GL_TRIANGLES, 0, 36);
 					} else {
-						gl.glClearColor(0, 0, 0, 1);  // Black background.
-						gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-						
 						new GRender(gl, this).render(model);
 					}
 
