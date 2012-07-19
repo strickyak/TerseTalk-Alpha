@@ -2253,19 +2253,28 @@ meth FnordApp run:
   while(1) do(self step).
 meth FnordApp init
   se gl light: 0.8 @ 0.8 @ 0.8.
+meth FnordApp prePost:
+  x = se gl ex.
+  y = se gl ey.
+  se gl look: x @ y @ 0.
+
+meth FnordApp post:
+  se prePost: a.
+  se gl post: a.
+
 meth FnordApp step
-  gl post: se model.
+  se post: se model.
 
 meth FnordApp model
   v1 = ().
-  for(i: 5) do(ii= (i - 2) / 1.5.
-    for (j: 5) do(jj= (j - 2) / 1.5.
-      for (k: 5) do(kk= (k - 2) / 1.5.
+  for(i: 6) do(
+    for (j: 6) do(
+      for (k: 6) do(
         v1 ap: (
 	  GPrim new 
-	    $ pos: (ii @ jj @ kk )
-	    $ scale: 0.5 @ 0.3 @ 0.1
-	    $ rot: ii*10 @ jj*10 @ kk*10
+	    $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
+	    $ scale: 5 @ 3 @ 1
+	    $ rot: i*10 @ j*10 @ k*10
 	    $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
 	)
       )
@@ -2276,7 +2285,8 @@ meth FnordApp model
 cls FnordTwo FnordApp
 meth FnordTwo init
   super init.
-  "self gl eye: (GPrim new scale: 0.02 @ 0.02 @ 0.02)."
+
+
 meth FnordTwo model
   v1 = ().
   for(i: 10) do(
@@ -2294,16 +2304,16 @@ meth FnordTwo model
 
 cls FnordRandom FnordApp
 meth FnordRandom init
-  su init.
+  super init.
 meth FnordRandom model
   v1 = ().
-  for(i: 5) do(i= (i - 2) / 1.5.
-    for (j: 5) do(j= (j - 2) / 1.5.
-      for (k: 5) do(k= (k - 2) / 1.5.
+  for(i: 5) do(
+    for (j: 5) do(
+      for (k: 5) do(
         v1 ap: (
 	  GPrim new 
-	    $ pos: Num rand * 2 - 1 @ Num rand * 2 - 1 @ Num rand * 2 - 1
-	    $ scale: Num rand @ Num rand @ Num rand
+	    $ pos: 30 + (Num rand: 40) @ 30 + (Num rand: 40) @ (Num rand: 20)
+	    $ scale: 10 * Num rand @ 10 * Num rand @ 10 * Num rand
 	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
 	    $ color: Num rand @ Num rand @ Num rand @ 1
 	)
@@ -2320,6 +2330,6 @@ meth FnordMotherShip step
   IF(model equals: nil) THEN(
     model = se model.
   ).
-  se gl post: model.
+  se post: model.
 
 ##END

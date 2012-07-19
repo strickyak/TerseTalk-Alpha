@@ -56,6 +56,7 @@ import org.apache.http.params.HttpParams;
 
 import terse.vm.Cls;
 import terse.vm.Parser;
+import terse.vm.Ur.Sys;
 import terse.vm.Wrap;
 import terse.vm.Terp.ICanv;
 import terse.vm.Terp.IInk;
@@ -1245,14 +1246,32 @@ public class TerseActivity extends Activity {
 
 	public class FnordView extends GLSurfaceView {
 		// Thanks http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
+
+		AndyTerp terp;
 		final Obj app;
 		GObj model = null;
 		GLSurfaceView.Renderer renderer;
-		GGl ggl;
-		AndyTerp terp;
-		public GObj eye = null;
-		public Vec lighting = null;
+		GGl ggl;  // Interface to TerseTalk
 		public boolean wires = false;
+		
+		float eyeX = 50, eyeY = 50, eyeZ = 100;
+		float lookX = 50, lookY = 50, lookZ = 0;
+		float upX = 0, upY = 1, upZ = 0;
+		float clipNear = 0.1f, clipFar = 200;
+		float lightX = 50, lightY = 50, lightZ = 100;
+		float ambientR = 0.8f, ambientG = 0.8f, ambientB = 0.8f;
+		float diffuseR = 0.8f, diffuseG = 0.8f, diffuseB = 0.8f;
+		
+		int width = 0;
+		int height = 0;
+		int hectare = 0;  // Num pixels per User's measure of 100.
+		int frameCount = 0;
+
+		float touchRawX = -1;
+		float touchRawY = -1;
+		float touchUserX = 50;
+		float touchUserY = 50;
+		double touchSecs = System.currentTimeMillis() / 1000.0;
 
 		public FnordView(Context context, final Obj app) {
 			super(context);
@@ -1285,17 +1304,45 @@ public class TerseActivity extends Activity {
 			public GGl(Cls a) {
 				super(a);
 			}
+			// =meth GGl "gl" ex
+			public float _ex() {
+				return touchUserX;
+			}
+			// =meth GGl "gl" ey
+			public float _ey() {
+				return touchUserY;
+			}
+			// =meth GGl "gl" esecs
+			public double _esecs() {
+				return System.currentTimeMillis() - touchSecs;
+			}
 			// =meth GGl "gl" post:
 			public void post_(GObj a) {
 				FnordView.this.model = a;
 			}
 			// =meth GGl "gl" eye:
-			public void eye_(GObj a) {
-				FnordView.this.eye = a;
+			public void eye_(Vec a) {
+				eyeX = floatAt(a, 0);
+				eyeY = floatAt(a, 1);
+				eyeZ = floatAt(a, 2);
+			}
+			// =meth GGl "gl" look:
+			public void look_(Vec a) {
+				lookX = floatAt(a, 0);
+				lookY = floatAt(a, 1);
+				lookZ = floatAt(a, 2);
+			}
+			// =meth GGl "gl" up:
+			public void up_(Vec a) {
+				upX = floatAt(a, 0);
+				upY = floatAt(a, 1);
+				upZ = floatAt(a, 2);
 			}
 			// =meth GGl "gl" light:
 			public void light_(Vec a) {
-				FnordView.this.lighting = a;
+				lightX = floatAt(a, 0);
+				lightY = floatAt(a, 1);
+				lightZ = floatAt(a, 2);
 			}
 			// =meth GGl "gl" wires:
 			public void wires_(boolean a) {
@@ -1306,14 +1353,7 @@ public class TerseActivity extends Activity {
 		public class FnordRenderer implements GLSurfaceView.Renderer {
 			
 			private FloatBuffer cubeVCB = null;
-			private FloatBuffer triVCB = null;
 			private FloatBuffer axesVCB = null;
-			int width = 0;
-			int height = 0;
-			int frameCount = 0;
-			float theta = 0.0f;
-			float touchX = -1;
-			float touchY = -1;
 
 			private void initShapes() {
 				float unitCubeCoords[] = {
@@ -1437,7 +1477,7 @@ public class TerseActivity extends Activity {
 				};
 
 				cubeVCB = newFloatBuffer(unitCubeCoords);
-				triVCB = newFloatBuffer(triangleCoords);
+				//triVCB = newFloatBuffer(triangleCoords);
 				axesVCB = newFloatBuffer(refVertexAndColor);
 			}
 
@@ -1468,11 +1508,6 @@ public class TerseActivity extends Activity {
 
 			public void onDrawFrame(GL10 gl) {
 				try {
-					// TODO
-					if (frameCount < 3) {
-					  terp.say("FNORD onDrawFrame #" + frameCount);
-					}
-					/////////terp.say("bomb %d", 100 / frameCount);
 					++frameCount;
 					
 					// Redraw background color
@@ -1483,53 +1518,40 @@ public class TerseActivity extends Activity {
 					}
 					gl.glClear(GL10.GL_COLOR_BUFFER_BIT
 							| GL10.GL_DEPTH_BUFFER_BIT);
+					gl.glEnable(GL10.GL_DEPTH_TEST);
+					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					
 					gl.glViewport(0, 0, width, height);
 					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
 					gl.glLoadIdentity();
 					GLU.gluPerspective(gl, 45.0f, // FieldOfView angle in degrees
 							(float) width / (float) height,  // aspect ratio
-							0.1f, // distance to near clipping plane
-							200.0f);  // distance to far clipping plane
+							clipNear, // distance to near clipping plane
+							clipFar);  // distance to far clipping plane
 
-					float centerX = (touchX / width) * 100;
-					float centerY = (touchY / height) * 100;
-					float centerZ = 0;
-					GLU.gluLookAt(gl, 50, 50, 100, centerX, centerY, centerZ, 0, 1, 0);
-//					if (eye != null) {
-//						new GRender(gl, this).justTransform(eye);
-//					}
-
+//					float centerX = (touchRawX / width) * 100;
+//					float centerY = (touchRawY / height) * 100;
+//					float centerZ = 0;
+					GLU.gluLookAt(gl, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
-					gl.glEnable(GL10.GL_DEPTH_TEST);
-					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
-					
-					gl.glColor4f(0.5f, 0.5f, 0.5f, 1);
-	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
-					if (lighting != null) {
-						// http://code.google.com/p/android-gl/source/browse/trunk/AndroidGL/src/edu/union/GLTutorialEleven.java?r=26
+					float[] lightAmbient = new float[] { ambientR, ambientG,
+							ambientB, 0.5f };
+					float[] lightDiffuse = new float[] { diffuseR, diffuseG,
+							diffuseB, 0.5f };
+					float[] lightPos = new float[] { lightX, lightY, lightZ, 1 };
 
-				        float[] lightAmbient = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
-				        float[] lightDiffuse = new float[] { floatAt(lighting, 0), floatAt(lighting, 1), floatAt(lighting, 2), 0.5f };
-				        float[] lightPos = new float[] {100, 100, 100, 1}; // 2, 2, -10, 1;
-				        
-				        float matAmbient[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
-				        float matDiffuse[] = new float[] { 0.8f, 0.8f, 0.8f, 0.5f };
-				        
-		                gl.glEnable(GL10.GL_LIGHTING);
-		                gl.glEnable(GL10.GL_LIGHT0);
-		                
-		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,     0);
-		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuse,     0);
-		                gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
-		                gl.glShadeModel(GL10.GL_SMOOTH);
-					} else {
-		                gl.glDisable(GL10.GL_LIGHTING);
-		                gl.glDisable(GL10.GL_LIGHT0);
-					}
-					
+					gl.glEnable(GL10.GL_LIGHTING);
+					gl.glEnable(GL10.GL_LIGHT0);
+
+					gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_AMBIENT, lightAmbient,
+							0);
+					gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_DIFFUSE, lightDiffuse,
+							0);
+					gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
+					gl.glShadeModel(GL10.GL_SMOOTH);
 					gl.glPushMatrix();
 
 
@@ -1594,7 +1616,10 @@ public class TerseActivity extends Activity {
 				gl.glDrawArrays(wires ? GL10.GL_LINE_LOOP : GL10.GL_TRIANGLES, 0, 36);
 			}
 
-			public void onSurfaceChanged(GL10 gl, int width, int height) {
+			public void onSurfaceChanged(GL10 gl, int wid, int hei) {
+				width = wid;
+				height = hei;
+				hectare = (hei < wid) ? hei : wid;
 				try {
 					setOnTouchListener(new OnTouchListener() {
 							@Override
@@ -1603,25 +1628,25 @@ public class TerseActivity extends Activity {
 								if (action == MotionEvent.ACTION_DOWN
 										|| action == MotionEvent.ACTION_MOVE) {
 									// Just save the X and Y points, for now.
-									touchX = event.getRawX();
-									touchY = event.getRawY();
+									touchRawX = event.getRawX();
+									touchRawY = event.getRawY();
+									touchUserX = touchRawX * 100 / hectare;
+									touchUserY = (height - 1 - touchRawY) * 100 / hectare;
+									touchSecs = System.currentTimeMillis() / 1000.0;
 									return true;
 								}
 								return false;
 							}
 					});
 					
-					terp.say("FNORD onSurfaceChanged(", width, ",", height, ")");
-					this.width = width;
-					this.height = height;
-					gl.glViewport(0, 0, width, height);
+					terp.say("FNORD onSurfaceChanged(", wid, ",", hei, ")");
+					gl.glViewport(0, 0, wid, hei);
 				} catch (Exception e) {
 					terp.say("FnordRenderer::onSurfaceChanged CAUGHT %s",
 							Static.describe(e));
 					postMortem(e);
 				}
 			}
-
 		}
 		class GRender extends GVisitor {
 			GL10 gl;
@@ -1670,7 +1695,7 @@ public class TerseActivity extends Activity {
 				float g = color.vec.size() > 0 ? Static.floatAt(color, 1) : 1;
 				float b = color.vec.size() > 0 ? Static.floatAt(color, 2) : 1;
 				float alpha = color.vec.size() > 0 ? Static.floatAt(color, 3) : 1;
-				if (lighting == null) {
+				if (false) {
 					gl.glColor4f(r, g, b, alpha);
 				} else {
 					material[0] = r;
