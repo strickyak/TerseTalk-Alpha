@@ -31,6 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
@@ -81,7 +85,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.net.DhcpInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
@@ -2079,7 +2085,34 @@ public class TerseActivity extends Activity {
 		public void trans_(Vec a) {
 			Matrix.translateM(this.m, 0, floatAt(a, 0), floatAt(a, 1), floatAt(a, 2));
 		}
+	}  // end class Mat.
+	
+	// TODO:  Be able to send and receive UDP packets about the state
+	// of other players.   The following is unused model code from the net.
+	
+	// Thanks: http://code.google.com/p/boxeeremote/wiki/AndroidUDP
+	InetAddress getBroadcastAddress() throws IOException {
+	    WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+	    DhcpInfo dhcp = wifi.getDhcpInfo();
+	    // handle null somehow
+
+	    int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+	    byte[] quads = new byte[4];
+	    for (int k = 0; k < 4; k++)
+	      quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+	    return InetAddress.getByAddress(quads);
+	}
+	
+	byte[] sendAndReceiveUdp(int PORT, String data) throws IOException {
+		DatagramSocket socket = new DatagramSocket(PORT);
+		socket.setBroadcast(true);
+		DatagramPacket packet = new DatagramPacket(data.getBytes(), data.length(),
+		    getBroadcastAddress(), PORT);
+		socket.send(packet);
 		
-		
+		byte[] buf = new byte[1024];
+		DatagramPacket p = new DatagramPacket(buf, buf.length);
+		socket.receive(p);
+		return buf;
 	}
 }
