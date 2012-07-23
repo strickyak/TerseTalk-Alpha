@@ -2358,18 +2358,82 @@ meth FnordMotherShip step
   ).
   se post: model.
 
+cls RedPlane Usr
+vars RedPlane
+  px py pz  vx vy vz  roll pitch yaw lasttime
+# http://mathworld.wolfram.com/EulerAngles.html
+#   phi about z (yaw); theta about new x (pitch); psi about new z (roll).
+#     http://en.wikipedia.org/wiki/Flight_dynamics
+meth RedPlane init
+  lasttime = Sys secs.
+  self tweak.
+  px,py,pz = 10, 30, 5.
+  self.
+meth RedPlane tweak
+  "Tweak direction based on sin waves of time"
+  t = Sys secs.
+  roll,pitch,yaw =  t sin * 60,  (t / 5) sin * 30,  (t / 13) sin * 10.
+meth RedPlane step
+  self tweak.
+  thistime = Sys secs.
+  delta = thistime - lasttime.
+
+  m = Mat new rot: roll @ pitch @ yaw.
+  vx,vy,vz,vw = m mulv: 1 @ 0 @ 0 @ 1.
+  v = vx @ vy @ vz $unit.
+  dx,dy,dz = FOR(e: v)MAP(e * delta).
+
+  'delta' say: delta.
+  'unit v' say: v.
+  'dx,dy,dz' say: dx @ dy @ dz.
+
+  px,py,pz = px+dx, py+dy, pz+dz.
+  IF(pz < 1)THEN(pz = 1).
+  IF(pz > 50)THEN(pz = 50).
+  IF(px < 0)THEN(px = 0).
+  IF(px > 100)THEN(px = 0).
+  IF(py < 0)THEN(py = 0).
+  IF(py > 100)THEN(py = 0).
+
+  lasttime = thistime.
+
+meth RedPlane prototype
+  GVec new vec: VEC(
+    "Fusalage along the X axis"
+    GPrim new $ scale: 1 @ 0.2 @ 0.2 $ color: 1 @ 0 @ 0 @ 1,
+    "Wings along the Y axis"
+    GPrim new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
+  ).
+meth RedPlane current
+   "t= Sys secs % 100."
+   'PX PY PZ' say: px @ py @ pz.
+   se prototype
+     $ pos: px @ py @ pz
+     $ scale: 3 @ 3 @ 3
+     $ rot: roll @ pitch @ yaw
+     .
+     " rot: t sin * 90  @  (t / 5) sin * 45   @   (t / 13) sin * 20 "
+
 cls FnordFlight FnordApp
+vars FnordFlight
+  plane
 meth FnordFlight init
-  su init
+  su init.
+  plane= RedPlane new init.
 meth FnordFlight prePost:
-  'EXEY' say: (se gl ex, se gl ey).
   su prePost: a.
 meth FnordFlight model
-  GVec new vec: (
-    GPrim new $ scale: 5 @ 20 @ 1 $ pos: 25 @ 25 @ 0,
-    GPrim new $ scale: 5 @ 20 @ 1 $ pos: 75 @ 75 @ 0,
-    GPrim new $ scale: 20 @ 5 @ 1 $ pos: 25 @ 75 @ 0,
-    GPrim new $ scale: 20 @ 5 @ 1 $ pos: 75 @ 25 @ 0,
+  plane step.
+  GVec new vec: VEC(
+    se modelGround,
+    plane current,
+  ).
+meth FnordFlight modelGround
+  GVec new vec: VEC(
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
   	  GPrim new 
@@ -2379,6 +2443,5 @@ meth FnordFlight model
       )
     ),
   )ravel.
-
 
 ##END

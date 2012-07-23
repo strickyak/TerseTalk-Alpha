@@ -85,6 +85,7 @@ import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -1429,71 +1430,17 @@ public class TerseActivity extends Activity {
 						+0.5f, +0.5f, -0.5f, 0, +1, 0,
 
 						// X, Y, Z
-						+0.4f, +0.4f, +0.4f, 0, 0, +1,
+						+0.5f, +0.5f, +0.5f, 0, 0, +1,
 						-0.5f, +0.5f, +0.5f, 0, 0, +1,
 						+0.5f, -0.5f, +0.5f, 0, 0, +1,
 						// X, Y, Z
-						+0.4f, +0.4f, +0.4f, +1, 0, 0,
+						+0.5f, +0.5f, +0.5f, +1, 0, 0,
 						+0.5f, +0.5f, -0.5f, +1, 0, 0,
 						+0.5f, -0.5f, +0.5f, +1, 0, 0,
 						// X, Y, Z
-						+0.4f, +0.4f, +0.4f, 0, +1, 0,
+						+0.5f, +0.5f, +0.5f, 0, +1, 0,
 						-0.5f, +0.5f, +0.5f, 0, +1, 0,
 						+0.5f, +0.5f, -0.5f, 0, +1, 0,
-						};//
-				
-				float triangleCoords[] = {
-						// X, Y, Z
-						0.1f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						0.1f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						0.9f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						// X, Y, Z
-						0, 0.1f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
-						0, 0.9f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
-						0, 0.1f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
-						// X, Y, Z
-						0.1f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
-						0.1f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
-						0.9f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
-
-						// X, Y, Z
-						0.9f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						0.1f, 0.9f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						0.9f, 0.1f, 0, /**/ 0.4f, 0.4f, 0, 1,
-						// X, Y, Z
-						0, 0.9f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
-						0, 0.9f, 0.1f, /**/ 0, 0.4f, 0.4f, 1,
-						0, 0.1f, 0.9f, /**/ 0, 0.4f, 0.4f, 1,
-						// X, Y, Z
-						0.9f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
-						0.1f, 0, 0.9f, /**/ 0.4f, 0, 0.4f, 1,
-						0.9f, 0, 0.1f, /**/ 0.4f, 0, 0.4f, 1,
-
-						// X, Y, Z
-						0.1f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						0.1f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						0.9f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						// X, Y, Z
-						1, 0.1f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
-						1, 0.9f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
-						1, 0.1f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
-						// X, Y, Z
-						0.1f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
-						0.1f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
-						0.9f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
-
-						// X, Y, Z
-						0.9f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						0.1f, 0.9f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						0.9f, 0.1f, 1, /**/ 0.2f, 0.2f, 0, 1,
-						// X, Y, Z
-						1, 0.9f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
-						1, 0.9f, 0.1f, /**/ 0, 0.2f, 0.2f, 1,
-						1, 0.1f, 0.9f, /**/ 0, 0.2f, 0.2f, 1,
-						// X, Y, Z
-						0.9f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
-						0.1f, 1, 0.9f, /**/ 0.2f, 0, 0.2f, 1,
-						0.9f, 1, 0.1f, /**/ 0.2f, 0, 0.2f, 1,
 						};//
 				
 				float refVertexAndColor[] = {
@@ -1509,7 +1456,6 @@ public class TerseActivity extends Activity {
 				};
 
 				cubeVCB = newFloatBuffer(unitCubeCoords);
-				//triVCB = newFloatBuffer(triangleCoords);
 				axesVCB = newFloatBuffer(refVertexAndColor);
 			}
 
@@ -1543,7 +1489,7 @@ public class TerseActivity extends Activity {
 					++frameCount;
 					
 					// Redraw background color
-					if (model == null) {
+					if (model == null && frameCount > 3) {
 						gl.glClearColor(1, 0, 0, 1);  // Red sky if no model.
 					} else {
 						gl.glClearColor(0, 0, 0, 1);  // Black sky.
@@ -1562,9 +1508,6 @@ public class TerseActivity extends Activity {
 							clipNear, // distance to near clipping plane
 							clipFar);  // distance to far clipping plane
 
-//					float centerX = (touchRawX / width) * 100;
-//					float centerY = (touchRawY / height) * 100;
-//					float centerZ = 0;
 					GLU.gluLookAt(gl, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 					gl.glMatrixMode(GL10.GL_MODELVIEW);
 					gl.glLoadIdentity();
@@ -1586,18 +1529,6 @@ public class TerseActivity extends Activity {
 					gl.glShadeModel(GL10.GL_SMOOTH);
 					gl.glPushMatrix();
 
-
-					// WHY // gl.glScalef(0.6f, 0.6f, -0.6f);
-					
-//					if (touchX < 0) {
-//						theta = theta + 0.2f;
-//						gl.glRotatef(theta, 1, 0, 0);
-//						gl.glRotatef(theta / 3, 0, 1, 0);
-//						gl.glRotatef(theta / 10, 0, 0, 1);
-//					} else {
-//						gl.glRotatef((touchY * 360f/ width), 1, 0, 0);
-//						gl.glRotatef((touchX * 360f / height), 0, 1, 0);
-//					}
 					if (model == null) {
 						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
 						gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
@@ -1795,10 +1726,9 @@ public class TerseActivity extends Activity {
 			void justTransform(GObj a) {
 				gl.glTranslatef(a.px, a.py, a.pz);
 				gl.glScalef(a.sx, a.sy, a.sz);
-				//terp.say("LOC %f, %f, %f", a.px, a.py, a.pz);
-				gl.glRotatef(a.rz, 0, 0, 1);
-				gl.glRotatef(a.ry, 0, 1, 0);
-				gl.glRotatef(a.rx, 1, 0, 0);	
+				if (a.rz != 0) gl.glRotatef(a.rz, 0, 0, 1);
+				if (a.ry != 0) gl.glRotatef(a.ry, 0, 1, 0);
+				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
 			}
 		}
 	}
@@ -2079,5 +2009,77 @@ public class TerseActivity extends Activity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	static class Mat extends Obj {
+		float[] m;
+		// =cls "GL" Mat Obj
+		public Mat(Cls a) {
+			super(a);
+			this.m = new float[16];
+			Matrix.setIdentityM(m, 0);
+		}
+		Mat(Cls a, float[] b) {
+			super(a);
+			this.m = b;
+		}
+		// =meth MatCls "GL" new
+		public static Mat _new(Terp terp) {
+			AndyTerp t = (AndyTerp) terp;
+			return new Mat(t.wrapandy.clsMat);
+		}
+		// =meth Mat "GL" mulM:
+		public Mat mulM_(Mat a) {
+			AndyTerp t = (AndyTerp) terp();
+			Mat z = new Mat(this.cls);
+			Matrix.multiplyMM(z.m, 0, m, 0, a.m, 0);
+			return z;
+		}
+		// =meth Mat "GL" clone
+		public Mat clone() {
+			AndyTerp t = (AndyTerp) terp();
+			Mat z = new Mat(this.cls);
+			System.arraycopy(this.m, 0, z.m, 0, 16);
+			return z;
+		}
+		// =meth Mat "GL" vec
+		public Vec _vec() {
+			return terp().mkFloatVec(m);
+		}
+		// =meth Mat "GL" vec:
+		public void vec_(Vec a) {
+			for (int i = 0; i < 16; i++) {
+				m[i] = (float) a.vec.get(i).mustNum().num;
+			}
+		}
+
+		// =meth Mat "GL" mulV:
+		public Vec mulV_(Vec a) {
+			float[] aa = floats(floatAt(a, 0), floatAt(a, 1), floatAt(a, 2), floatAt(a, 3));
+			float[] zz = floats(0, 0, 0, 0);
+			Matrix.multiplyMV(zz, 0, m, 0, aa, 0);
+			return terp().mkFloatVec(zz);
+		}
+		// =meth Mat "GL" rot:axis:
+		public void rot_axis_(float a, Vec b) {
+			Matrix.rotateM(this.m, 0, a, floatAt(b, 0), floatAt(b, 1), floatAt(b, 2));
+		}
+		// =meth Mat "GL" rot:
+		public void rot_(Vec a) {
+			float x = floatAt(a, 0), y = floatAt(a, 1), z = floatAt(a, 2);
+			if (x != 0) Matrix.rotateM(this.m, 0, x, 1, 0, 0);
+			if (y != 0) Matrix.rotateM(this.m, 0, x, 0, 1, 0);
+			if (z != 0) Matrix.rotateM(this.m, 0, x, 0, 0, 1);
+		}
+		// =meth Mat "GL" scale:
+		public void scale(Vec a) {
+			Matrix.scaleM(this.m, 0, floatAt(a, 0), floatAt(a, 1), floatAt(a, 2));
+		}
+		// =meth Mat "GL" trans:
+		public void trans_(Vec a) {
+			Matrix.translateM(this.m, 0, floatAt(a, 0), floatAt(a, 1), floatAt(a, 2));
+		}
+		
+		
 	}
 }

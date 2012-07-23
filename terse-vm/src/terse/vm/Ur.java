@@ -2070,9 +2070,71 @@ public class Ur extends Static implements Comparable {
 			z.vec.add(a);
 			return z;
 		}
-
-		static void addBuiltinMethodsForVec(final Terp terp) {
+		
+		// =meth Vec "math" dot: "Dot product of two numerical Vecs"
+		public Vec dot_(Vec a) {
+			int nthis = this.vec.size();
+			int na = a.vec.size();
+			int n = (nthis < na) ? nthis : na;  // Minimum.
+			Vec z = new Vec(terp());
+			for (int i = 0; i < n; i++) {
+				double x = this.vec.get(i).mustNum().num;
+				double y = a.vec.get(i).mustNum().num;
+				z.vec.add(terp().newNum(x*y));
+			}
+			return z;
 		}
+		
+		// =meth Vec "math" cross: "Cross product of two 3-element numerical Vecs"
+		public Vec cross_(Vec b) {
+			int nthis = this.vec.size();
+			int na = b.vec.size();
+			if (nthis != 3 || na != 3) {
+				toss("Expected 3 elements in Vec for crossproduct: %d %d", nthis, na);
+				return null;  // NOTREACHED
+			}
+			double a1 = this.vec.get(0).mustNum().num;
+			double a2 = this.vec.get(1).mustNum().num;
+			double a3 = this.vec.get(2).mustNum().num;
+			double b1 = b.vec.get(0).mustNum().num;
+			double b2 = b.vec.get(1).mustNum().num;
+			double b3 = b.vec.get(2).mustNum().num;
+			Vec z = terp().newVec(emptyInts);
+			z.vec.add(terp().newNum(a2*b3 - a3*b2));
+			z.vec.add(terp().newNum(a3*b1 - a1*b3));
+			z.vec.add(terp().newNum(a1*b2 - a2*b1));
+			return z;
+		}
+		
+
+		// =meth Vec "math" abs
+		// "Absolute euclidian length of numerical vector"
+		public double _abs() {
+			int nthis = this.vec.size();
+			double x = 0;
+			for (int i = 0; i < nthis; i++) {
+				double e = this.vec.get(i).mustNum().num;
+				x += e * e;
+			}
+			return Math.sqrt(x);
+		}
+
+		// =meth Vec "math" unit
+		// "Return vector in same direction but unit length"
+		public Vec _unit() {
+			double abs = this._abs();
+			if (abs == 0.0) {
+				toss("Cannot unit a Vec with abs len 0");
+			}
+			Vec z = terp().newVec(emptyInts);
+			int nthis = this.vec.size();
+			for (int i = 0; i < nthis; i++) {
+				double e = this.vec.get(i).mustNum().num;
+				z.vec.add(terp().newNum(e / abs));
+			}
+			return z;
+		}
+			
 	}
 
 	public final static class Dict extends Obj {
