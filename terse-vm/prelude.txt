@@ -2274,10 +2274,6 @@ meth FnordApp init
   se gl diffuse: 0.9 @ 0.9 @ 0.9.
   se gl light: 100 @ 100 @ 100.
 meth FnordApp prePost:
- "x = se gl ex.
-  y = se gl ey.
-  se gl look: x @ y @ 0.
- "
   x = se gl ex.
   y = se gl ey.
   se gl light: x @ y @ 100.
@@ -2372,20 +2368,24 @@ meth RedPlane init
 meth RedPlane tweak
   "Tweak direction based on sin waves of time"
   t = Sys secs.
-  roll,pitch,yaw =  t sin * 60,  (t / 5) sin * 30,  (t / 13) sin * 10.
-meth RedPlane step
+  roll,pitch,yaw =  t sin * 10,  (t / 5) sin * 10,  (t / 13) sin * 10.
+meth RedPlane step:
+  mps = 2.
+  gl= a.
   self tweak.
   thistime = Sys secs.
-  delta = thistime - lasttime.
+  delta = mps * (thistime - lasttime).
 
   m = Mat new rot: roll @ pitch @ yaw.
   vx,vy,vz,vw = m mulv: 1 @ 0 @ 0 @ 1.
-  v = vx @ vy @ vz $unit.
+  vx,vy,vz = v = vx @ vy @ vz $unit.
   dx,dy,dz = FOR(e: v)MAP(e * delta).
 
-  'delta' say: delta.
-  'unit v' say: v.
-  'dx,dy,dz' say: dx @ dy @ dz.
+  "
+    'delta' say: delta.
+    'unit v' say: v.
+    'dx,dy,dz' say: dx @ dy @ dz.
+  "
 
   px,py,pz = px+dx, py+dy, pz+dz.
   IF(pz < 1)THEN(pz = 1).
@@ -2394,6 +2394,12 @@ meth RedPlane step
   IF(px > 100)THEN(px = 0).
   IF(py < 0)THEN(py = 0).
   IF(py > 100)THEN(py = 0).
+
+  ex, ey = gl ex - 50, gl ey - 50.
+  gl light: px - 20 @ py @ pz + 50.
+  gl eye: px - 20 @ py + ex @ pz + ey.
+  gl look: px @ py @ pz.
+  gl up: 0 @ 0 @ 1.
 
   lasttime = thistime.
 
@@ -2406,13 +2412,12 @@ meth RedPlane prototype
   ).
 meth RedPlane current
    "t= Sys secs % 100."
-   'PX PY PZ' say: px @ py @ pz.
+   " 'PX PY PZ' say: px @ py @ pz. "
    se prototype
      $ pos: px @ py @ pz
      $ scale: 3 @ 3 @ 3
      $ rot: roll @ pitch @ yaw
      .
-     " rot: t sin * 90  @  (t / 5) sin * 45   @   (t / 13) sin * 20 "
 
 cls FnordFlight FnordApp
 vars FnordFlight
@@ -2421,19 +2426,20 @@ meth FnordFlight init
   su init.
   plane= RedPlane new init.
 meth FnordFlight prePost:
-  su prePost: a.
+  "su prePost: a."
+
 meth FnordFlight model
-  plane step.
+  plane step: se gl.
   GVec new vec: VEC(
     se modelGround,
     plane current,
   ).
 meth FnordFlight modelGround
   GVec new vec: VEC(
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3,
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
   	  GPrim new 
@@ -2441,6 +2447,16 @@ meth FnordFlight modelGround
   	    $ scale: 9 @ 9 @ 1
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
+    ),
+    FOR(i: 10) MAP(
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:  50 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @   0 @ i*10 $ color: 1 @ 0 @ 0 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @  50 @ i*10 $ color: 1 @ 0 @ 0 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ 100 @ i*10 $ color: 0 @ 1 @ 0 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:  50 @ 100 @ i*10 $ color: 0 @ 1 @ 0 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ 100 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
+      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @  50 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
     ),
   )ravel.
 
