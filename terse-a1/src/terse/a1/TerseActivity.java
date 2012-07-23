@@ -1259,7 +1259,7 @@ public class TerseActivity extends Activity {
 		float eyeX = 50, eyeY = 50, eyeZ = 100;
 		float lookX = 50, lookY = 50, lookZ = 0;
 		float upX = 0, upY = 1, upZ = 0;
-		float clipNear = 0.1f, clipFar = 200;
+		float clipNear = 3, clipFar = 300;
 		float lightX = 50, lightY = 50, lightZ = 100;
 		float ambientR = 0.8f, ambientG = 0.8f, ambientB = 0.8f;
 		float diffuseR = 0.8f, diffuseG = 0.8f, diffuseB = 0.8f;
@@ -1363,6 +1363,18 @@ public class TerseActivity extends Activity {
 				lightX = floatAt(a, 0);
 				lightY = floatAt(a, 1);
 				lightZ = floatAt(a, 2);
+			}
+			// =meth GGl "gl" ambient:
+			public void ambient_(Vec a) {
+				ambientR = floatAt(a, 0);
+				ambientG = floatAt(a, 1);
+				ambientB = floatAt(a, 2);
+			}
+			// =meth GGl "gl" diffuse:
+			public void diffuse_(Vec a) {
+				diffuseR = floatAt(a, 0);
+				diffuseG = floatAt(a, 1);
+				diffuseB = floatAt(a, 2);
 			}
 			// =meth GGl "gl" wires:
 			public void wires_(boolean a) {
@@ -1606,7 +1618,8 @@ public class TerseActivity extends Activity {
 	                gl.glDisable(GL10.GL_LIGHTING);
 	                gl.glDisable(GL10.GL_LIGHT0);
 					gl.glDisable(GL10.GL_DEPTH_TEST);
-	                
+	              
+					gl.glScalef(100, 100, 100);
 				    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 					gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 					axesVCB.position(0);
@@ -1687,6 +1700,10 @@ public class TerseActivity extends Activity {
 					uiWidth = wid;
 					uiHeight = hei - wid;
 				}
+				// Set touch to very middle
+				touchRawX = hectare / 2;
+				touchRawY = hei - hectare / 2;
+				touchUserX = touchUserY = 50;
 				try {
 					setOnTouchListener(new OnTouchListener() {
 							@Override

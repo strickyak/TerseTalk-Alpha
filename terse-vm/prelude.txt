@@ -152,6 +152,23 @@ equals 10, 20
 
 equals 'once-upon-a-time'
   ('once', 'upon', 'a', 'time') join: '-'
+
+meth Vec ravel
+  z= Vec new.
+  self ravelTo: z.
+  z.
+meth Obj ravelTo:
+  a ap: se.
+  se.
+meth Vec ravelTo:
+  FOR(x: se) DO(
+    x ravelTo: a
+  ).
+  se.
+equals VEC(10, )
+  VEC(10, )ravel
+equals VEC(10, 20, 30, 40, 50)
+  (10, (20, 30), (), ( (), (40), ), 50)ravel
   
 cls Orphan Usr
 meth Orphan handle:query:
@@ -200,6 +217,7 @@ meth Top handle:query:
       '/FnordApp';
       '/FnordTwo';
       '/FnordMotherShip';
+      '/FnordFlight';
       '/GameFoo';
       '/GamePong';
       '/GameTroids';
@@ -2235,7 +2253,7 @@ meth TroidsAster draw:
     x1,y1= x2,y2.
   }
 
-
+##############################  Fnord
 cls FnordApp App
 vars FnordApp
   gl
@@ -2252,11 +2270,19 @@ meth FnordApp run:
   self init.
   while(1) do(self step).
 meth FnordApp init
-  se gl light: 0.8 @ 0.8 @ 0.8.
+  se gl ambient: 0.4 @ 0.4 @ 0.4.
+  se gl diffuse: 0.9 @ 0.9 @ 0.9.
+  se gl light: 100 @ 100 @ 100.
 meth FnordApp prePost:
-  x = se gl ex.
+ "x = se gl ex.
   y = se gl ey.
   se gl look: x @ y @ 0.
+ "
+  x = se gl ex.
+  y = se gl ey.
+  se gl light: x @ y @ 100.
+  se gl eye: x @ y @ (x - y)abs * 3.
+  se gl look: 100 - y @ 100 - x @ 0.
 
 meth FnordApp post:
   se prePost: a.
@@ -2331,5 +2357,28 @@ meth FnordMotherShip step
     model = se model.
   ).
   se post: model.
+
+cls FnordFlight FnordApp
+meth FnordFlight init
+  su init
+meth FnordFlight prePost:
+  'EXEY' say: (se gl ex, se gl ey).
+  su prePost: a.
+meth FnordFlight model
+  GVec new vec: (
+    GPrim new $ scale: 5 @ 20 @ 1 $ pos: 25 @ 25 @ 0,
+    GPrim new $ scale: 5 @ 20 @ 1 $ pos: 75 @ 75 @ 0,
+    GPrim new $ scale: 20 @ 5 @ 1 $ pos: 25 @ 75 @ 0,
+    GPrim new $ scale: 20 @ 5 @ 1 $ pos: 75 @ 25 @ 0,
+    FOR(i: 10) MAP(
+      FOR (j: 10) MAP(
+  	  GPrim new 
+  	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
+  	    $ scale: 9 @ 9 @ 1
+  	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
+      )
+    ),
+  )ravel.
+
 
 ##END
