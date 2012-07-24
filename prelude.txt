@@ -2364,40 +2364,65 @@ meth RedPlane init
   lasttime = Sys secs.
   self tweak.
   px,py,pz = 10, 30, 5.
+  vx,vy,vz = 0, 0, 0.
   self.
 meth RedPlane tweak
   "Tweak direction based on sin waves of time"
   t = Sys secs.
-  roll,pitch,yaw =  t sin * 10,  (t / 5) sin * 10,  (t / 13) sin * 10.
+  roll,pitch,yaw =  (t / 2) sin * 20,  (t / 5) sin * 20,  (t / 13) sin * 20.
 meth RedPlane step:
-  mps = 2.
   gl= a.
   self tweak.
   thistime = Sys secs.
-  delta = mps * (thistime - lasttime).
+  deltaT = (thistime - lasttime).
 
+  "Compute thrust in forward direction."
+  kThrottle = 1.
   m = Mat new rot: roll @ pitch @ yaw.
-  vx,vy,vz,vw = m mulv: 1 @ 0 @ 0 @ 1.
-  vx,vy,vz = v = vx @ vy @ vz $unit.
-  dx,dy,dz = FOR(e: v)MAP(e * delta).
+  tx,ty,tz,tw = m mulv: kThrottle @ 0 @ 0 @ 1.
 
-  "
-    'delta' say: delta.
-    'unit v' say: v.
-    'dx,dy,dz' say: dx @ dy @ dz.
-  "
+  "Lift."
+  kLift = 0.55.
+  speed= (vx, vy, vz) abs.
+  lx,ly,lz,lw = m mulv: 0 @ 0 @ speed*kLift @ 1.
 
-  px,py,pz = px+dx, py+dy, pz+dz.
-  IF(pz < 1)THEN(pz = 1).
-  IF(pz > 50)THEN(pz = 50).
-  IF(px < 0)THEN(px = 0).
-  IF(px > 100)THEN(px = 0).
-  IF(py < 0)THEN(py = 0).
-  IF(py > 100)THEN(py = 0).
+  "Gravity."
+  kGrav = -0.5.
+
+  "Total Acceleration (before drag)."
+  ax,ay,az= tx+lx, ty+ly, tz+lz+kGrav.
+
+  "Velocity."
+  vx,vy,vz= vx+ax, vy+ay, vz+az.
+
+  "Drag."
+  kDrag= 0.1.
+  speed= (vx, vy, vz) abs.
+  fric= speed * speed * kDrag.
+  IF(fric > 1)THEN(fric= 1).
+  frac= 1 - fric.
+
+  vx,vy,vz= frac*vx, frac*vy, frac*vz.
+
+    'deltaT' say: deltaT.
+    'tx,ty,tz' say: tx @ ty @ tz.
+    'lx,ly,lz' say: lx @ ly @ lz.
+    'ax,ay,az' say: ax @ ay @ az.
+    'vx,vy,vz' say: vx @ vy @ vz.
+    'px,py,pz' say: px @ py @ pz.
+
+  px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
+  IF(pz < 0)THEN(pz = pz + 40).
+  IF(pz > 41)THEN(pz = pz - 40).
+  IF(px < 0)THEN(px = px + 100).
+  IF(px > 101)THEN(px = px - 100).
+  IF(py < 0)THEN(py = py + 100).
+  IF(py > 101)THEN(py = py - 100).
 
   ex, ey = gl ex - 50, gl ey - 50.
+  behind = 10 + ex abs + ey abs.
   gl light: px - 20 @ py @ pz + 50.
-  gl eye: px - 20 @ py + ex @ pz + ey.
+  gl eye: px - behind @ py + ex @ pz + ey.
   gl look: px @ py @ pz.
   gl up: 0 @ 0 @ 1.
 
@@ -2448,7 +2473,7 @@ meth FnordFlight modelGround
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
     ),
-    FOR(i: 10) MAP(
+    FOR(i: 4) MAP(i= i + 1.
       GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
       GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:  50 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
       GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @   0 @ i*10 $ color: 1 @ 0 @ 0 @ 1,
