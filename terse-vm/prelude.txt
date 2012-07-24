@@ -2356,25 +2356,27 @@ meth FnordMotherShip step
 
 cls RedPlane Usr
 vars RedPlane
-  px py pz  vx vy vz  roll pitch yaw lasttime
+  gl px py pz  vx vy vz  roll pitch yaw lasttime
 # http://mathworld.wolfram.com/EulerAngles.html
 #   phi about z (yaw); theta about new x (pitch); psi about new z (roll).
 #     http://en.wikipedia.org/wiki/Flight_dynamics
-meth RedPlane init
+meth RedPlane init:
+  gl = a.
   lasttime = Sys secs.
-  self tweak.
-  px,py,pz = 10, 30, 5.
+  px,py,pz = 25, 25, 1.
   vx,vy,vz = 0, 0, 0.
+  roll,pitch,yaw = 0,0,0.
   self.
-meth RedPlane tweak
-  "Tweak direction based on sin waves of time"
-  t = Sys secs.
-  roll,pitch,yaw =  (t / 2) sin * 20,  (t / 5) sin * 20,  (t / 13) sin * 20.
-meth RedPlane step:
-  gl= a.
-  self tweak.
+meth RedPlane step
+  "self tweak."
   thistime = Sys secs.
   deltaT = (thistime - lasttime).
+
+  "Yoke."
+  ex, ey = gl ex - 50, gl ey - 50.
+  roll = ex / 1.5.
+  pitch = ey / 1.5.
+  yaw = yaw - deltaT * roll / 8.
 
   "Compute thrust in forward direction."
   kThrottle = 1.
@@ -2405,6 +2407,10 @@ meth RedPlane step:
   vx,vy,vz= frac*vx, frac*vy, frac*vz.
 
     'deltaT' say: deltaT.
+    'roll' say: ((Mat new rot: roll @ 0 @ 0)say mulv: (1@0@0@1)).
+    'pitch' say: ((Mat new rot: 0 @ pitch @ 0)say mulv: (1@0@0@1)).
+    'yaw' say: ((Mat new rot: 0 @ 0 @ yaw)say mulv: (1@0@0@1)).
+    'roll,pitch,yaw' say: (roll,pitch,yaw).
     'tx,ty,tz' say: tx @ ty @ tz.
     'lx,ly,lz' say: lx @ ly @ lz.
     'ax,ay,az' say: ax @ ay @ az.
@@ -2412,17 +2418,14 @@ meth RedPlane step:
     'px,py,pz' say: px @ py @ pz.
 
   px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
-  IF(pz < 0)THEN(pz = pz + 40).
-  IF(pz > 41)THEN(pz = pz - 40).
+  IF(pz < 0)THEN(pz = 0).
+  IF(pz > 51)THEN(pz = 50).
   IF(px < 0)THEN(px = px + 100).
   IF(px > 101)THEN(px = px - 100).
   IF(py < 0)THEN(py = py + 100).
   IF(py > 101)THEN(py = py - 100).
 
-  ex, ey = gl ex - 50, gl ey - 50.
-  behind = 10 + ex abs + ey abs.
-  gl light: px - 20 @ py @ pz + 50.
-  gl eye: px - behind @ py + ex @ pz + ey.
+  gl eye: px - 15*tx @ py - 15*ty @ pz - 15*tz + 5.
   gl look: px @ py @ pz.
   gl up: 0 @ 0 @ 1.
 
@@ -2449,22 +2452,22 @@ vars FnordFlight
   plane
 meth FnordFlight init
   su init.
-  plane= RedPlane new init.
+  plane= RedPlane new init: se gl.
 meth FnordFlight prePost:
   "su prePost: a."
 
 meth FnordFlight model
-  plane step: se gl.
+  plane step.
   GVec new vec: VEC(
     se modelGround,
     plane current,
   ).
 meth FnordFlight modelGround
   GVec new vec: VEC(
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
   	  GPrim new 
@@ -2473,15 +2476,13 @@ meth FnordFlight modelGround
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
     ),
-    FOR(i: 4) MAP(i= i + 1.
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:  50 @   0 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @   0 @ i*10 $ color: 1 @ 0 @ 0 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @  50 @ i*10 $ color: 1 @ 0 @ 0 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ 100 @ i*10 $ color: 0 @ 1 @ 0 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:  50 @ 100 @ i*10 $ color: 0 @ 1 @ 0 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ 100 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
-      GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @  50 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
+    FOR(i: 6) MAP(i= i+1.
+      FOR (j: 10) MAP(j= 10*j + 5.
+        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ j @ i*10 $ color: 1 @ 0 @ 0 @ 1,
+        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ j @ i*10 $ color: 0 @ 1 @ 0 @ 1,
+        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @   0 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
+        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @ 100 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
+      )
     ),
   )ravel.
 

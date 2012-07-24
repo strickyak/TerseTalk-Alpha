@@ -2074,8 +2074,8 @@ public class TerseActivity extends Activity {
 		public void rot_(Vec a) {
 			float x = floatAt(a, 0), y = floatAt(a, 1), z = floatAt(a, 2);
 			if (x != 0) Matrix.rotateM(this.m, 0, x, 1, 0, 0);
-			if (y != 0) Matrix.rotateM(this.m, 0, x, 0, 1, 0);
-			if (z != 0) Matrix.rotateM(this.m, 0, x, 0, 0, 1);
+			if (y != 0) Matrix.rotateM(this.m, 0, y, 0, 1, 0);
+			if (z != 0) Matrix.rotateM(this.m, 0, z, 0, 0, 1);
 		}
 		// =meth Mat "GL" scale:
 		public void scale(Vec a) {
@@ -2084,6 +2084,15 @@ public class TerseActivity extends Activity {
 		// =meth Mat "GL" trans:
 		public void trans_(Vec a) {
 			Matrix.translateM(this.m, 0, floatAt(a, 0), floatAt(a, 1), floatAt(a, 2));
+		}
+		public String toString() {
+			StringBuilder sb = new StringBuilder("MAT(");
+			for (int i = 0; i < m.length; i++) {
+				sb.append(m[i]);
+				sb.append("@");
+			}
+			sb.append(")");
+			return sb.toString();
 		}
 	}  // end class Mat.
 	
