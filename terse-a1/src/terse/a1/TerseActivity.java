@@ -40,6 +40,7 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1392,10 +1393,11 @@ public class TerseActivity extends Activity {
 		public class FnordRenderer implements GLSurfaceView.Renderer {
 			
 			private FloatBuffer cubeVCB = null;
-			private FloatBuffer axesVCB = null;
+			private FloatBuffer axesVCB = null; 
+			private FloatBuffer square2DVB = null;
 
 			private void initShapes() {
-				float unitCubeCoords[] = {
+				float[] unitCubeCoords = {
 						// X, Y, Z
 						-0.5f, -0.5f, -0.5f, 0, 0, -1,
 						-0.5f, +0.5f, -0.5f, 0, 0, -1,
@@ -1449,7 +1451,7 @@ public class TerseActivity extends Activity {
 						+0.5f, +0.5f, -0.5f, 0, +1, 0,
 						};//
 				
-				float refVertexAndColor[] = {
+				float[] refVertexAndColor = {
 						0, 0, 0, /**/ 1, 0, 0, 1, //  X axis, red.
 						1, 0, 0, /**/ 1, 0, 0, 1, //
 						
@@ -1460,9 +1462,17 @@ public class TerseActivity extends Activity {
 						0, 0, 1, /**/ 0, 0, 1, 1,//
 						
 				};
+				
+				float[] square2D = {
+						0, 0,
+						0, 1,
+						1, 0,
+						1, 1,
+				};
 
 				cubeVCB = newFloatBuffer(unitCubeCoords);
 				axesVCB = newFloatBuffer(refVertexAndColor);
+				square2DVB = newFloatBuffer(square2D);
 			}
 
 			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -1481,8 +1491,6 @@ public class TerseActivity extends Activity {
 					// initialize the triangle vertex array
 					initShapes();
 
-					// Enable use of vertex arrays
-					gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 				} catch (Exception e) {
 					terp.say("FnordRenderer::onSurfaceCreated CAUGHT %s",
 							Static.describe(e));
@@ -1503,7 +1511,7 @@ public class TerseActivity extends Activity {
 					gl.glClear(GL10.GL_COLOR_BUFFER_BIT
 							| GL10.GL_DEPTH_BUFFER_BIT);
 					gl.glEnable(GL10.GL_DEPTH_TEST);
-					gl.glCullFace(GL10.GL_FRONT_AND_BACK);
+					//gl.glCullFace(GL10.GL_FRONT_AND_BACK);
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					
 					gl.glViewport(0, 0, width, height);
@@ -1524,6 +1532,7 @@ public class TerseActivity extends Activity {
 							diffuseB, 0.5f };
 					float[] lightPos = new float[] { lightX, lightY, lightZ, 1 };
 
+					gl.glDisable(GL10.GL_TEXTURE_2D);
 					gl.glEnable(GL10.GL_LIGHTING);
 					gl.glEnable(GL10.GL_LIGHT0);
 
@@ -1534,6 +1543,8 @@ public class TerseActivity extends Activity {
 					gl.glLightfv(GL10.GL_LIGHT0, GL10.GL_POSITION, lightPos, 0);
 					gl.glShadeModel(GL10.GL_SMOOTH);
 					gl.glPushMatrix();
+					// Enable use of vertex arrays
+					gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 
 					if (model == null) {
 						int strideOverNormal = 4 /*bytes per float*/ * (3 + 3) /*floats per vertex*/;
@@ -1565,7 +1576,42 @@ public class TerseActivity extends Activity {
 					gl.glColorPointer(4, GL10.GL_FLOAT, strideOverColor, axesVCB);
 					gl.glDrawArrays(GL10.GL_LINES, 0, 6);
 					
+					/////////////// drawText(gl);  // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+					
 					gl.glPopMatrix();
+					
+					// UI ////  Draw UI stuff on top of it  ///////////// UI
+					
+					int minWidHei = (width < height) ? width : height;
+					// gl.glViewport(50, 50, minWidHei-2*50, minWidHei-2*50);
+					gl.glViewport(2, height-34, 256, 32);
+					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
+					gl.glLoadIdentity();
+					
+					gl.glMatrixMode(GL10.GL_MODELVIEW); // Was using this.
+					gl.glLoadIdentity();
+					gl.glOrthof(0, 1, 1, 0, -1, 1);
+
+					gl.glDisable(GL10.GL_DEPTH_TEST);
+	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+					gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+					gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
+					gl.glDisable(GL10.GL_NORMALIZE);
+					gl.glDisable(GL10.GL_LIGHTING);
+					gl.glEnable(GL10.GL_TEXTURE_2D);
+					
+					gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+					gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+
+	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+					
+					setTextureWithText(gl, "Hello Terse Talk!");
+					square2DVB.position(0);
+					gl.glVertexPointer(2, GL10.GL_FLOAT, 0, square2DVB);
+					square2DVB.position(0);
+					gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, square2DVB);
+					gl.glColor4f(1, 1, 1, 0.5f);
+					gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 					
 				} catch (Exception e) {
 					terp.say("FnordRenderer::onDrawFrame CAUGHT %s",
@@ -1586,31 +1632,26 @@ public class TerseActivity extends Activity {
 				gl.glDrawArrays(wires ? GL10.GL_LINE_LOOP : GL10.GL_TRIANGLES, 0, 36);
 			}
 			
-			void drawText(GL10 gl) {  // TODO -- figure out how to complete.
+			void setTextureWithText(GL10 gl, String message) {  // TODO -- figure out how to complete.
 				// StackOverflow 1339136 JVitela Dec 2 '010 at 15:35
-				Bitmap bm = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_4444);
-				Canvas cvs = new Canvas(bm);
-				bm.eraseColor(0);
-				
-				// Get a background image from resources
-				// note image format must match bitmap format.
-//				Context context = TerseActivity.this;
-//				Drawable bg = context.getResources().getDrawable(R.drawable.background); // ??
-//				bg.setBounds(0, 0, 256, 256);
-//				bg.draw(cvs);
+				Bitmap bm = Bitmap.createBitmap(256, 32, Bitmap.Config.ARGB_4444);
+				Canvas canvas = new Canvas(bm);
+				bm.eraseColor(Color.TRANSPARENT);
 				
 				//Draw the text
 				Paint textPaint = new Paint();
 				textPaint.setTextSize(32);
 				textPaint.setAntiAlias(true);
-				textPaint.setARGB(0xff, 0, 0, 0);
-				cvs.drawText("Hello World", 16, 112, textPaint);
+				// textPaint.setARGB(255, 0, 0, 255);
+				textPaint.setColor(Color.GREEN);
+				canvas.drawText(message, 0, 30, textPaint);
 				
 				// Generate one texture pointer...
 				int[] textures = {0};
-				gl.glGenTextures(1, textures, 0);
+				gl.glGenTextures(1 /*how many*/, textures, 0 /*offset*/);
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 				
+
 				// Create Nearest Filtered Texture
 				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
 				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
@@ -1620,10 +1661,10 @@ public class TerseActivity extends Activity {
 				gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_REPEAT);
 				
 				// Use the Android GLUtils to specify a 2d texture image from our bitmap
-				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bm, 0);
-				
+				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0 /* mipmap level */, bm, 0 /* border*/);
+
 				// Clean up.
-				bm.recycle();
+//				bm.recycle();
 			}
 
 			public void onSurfaceChanged(GL10 gl, int wid, int hei) {
