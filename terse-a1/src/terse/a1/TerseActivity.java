@@ -1094,7 +1094,7 @@ public class TerseActivity extends Activity {
 		// =meth Screen "draw" fps
 		public Obj _fps() {
 			if (numPosts > 1) {
-				return aterp.newNum(numPosts / (lastPost - firstPost) * 1000);
+				return aterp.newNum(numPosts / (lastPost - firstPost));
 			} else {
 				return aterp.instNil;
 			}
@@ -1109,9 +1109,9 @@ public class TerseActivity extends Activity {
 				try {
 					locked.drawBitmap(bm, 0, 0, null);
 					if (firstPost == 0) {
-						firstPost = System.currentTimeMillis();
+						firstPost = System.currentTimeMillis() / 1000.0;
 					}
-					lastPost = System.currentTimeMillis();
+					lastPost = System.currentTimeMillis() / 1000.0;
 					++numPosts;
 				} finally {
 					holder.unlockCanvasAndPost(locked);
@@ -1274,13 +1274,13 @@ public class TerseActivity extends Activity {
 		
 		int width = 0;
 		int height = 0;
-		int hectare = 0;  // Num pixels per User's measure of 100.
-		int uiWidth = 0;
-		int uiHeight = 0;
+		double startTime = System.currentTimeMillis() / 1000.0;
+		double frameTime = startTime;
 		int frameCount = 0;
+		double frameInterval = 0;
 
-		float touchRawX = -1;
-		float touchRawY = -1;
+		float touchRawX = width / 2;
+		float touchRawY = height / 2;
 		float touchUserX = 50;
 		float touchUserY = 50;
 		double touchSecs = System.currentTimeMillis() / 1000.0;
@@ -1316,21 +1316,25 @@ public class TerseActivity extends Activity {
 			public GGl(Cls a) {
 				super(a);
 			}
-			// =meth GGl "gl" uiWid
-			public float _uiWid() {
-				return uiWidth;
+			// =meth GGl "gl" frameCount
+			public int _frameCount() {
+				return frameCount;
 			}
-			// =meth GGl "gl" uiHei
-			public float _uiHei() {
-				return uiHeight;
+			// =meth GGl "gl" frameInterval
+			public double _frameInterval() {
+				return frameInterval;
 			}
-			// =meth GGl "gl" uiWid
-			public float _glWid() {
-				return width * 100 / (float)hectare;
+			// =meth GGl "gl" startTime
+			public double _startTime() {
+				return startTime;
 			}
-			// =meth GGl "gl" uiHei
-			public float _glHei() {
-				return height * 100 / (float)hectare;
+			// =meth GGl "gl" wid
+			public float _wid() {
+				return width;
+			}
+			// =meth GGl "gl" hei
+			public float _hei() {
+				return height;
 			}
 			// =meth GGl "gl" ex
 			public float _ex() {
@@ -1342,7 +1346,7 @@ public class TerseActivity extends Activity {
 			}
 			// =meth GGl "gl" esecs
 			public double _esecs() {
-				return System.currentTimeMillis() - touchSecs;
+				return System.currentTimeMillis() / 1000.0 - touchSecs;
 			}
 			// =meth GGl "gl" post:
 			public void post_(GObj a) {
@@ -1483,8 +1487,8 @@ public class TerseActivity extends Activity {
 					gl.glEnable(GL10.GL_LIGHT0);
 					gl.glEnable(GL10.GL_DEPTH_TEST);
 					gl.glEnable(GL10.GL_AMBIENT_AND_DIFFUSE); // 
-					gl.glEnable (GL10.GL_BLEND);
-					gl.glBlendFunc (GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+					gl.glEnable(GL10.GL_BLEND);
+					gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					// Set the background frame color
 					gl.glClearColor(0.1f, 0.1f, 0.4f, 1.0f);  // blue sky // WHY
 
@@ -1501,6 +1505,9 @@ public class TerseActivity extends Activity {
 			public void onDrawFrame(GL10 gl) {
 				try {
 					++frameCount;
+					double lastTime = frameTime;
+					frameTime = System.currentTimeMillis() / 1000.0;
+					frameInterval = frameTime - lastTime;
 					
 					// Redraw background color
 					if (model == null && frameCount > 3) {
@@ -1576,15 +1583,11 @@ public class TerseActivity extends Activity {
 					gl.glColorPointer(4, GL10.GL_FLOAT, strideOverColor, axesVCB);
 					gl.glDrawArrays(GL10.GL_LINES, 0, 6);
 					
-					/////////////// drawText(gl);  // zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-					
 					gl.glPopMatrix();
 					
 					// UI ////  Draw UI stuff on top of it  ///////////// UI
 					
-					int minWidHei = (width < height) ? width : height;
-					// gl.glViewport(50, 50, minWidHei-2*50, minWidHei-2*50);
-					gl.glViewport(2, height-34, 256, 32);
+					gl.glViewport(2, height-34, 256, 32);  // TODO
 					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
 					gl.glLoadIdentity();
 					
@@ -1605,7 +1608,7 @@ public class TerseActivity extends Activity {
 
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 					
-					setTextureWithText(gl, "Hello Terse Talk!");
+	                setTextureWithText(gl, Static.fmt("[%.2f fps]", frameCount / ((System.currentTimeMillis() / 1000.0) - startTime)));
 					square2DVB.position(0);
 					gl.glVertexPointer(2, GL10.GL_FLOAT, 0, square2DVB);
 					square2DVB.position(0);
@@ -1664,24 +1667,24 @@ public class TerseActivity extends Activity {
 				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0 /* mipmap level */, bm, 0 /* border*/);
 
 				// Clean up.
-//				bm.recycle();
+				bm.recycle();
 			}
 
 			public void onSurfaceChanged(GL10 gl, int wid, int hei) {
 				width = wid;
 				height = hei;
-				hectare = (hei < wid) ? hei : wid;
-				if (hei < wid) {
-					uiHeight = hei;
-					uiWidth = wid - hei;
-				} else {
-					uiWidth = wid;
-					uiHeight = hei - wid;
-				}
+//				hectare = (hei < wid) ? hei : wid;
+//				if (hei < wid) {
+//					uiHeight = hei;
+//					uiWidth = wid - hei;
+//				} else {
+//					uiWidth = wid;
+//					uiHeight = hei - wid;
+//				}
 				// Set touch to very middle
-				touchRawX = hectare / 2;
-				touchRawY = hei - hectare / 2;
-				touchUserX = touchUserY = 50;
+				touchRawX = width / 2;
+				touchRawY = height / 2;
+//				touchUserX = touchUserY = 50;
 				try {
 					setOnTouchListener(new OnTouchListener() {
 							@Override
@@ -1692,8 +1695,9 @@ public class TerseActivity extends Activity {
 									// Just save the X and Y points, for now.
 									touchRawX = event.getRawX();
 									touchRawY = event.getRawY();
-									touchUserX = touchRawX * 100 / hectare;
-									touchUserY = (height - 1 - touchRawY) * 100 / hectare;
+									// TODO: quit scaling to 100.
+									touchUserX = touchRawX * 100 / width;
+									touchUserY = (height - 1 - touchRawY) * 100 / height;
 									touchSecs = System.currentTimeMillis() / 1000.0;
 									return true;
 								}
