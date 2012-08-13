@@ -122,6 +122,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
@@ -811,6 +812,11 @@ public class TerseActivity extends Activity {
 					FnordView fnord = new FnordView(this, app);
 					setContentView(fnord);
 					return;
+				} else if (type.str.equals("dual")) {
+					Obj app = value.mustObj();
+					DualView fnord = new DualView(this, app);
+					setContentView(fnord);
+					return;
 				} else if (type.str.equals("world") && value instanceof Str) {
 					String newWorld = value.toString();
 					if (Terp.WORLD_P.matcher(newWorld).matches()) {
@@ -1251,6 +1257,21 @@ public class TerseActivity extends Activity {
 		zz.put(a);
 		zz.position(0);
 		return zz;
+	}
+	
+	public class DualView extends FrameLayout {
+		FnordView fv;
+		DrawView dv;
+		DualView(Context context, final Obj app) {
+			super(context);
+			fv = new FnordView(context, app);
+			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 22, 22, 99, 99, 2, 'green' ), )" ).mustVec();
+			dv = new DrawView(context, v1.vec, terp.newDict(Static.emptyUrs));
+			
+			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+			addView(fv, FILL);
+			addView(dv, FILL);
+		}
 	}
 	
 

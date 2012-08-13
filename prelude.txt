@@ -218,6 +218,7 @@ meth Top handle:query:
       '/FnordTwo';
       '/FnordMotherShip';
       '/FnordFlight';
+      '/DualFlight';
       '/GameFoo';
       '/GamePong';
       '/GameTroids';
@@ -2457,9 +2458,10 @@ meth FnordFlight prePost:
   "su prePost: a."
 
 meth FnordFlight model
+  m= se modelGround.
   plane step.
   GVec new vec: VEC(
-    se modelGround,
+    m,
     plane current,
   ).
 meth FnordFlight modelGround
@@ -2485,5 +2487,12 @@ meth FnordFlight modelGround
       )
     ),
   )ravel.
+
+cls DualFlight FnordFlight
+meth DualFlight handle:query:
+  DICT(
+    'type', 'dual';
+    'value', self;
+  ). 
 
 ##END
