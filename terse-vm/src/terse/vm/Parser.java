@@ -302,7 +302,7 @@ public class Parser extends Obj {
 		// this chaining sends subsequent messages to the previous result.
 		String front = lex.front; String white = lex.white;
 		Expr unary = parseUnary();
-		Expr expr = parseKeyed(unary, 999);
+		Expr expr = parseKeyed(unary);
 		while (lex.isChain()) {
 			lex.advance();
 			while (lex.t == Pat.NAME && !lex.isKeyword()) { 
@@ -313,24 +313,22 @@ public class Parser extends Obj {
 				expr.rest = lex.rest;
 			}
 			if (lex.isKeyword() || lex.isTupler() || lex.isBinop()) {
-				expr = parseKeyed(expr, 999);
+				expr = parseKeyed(expr);
 			}
 		}
 		return expr;
 	}
 
-	private Expr parseKeyed(Expr receiver, int cap) {
+	private Expr parseKeyed(Expr receiver) {
 		// cap is obsolete now.
 		receiver = parseBinary3(receiver);
-		// keywordStrength is obsolete now -- we quit using that.
-		if (lex.isKeyword() && lex.keywordStrength() < cap) {
-			while (lex.isKeyword() && lex.keywordStrength() < cap) {
+		if (lex.isKeyword()) {
+			while (lex.isKeyword()) {
 				String front = lex.front; String white = lex.white;
 				String keywords = "";
 				Expr[] args = emptyExprs;
-				int strength = lex.keywordStrength();
 				int[] locs = emptyInts;
-				while (lex.isKeyword() && lex.keywordStrength() == strength) {
+				while (lex.isKeyword()) {
 					keywords += lex.keywordName().toLowerCase() + ":";
 					locs = append(locs, lex.frontLocation());
 					lex.advance();
@@ -338,8 +336,7 @@ public class Parser extends Obj {
 					lex.advance();
 					Expr unary = parseUnary();
 					Expr tuple = parseBinary3(unary);
-					Expr arg = parseKeyed(tuple, strength); // Do keywords of
-					// smaller strength.
+					Expr arg = parseKeyed(tuple);
 					args = append(args, arg);
 				}
 				receiver = new Expr.Send(receiver, keywords, args, locs);
@@ -913,21 +910,6 @@ public class Parser extends Obj {
 		String keywordName() {
 			assert isKeyword();
 			return w;
-		}
-
-		/** Obsolete Feature */
-		int keywordStrength() {
-//			if (t == Pat.NAME) {
-//				storeState();
-//				if (w != null && w.charAt(0) == ':') {
-//					recallState();
-//					return w.length();
-//				}
-//				recallState();
-//			}
-//			assert false : w + " " + this.rest;
-//			return 0;
-			return 1;
 		}
 
 		/** Look ahead at the next token, to distinguish MACRO. */
