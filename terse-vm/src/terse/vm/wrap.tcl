@@ -284,7 +284,7 @@ if {$CLASS == "WrapAndy"} {
   import terse.a1.TerseActivity.GFan;
   import terse.a1.TerseActivity.Mat;
 
-  import terse.a1.TerseActivity.FnordView.GGl;
+  import terse.a1.TerseActivity.DualView.FnordView.GGl;
 "
 } else {
   puts "package terse.vm;"

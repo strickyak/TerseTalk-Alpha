@@ -2406,7 +2406,7 @@ meth RedPlane step
   frac= 1 - fric.
 
   vx,vy,vz= frac*vx, frac*vy, frac*vz.
-
+ "
     'deltaT' say: deltaT.
     'roll' say: ((Mat new rot: roll @ 0 @ 0)say mulv: (1@0@0@1)).
     'pitch' say: ((Mat new rot: 0 @ pitch @ 0)say mulv: (1@0@0@1)).
@@ -2417,6 +2417,7 @@ meth RedPlane step
     'ax,ay,az' say: ax @ ay @ az.
     'vx,vy,vz' say: vx @ vy @ vz.
     'px,py,pz' say: px @ py @ pz.
+ "
 
   px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
   IF(pz < 0)THEN(pz = 0).

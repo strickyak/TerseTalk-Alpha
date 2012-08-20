@@ -810,7 +810,8 @@ public class TerseActivity extends Activity {
 					return;
 				} else if (type.str.equals("fnord")) {
 					Obj app = value.mustObj();
-					FnordView fnord = new FnordView(this, app);
+					//FnordView fnord = new FnordView(this, app);
+					DualView fnord = new DualView(this, app);
 					setContentView(fnord);
 					return;
 				} else if (type.str.equals("dual")) {
@@ -1045,21 +1046,21 @@ public class TerseActivity extends Activity {
 			});
 			}
 
-			setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					terp.say("CLICK");
-				}
-			});
-
-			setOnLongClickListener(new OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					terp.say("LONG CLICK");
-					taGotLongClick = true;
-					return false;
-				}
-			});
+//			setOnClickListener(new OnClickListener() {
+//				@Override
+//				public void onClick(View v) {
+//					terp.say("CLICK");
+//				}
+//			});
+//
+//			setOnLongClickListener(new OnLongClickListener() {
+//				@Override
+//				public boolean onLongClick(View v) {
+//					terp.say("LONG CLICK");
+//					taGotLongClick = true;
+//					return false;
+//				}
+//			});
 		}
 	}
 
@@ -1266,12 +1267,12 @@ public class TerseActivity extends Activity {
 	
 	public class DualView extends FrameLayout {
 		FnordView fv;
-		DrawView dv;
+		OverView dv;
 		DualView(Context context, final Obj app) {
 			super(context);
 			fv = new FnordView(context, app);
 			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 22, 22, 99, 99, 2, 'green' ), )" ).mustVec();
-			dv = new DrawView(context, v1.vec, terp.newDict(Static.emptyUrs), false);
+			dv = new OverView(context, v1.vec);
 			
 			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			addView(fv, FILL);
@@ -1280,11 +1281,11 @@ public class TerseActivity extends Activity {
 			setOnTouchListener(new OnTouchListener() {
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
+					terp.say("DUAL TOUCH");
 					return fv.callOnTouchListener(v, event);
 				}
 			});
 		}
-	}
 	
 
 	public class FnordView extends GLSurfaceView {
@@ -1731,6 +1732,7 @@ public class TerseActivity extends Activity {
 					(new OnTouchListener() {
 							@Override
 							public boolean onTouch(View v, MotionEvent event) {
+								terp.say("FNORD TOUCH");
 								int action = event.getAction();
 								if (action == MotionEvent.ACTION_DOWN
 										|| action == MotionEvent.ACTION_MOVE) {
@@ -1824,7 +1826,58 @@ public class TerseActivity extends Activity {
 				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
 			}
 		}
-	}
+
+	}  // end FnordView
+
+	public class OverView extends View {
+
+		public OverView(Context context, ArrayList<Ur> list) {
+			super(context);
+			this.list = list;
+		}
+
+		private ArrayList<Ur> list;
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			Paint green = new Paint();
+			green.setColor(Color.GREEN);
+			green.setStrokeWidth(2);
+
+			Paint blue = new Paint();
+			blue.setColor(Color.BLUE);
+			blue.setStrokeWidth(1);
+
+			Paint yellow = new Paint();
+			yellow.setColor(Color.YELLOW);
+			yellow.setStrokeWidth(1);
+			yellow.setTextSize(12);
+
+			for (int i = 0; i < list.size(); i++) {
+				Ur p = list.get(i);
+				String drawtype = stringAt(p, 0);
+				if (drawtype.equals("line")) {
+					float x1 = floatAt(p, 1);
+					float y1 = floatAt(p, 2);
+					float x2 = floatAt(p, 3);
+					float y2 = floatAt(p, 4);
+					canvas.drawLine(x1, y1, x2, y2, green);
+				} else if (drawtype.equals("rect")) {
+					float x1 = floatAt(p, 1);
+					float y1 = floatAt(p, 2);
+					float x2 = floatAt(p, 3) + x1;
+					float y2 = floatAt(p, 4) + y1;
+					canvas.drawRect(x1, y1, x2, y2, blue);
+				} else if (drawtype.equals("text")) {
+					float x1 = floatAt(p, 1);
+					float y1 = floatAt(p, 2);
+					String text = stringAt(p, 3);
+					canvas.drawText(text, x1, y1, yellow);
+				}
+			}
+		}
+	}  // end OverView
+} // end DualView
 
 	public static abstract class GVisitor {
 		abstract void visitGPrim(GPrim obj);
