@@ -21,6 +21,7 @@
 // --------------------------------------------------------------------------
 package terse.a1;
 
+import java.lang.Runnable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -797,7 +798,7 @@ public class TerseActivity extends Activity {
 
 				} else if (type.str.equals("draw") && value instanceof Vec) {
 					Vec v = ((Vec) value);
-					DrawView dv = new DrawView(this, v.vec, d);
+					DrawView dv = new DrawView(this, v.vec, d, true);
 					dv.setLayoutParams(widgetParams);
 					setContentView(dv);
 					return;
@@ -970,13 +971,15 @@ public class TerseActivity extends Activity {
 	}
 
 	class DrawView extends View {
-		ArrayList<Ur> list;
-		Dict dict;
+		private ArrayList<Ur> list;
+		private Dict dict;
+		private boolean acceptTouchEvents;
 
-		public DrawView(Context context, ArrayList<Ur> list, Dict dict) {
+		public DrawView(Context context, ArrayList<Ur> list, Dict dict, boolean acceptTouchEvents) {
 			super(context);
 			this.list = list;
 			this.dict = dict;
+			this.acceptTouchEvents = acceptTouchEvents;
 		}
 
 		@Override
@@ -1017,6 +1020,7 @@ public class TerseActivity extends Activity {
 				}
 			}
 
+			if (acceptTouchEvents) {
 			setOnTouchListener(new OnTouchListener() {
 				@Override
 				public boolean onTouch(View v, MotionEvent event) {
@@ -1039,6 +1043,7 @@ public class TerseActivity extends Activity {
 					return false;
 				}
 			});
+			}
 
 			setOnClickListener(new OnClickListener() {
 				@Override
@@ -1266,11 +1271,18 @@ public class TerseActivity extends Activity {
 			super(context);
 			fv = new FnordView(context, app);
 			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 22, 22, 99, 99, 2, 'green' ), )" ).mustVec();
-			dv = new DrawView(context, v1.vec, terp.newDict(Static.emptyUrs));
+			dv = new DrawView(context, v1.vec, terp.newDict(Static.emptyUrs), false);
 			
 			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			addView(fv, FILL);
 			addView(dv, FILL);
+			
+			setOnTouchListener(new OnTouchListener() {
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					return fv.callOnTouchListener(v, event);
+				}
+			});
 		}
 	}
 	
@@ -1305,6 +1317,7 @@ public class TerseActivity extends Activity {
 		float touchUserX = 50;
 		float touchUserY = 50;
 		double touchSecs = System.currentTimeMillis() / 1000.0;
+		public OnTouchListener onTouchListener;
 
 		public FnordView(Context context, final Obj app) {
 			super(context);
@@ -1332,6 +1345,13 @@ public class TerseActivity extends Activity {
 			terp.runOnWorkThread(runTheApp, "RunFnordApp");
 		}
 		
+		public boolean callOnTouchListener(View v, MotionEvent event) {
+			if (onTouchListener != null) {
+				return onTouchListener.onTouch(v, event);
+			}
+			return false;
+		}
+
 		public class GGl extends Obj {
 			// =cls "GL" GGl  Obj
 			public GGl(Cls a) {
@@ -1707,7 +1727,8 @@ public class TerseActivity extends Activity {
 				touchRawY = height / 2;
 //				touchUserX = touchUserY = 50;
 				try {
-					setOnTouchListener(new OnTouchListener() {
+					onTouchListener = 
+					(new OnTouchListener() {
 							@Override
 							public boolean onTouch(View v, MotionEvent event) {
 								int action = event.getAction();
@@ -1725,7 +1746,7 @@ public class TerseActivity extends Activity {
 								return false;
 							}
 					});
-					
+					setOnTouchListener(onTouchListener);
 					terp.say("FNORD onSurfaceChanged(", wid, ",", hei, ")");
 					gl.glViewport(0, 0, wid, hei);
 				} catch (Exception e) {
