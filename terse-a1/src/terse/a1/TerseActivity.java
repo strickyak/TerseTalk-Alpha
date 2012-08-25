@@ -1683,6 +1683,7 @@ public class TerseActivity extends Activity {
 				gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
 			    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
 				vb.position(0);
+				gl.glVertexPointer(3, GL10.GL_FLOAT, 3 * 4, vb);
 				gl.glDrawArrays(GL10.GL_LINE_STRIP, 0, n);
 			}
 			
@@ -1813,13 +1814,13 @@ public class TerseActivity extends Activity {
 					colors.push(a.color);
 				}
 				Vec color = colors.peek().mustVec();
-				float r = color.vec.size() > 0 ? Static.floatAt(color, 0) : 1;
-				float g = color.vec.size() > 0 ? Static.floatAt(color, 1) : 1;
-				float b = color.vec.size() > 0 ? Static.floatAt(color, 2) : 1;
-				float alpha = color.vec.size() > 0 ? Static.floatAt(color, 3) : 1;
-				if (false) {
-					gl.glColor4f(r, g, b, alpha);
-				} else {
+				float r = color.vec.size() > 0 ? Static.floatAt(color, 0) : 0;
+				float g = color.vec.size() > 1 ? Static.floatAt(color, 1) : 0;
+				float b = color.vec.size() > 2 ? Static.floatAt(color, 2) : 0;
+				float alpha = color.vec.size() > 3 ? Static.floatAt(color, 3) : 1;
+				//if (false) {
+					gl.glColor4f(r, g, b, alpha);  // For lines.
+				//} else {
 					material[0] = r;
 					material[1] = g;
 					material[2] = b;
@@ -1827,8 +1828,8 @@ public class TerseActivity extends Activity {
 					gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT,
 							material, 0);
 					gl.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE,
-							material, 0);
-				}
+							material, 0);  // For triangles.
+				//}
 			}
 			void justTransform(Node a) {
 				gl.glTranslatef(a.px, a.py, a.pz);

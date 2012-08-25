@@ -2303,6 +2303,7 @@ meth FnordApp model
       )
     )
   ).
+  v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 1@0@0 ).
   Group new vec: v1.
 
 cls FnordTwo FnordApp
@@ -2323,6 +2324,7 @@ meth FnordTwo model
 	)
     )
   ).
+  v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 0@0@1 ).
   Group new vec: v1.
 
 cls FnordRandom FnordApp
@@ -2343,6 +2345,7 @@ meth FnordRandom model
       )
     )
   ).
+  v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) ).
   Group new vec: v1.
 
 cls FnordMotherShip FnordRandom
@@ -2487,7 +2490,7 @@ meth FnordFlight modelGround
         Cube new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @ 100 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
       )
     ),
-    Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99),
+    Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 0@1@0,
   )flat.
 
 cls DualFlight FnordFlight
