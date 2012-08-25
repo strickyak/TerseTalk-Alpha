@@ -277,11 +277,11 @@ if {$CLASS == "WrapAndy"} {
   import terse.a1.TerseActivity.Ink;
   import terse.a1.TerseActivity.Motion;
   import terse.a1.TerseActivity.Screen;
-  import terse.a1.TerseActivity.GObj;
-  import terse.a1.TerseActivity.GPrim;
-  import terse.a1.TerseActivity.GVec;
-  import terse.a1.TerseActivity.GStrip;
-  import terse.a1.TerseActivity.GFan;
+  import terse.a1.TerseActivity.Node;
+  import terse.a1.TerseActivity.Prim;
+  import terse.a1.TerseActivity.Group;
+  import terse.a1.TerseActivity.Strip;
+  import terse.a1.TerseActivity.Fan;
   import terse.a1.TerseActivity.Mat;
 
   import terse.a1.TerseActivity.DualView.FnordView.GGl;

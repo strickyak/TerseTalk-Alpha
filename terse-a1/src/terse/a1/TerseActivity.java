@@ -1293,7 +1293,7 @@ public class TerseActivity extends Activity {
 
 		AndyTerp terp;
 		final Obj app;
-		GObj model = null;
+		Node model = null;
 		GLSurfaceView.Renderer renderer;
 		GGl ggl;  // Interface to TerseTalk
 		public boolean wires = false;
@@ -1391,7 +1391,7 @@ public class TerseActivity extends Activity {
 				return System.currentTimeMillis() / 1000.0 - touchSecs;
 			}
 			// =meth GGl "gl" post:
-			public void post_(GObj a) {
+			public void post_(Node a) {
 				FnordView.this.model = a;
 			}
 			// =meth GGl "gl" eye:
@@ -1769,21 +1769,21 @@ public class TerseActivity extends Activity {
 				this.rend = rend;
 				colors.push(terp.newVec(Static.ints(1, 1, 1, 1))); // Initially White
 			}
-			void render(GObj top) {
+			void render(Node top) {
 				top.visit(this);
 			}
 			@Override
-			void visitGPrim(GPrim a) {
+			public void visitPrim(Prim a) {
 				pushTransformAndColor(a);
 				rend.drawCube(gl);
 				popTransform();
 			}
 			@Override
-			void visitGVec(GVec a) {
+			public void visitGroup(Group a) {
 				pushTransformAndColor(a);
 				int sz = a.vec.vec.size();
 				for (int i = 0; i < sz; i++) {
-					GObj x = (GObj) a.vec.vec.get(i);
+					Node x = (Node) a.vec.vec.get(i);
 					x.visit(this);
 				}
 				popTransform();
@@ -1792,7 +1792,7 @@ public class TerseActivity extends Activity {
 				colors.pop();
 				gl.glPopMatrix();
 			}
-			void pushTransformAndColor(GObj a) {
+			void pushTransformAndColor(Node a) {
 				gl.glPushMatrix();
 				justTransform(a);
 				if (a.color == terp.instNil) {
@@ -1818,12 +1818,22 @@ public class TerseActivity extends Activity {
 							material, 0);
 				}
 			}
-			void justTransform(GObj a) {
+			void justTransform(Node a) {
 				gl.glTranslatef(a.px, a.py, a.pz);
 				gl.glScalef(a.sx, a.sy, a.sz);
 				if (a.rz != 0) gl.glRotatef(a.rz, 0, 0, 1);
 				if (a.ry != 0) gl.glRotatef(a.ry, 0, 1, 0);
 				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
+			}
+			@Override
+			public void visitStrip(Strip strip) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void visitFan(Fan fan) {
+				// TODO Auto-generated method stub
+				
 			}
 		}
 
@@ -1880,74 +1890,80 @@ public class TerseActivity extends Activity {
 } // end DualView
 
 	public static abstract class GVisitor {
-		abstract void visitGPrim(GPrim obj);
-		abstract void visitGVec(GVec vec);
+		abstract public void visitPrim(Prim obj);
+		public void visitGroup(Group group) {
+			for (Ur member : group.vec.vec) {
+				((Node)member).visit(this);
+			}
+		}
+		abstract public void visitStrip(Strip strip);
+		abstract public void visitFan(Fan fan);
 	}
-	public static abstract class GObj extends Obj {
+	public static abstract class Node extends Obj {
 		float px = 0, py = 0, pz = 0;  // Translation
 		float sx = 1, sy = 1, sz = 1;  // Scale
 		float rx = 0, ry = 0, rz = 0;  // Rot (Euclid)
 		Obj color = terp().instNil;  // Vec or nil
-		// =cls "GL" GObj  Obj
-		GObj(Cls cls) {
+		// =cls "GL" Node  Obj
+		Node(Cls cls) {
 			super(cls);
 		}
-		// =meth GObj "access" pos:
+		// =meth Node "access" pos:
 		public void pos_(Vec a) {
 			px = Static.floatAt(a, 0);
 			py = Static.floatAt(a, 1);
 			pz = Static.floatAt(a, 2);
 		}
-		// =meth GObj "access" scale:
+		// =meth Node "access" scale:
 		public void scale_(Vec a) {
 			sx = Static.floatAt(a, 0);
 			sy = Static.floatAt(a, 1);
 			sz = Static.floatAt(a, 2);
 		}
-		// =meth GObj "access" rot:
+		// =meth Node "access" rot:
 		public void rot_(Vec a) {
 			rx = Static.floatAt(a, 0);
 			ry = Static.floatAt(a, 1);
 			rz = Static.floatAt(a, 2);
 		}
-		// =meth GObj "access" color:
+		// =meth Node "access" color:
 		public void color_(Obj a) {
 			color = a;
 		}
-		// =meth GObj "access" pos
+		// =meth Node "access" pos
 		public Vec _pos() {
 			return terp.mkFloatVec(px, py, pz);
 		}
-		// =meth GObj "access" sca
+		// =meth Node "access" sca
 		public Vec _sca() {
 			return terp.mkFloatVec(sx, sy, sz);
 		}
-		// =meth GObj "access" rot
+		// =meth Node "access" rot
 		public Vec _rot() {
 			return terp.mkFloatVec(rx, ry, rz);
 		}
-		// =meth GObj "access" color
+		// =meth Node "access" color
 		public Obj _color() {
 			return color;
 		}
 		abstract void visit(GVisitor gv);
 	}
 	
-	public static class GPrim extends GObj {
+	public static class Prim extends Node {
 		FloatBuffer fbuf = null;
 		int sz = 0;
 		int mode = GL10.GL_TRIANGLES;
-		// =cls  "GL" GPrim  GObj
-		GPrim(Cls cls) {
+		// =cls  "GL" Prim  Node
+		Prim(Cls cls) {
 			super(cls);
 		}
-		// =meth GPrimCls "new" new
-		public static GPrim _new(Terp t) {
+		// =meth PrimCls "new" new
+		public static Prim _new(Terp t) {
 			AndyTerp terp = (AndyTerp) t;
-			return new GPrim(terp.wrapandy.clsGPrim);
+			return new Prim(terp.wrapandy.clsPrim);
 		}
 
-//		// =meth GPrim "access" mesh:
+//		// =meth Prim "access" mesh:
 //		public void mesh_(Vec a) {
 //			sz = a.vec.size();
 //			float[] ff = new float[sz * 3];
@@ -1962,49 +1978,57 @@ public class TerseActivity extends Activity {
 
 		@Override
 		void visit(GVisitor gv) {
-			gv.visitGPrim(this);
+			gv.visitPrim(this);
 		}
 	}
 	
-	public static class GVec extends GObj {
+	public static class Group extends Node {
 		Vec vec;
-		// =cls  "GL" GVec  GObj
-		GVec(Cls cls) {
+		// =cls  "GL" Group  Node
+		Group(Cls cls) {
 			super(cls);
 		}
-		// =meth GVecCls "new" new
-		public static GVec _new(Terp t) {
+		// =meth GroupCls "new" new
+		public static Group _new(Terp t) {
 			AndyTerp terp = (AndyTerp) t;
-			return new GVec(terp.wrapandy.clsGVec);
+			return new Group(terp.wrapandy.clsGroup);
 		}
 
-		// =meth GVec "access" vec
+		// =meth Group "access" vec
 		public Vec _vec() {
 			return vec;
 		}
-		// =meth GVec "access" vec:
+		// =meth Group "access" vec:
 		public void vec_(Vec a) {
 			this.vec = a;
 		}
 		@Override
 		void visit(GVisitor gv) {
-			gv.visitGVec(this);
+			gv.visitGroup(this);
 		}
 	}
 	
-	public static class GFan extends GPrim {
-		// =cls  "GL" GFan GPrim
-		GFan(Cls cls) {
+	public static class Fan extends Prim {
+		// =cls  "GL" Fan Prim
+		Fan(Cls cls) {
 			super(cls);
 			this.mode = GL10.GL_TRIANGLE_FAN;
 		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitFan(this);
+		}
 	}
 	
-	public static class GStrip extends GPrim {
-		// =cls  "GL" GStrip GPrim
-		GStrip(Cls cls) {
+	public static class Strip extends Prim {
+		// =cls  "GL" Strip Prim
+		Strip(Cls cls) {
 			super(cls);
 			this.mode = GL10.GL_TRIANGLE_STRIP;
+		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitStrip(this);
 		}
 	}
 

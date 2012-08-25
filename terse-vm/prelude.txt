@@ -2294,7 +2294,7 @@ meth FnordApp model
     for (j: 6) do(
       for (k: 6) do(
         v1 ap: (
-	  GPrim new 
+	  Prim new 
 	    $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
 	    $ scale: 5 @ 3 @ 1
 	    $ rot: i*10 @ j*10 @ k*10
@@ -2303,7 +2303,7 @@ meth FnordApp model
       )
     )
   ).
-  GVec new vec: v1.
+  Group new vec: v1.
 
 cls FnordTwo FnordApp
 meth FnordTwo init
@@ -2315,7 +2315,7 @@ meth FnordTwo model
   for(i: 10) do(
     for (j: 10) do(
         v1 ap: (
-	  GPrim new 
+	  Prim new 
 	    $ rot: 10*i + 5 @ 10*j + 5 @ 0
 	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
 	    $ scale: 8 @ 8 @ 1
@@ -2323,7 +2323,7 @@ meth FnordTwo model
 	)
     )
   ).
-  GVec new vec: v1.
+  Group new vec: v1.
 
 cls FnordRandom FnordApp
 meth FnordRandom init
@@ -2334,7 +2334,7 @@ meth FnordRandom model
     for (j: 5) do(
       for (k: 5) do(
         v1 ap: (
-	  GPrim new 
+	  Prim new 
 	    $ pos: 30 + (Num rand: 40) @ 30 + (Num rand: 40) @ (Num rand: 20)
 	    $ scale: 10 * Num rand @ 10 * Num rand @ 10 * Num rand
 	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
@@ -2343,7 +2343,7 @@ meth FnordRandom model
       )
     )
   ).
-  GVec new vec: v1.
+  Group new vec: v1.
 
 cls FnordMotherShip FnordRandom
 vars FnordMotherShip
@@ -2434,11 +2434,11 @@ meth RedPlane step
   lasttime = thistime.
 
 meth RedPlane prototype
-  GVec new vec: VEC(
+  Group new vec: VEC(
     "Fusalage along the X axis"
-    GPrim new $ scale: 1 @ 0.2 @ 0.2 $ color: 1 @ 0 @ 0 @ 1,
+    Prim new $ scale: 1 @ 0.2 @ 0.2 $ color: 1 @ 0 @ 0 @ 1,
     "Wings along the Y axis"
-    GPrim new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
+    Prim new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
   ).
 meth RedPlane current
    "t= Sys secs % 100."
@@ -2461,19 +2461,19 @@ meth FnordFlight prePost:
 meth FnordFlight model
   m= se modelGround.
   plane step.
-  GVec new vec: VEC(
+  Group new vec: VEC(
     m,
     plane current,
   ).
 meth FnordFlight modelGround
-  GVec new vec: VEC(
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    GPrim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+  Group new vec: VEC(
+    Prim new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    Prim new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    Prim new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    Prim new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
-  	  GPrim new 
+  	  Prim new 
   	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
   	    $ scale: 9 @ 9 @ 1
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
@@ -2481,10 +2481,10 @@ meth FnordFlight modelGround
     ),
     FOR(i: 6) MAP(i= i+1.
       FOR (j: 10) MAP(j= 10*j + 5.
-        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ j @ i*10 $ color: 1 @ 0 @ 0 @ 1,
-        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ j @ i*10 $ color: 0 @ 1 @ 0 @ 1,
-        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @   0 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
-        GPrim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @ 100 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
+        Prim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ j @ i*10 $ color: 1 @ 0 @ 0 @ 1,
+        Prim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ j @ i*10 $ color: 0 @ 1 @ 0 @ 1,
+        Prim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @   0 @ i*10 $ color: 0 @ 0 @ 1 @ 1,
+        Prim new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @ 100 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
       )
     ),
   )ravel.
