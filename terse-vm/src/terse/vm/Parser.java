@@ -336,8 +336,8 @@ public class Parser extends Obj {
 					lex.advance();
 					Expr unary = parseUnary();
 					Expr tuple = parseBinary3(unary);
-					Expr arg = parseKeyed(tuple);
-					args = append(args, arg);
+					// WAS lesser strength // Expr arg = parseKeyed(tuple);
+					args = append(args, tuple);
 				}
 				receiver = new Expr.Send(receiver, keywords, args, locs);
 				receiver.front = front; receiver.white = white;
