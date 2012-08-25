@@ -60,6 +60,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 
+import terse.a1.TerseActivity.DualView.FnordView.FnordRenderer;
 import terse.vm.Cls;
 import terse.vm.Parser;
 import terse.vm.Ur.Sys;
@@ -1676,6 +1677,14 @@ public class TerseActivity extends Activity {
 				gl.glNormalPointer(GL10.GL_FLOAT, strideOverNormal, cubeVCB);
 				gl.glDrawArrays(wires ? GL10.GL_LINE_LOOP : GL10.GL_TRIANGLES, 0, 36);
 			}
+
+			public void drawLine(GL10 gl, int n, FloatBuffer vb) {
+			    gl.glDisable(GL10.GL_NORMALIZE);
+				gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+			    gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
+				vb.position(0);
+				gl.glDrawArrays(GL10.GL_LINE_STRIP, 0, n);
+			}
 			
 			void setTextureWithText(GL10 gl, String message) {  // TODO -- figure out how to complete.
 				// StackOverflow 1339136 JVitela Dec 2 '010 at 15:35
@@ -1772,10 +1781,13 @@ public class TerseActivity extends Activity {
 			void render(Node top) {
 				top.visit(this);
 			}
+			void drawCube() {
+				rend.drawCube(gl);
+			}
 			@Override
 			public void visitPrim(Prim a) {
 				pushTransformAndColor(a);
-				rend.drawCube(gl);
+				a.drawPrim(gl, rend);
 				popTransform();
 			}
 			@Override
@@ -1824,16 +1836,6 @@ public class TerseActivity extends Activity {
 				if (a.rz != 0) gl.glRotatef(a.rz, 0, 0, 1);
 				if (a.ry != 0) gl.glRotatef(a.ry, 0, 1, 0);
 				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
-			}
-			@Override
-			public void visitStrip(Strip strip) {
-				// TODO Auto-generated method stub
-				
-			}
-			@Override
-			public void visitFan(Fan fan) {
-				// TODO Auto-generated method stub
-				
 			}
 		}
 
@@ -1896,8 +1898,6 @@ public class TerseActivity extends Activity {
 				((Node)member).visit(this);
 			}
 		}
-		abstract public void visitStrip(Strip strip);
-		abstract public void visitFan(Fan fan);
 	}
 	public static abstract class Node extends Obj {
 		float px = 0, py = 0, pz = 0;  // Translation
@@ -1949,36 +1949,32 @@ public class TerseActivity extends Activity {
 		abstract void visit(GVisitor gv);
 	}
 	
-	public static class Prim extends Node {
-		FloatBuffer fbuf = null;
-		int sz = 0;
-		int mode = GL10.GL_TRIANGLES;
+	public abstract static class Prim extends Node {
+//		FloatBuffer fbuf = null;
+//		int sz = 0;
+//		int mode = GL10.GL_TRIANGLES;
 		// =cls  "GL" Prim  Node
 		Prim(Cls cls) {
 			super(cls);
 		}
-		// =meth PrimCls "new" new
-		public static Prim _new(Terp t) {
-			AndyTerp terp = (AndyTerp) t;
-			return new Prim(terp.wrapandy.clsPrim);
-		}
-
-//		// =meth Prim "access" mesh:
-//		public void mesh_(Vec a) {
-//			sz = a.vec.size();
-//			float[] ff = new float[sz * 3];
-//			for (int i = 0; i < sz; i++) {
-//				Vec xyz = Static.urAt(a, i).mustVec();
-//				ff[i * 3 + 0] = Static.floatAt(xyz, 0);
-//				ff[i * 3 + 1] = Static.floatAt(xyz, 1);
-//				ff[i * 3 + 2] = Static.floatAt(xyz, 2);
-//			}
-//			fbuf = newFloatBuffer(ff);
-//		}
-
+		abstract public void drawPrim(GL10 gl, FnordRenderer rend);
 		@Override
 		void visit(GVisitor gv) {
 			gv.visitPrim(this);
+		}
+	}
+	public static class Cube extends Prim {
+		// =cls "GL" Cube Prim
+		Cube(Cls cls) {
+			super(cls);
+		}
+		public void drawPrim(GL10 gl, FnordRenderer rend) {
+			rend.drawCube(gl);
+		}
+		// =meth CubeCls "new" new
+		public static Cube _new(Terp t) {
+			AndyTerp terp = (AndyTerp) t;
+			return new Cube(terp.wrapandy.clsCube);
 		}
 	}
 	
@@ -2012,11 +2008,16 @@ public class TerseActivity extends Activity {
 		// =cls  "GL" Fan Prim
 		Fan(Cls cls) {
 			super(cls);
-			this.mode = GL10.GL_TRIANGLE_FAN;
+			// GL10.GL_TRIANGLE_FAN;
 		}
 		@Override
 		void visit(GVisitor gv) {
-			gv.visitFan(this);
+			gv.visitPrim(this);
+		}
+		@Override
+		public void drawPrim(GL10 gl, FnordRenderer rend) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -2024,11 +2025,47 @@ public class TerseActivity extends Activity {
 		// =cls  "GL" Strip Prim
 		Strip(Cls cls) {
 			super(cls);
-			this.mode = GL10.GL_TRIANGLE_STRIP;
+			// GL10.GL_TRIANGLE_STRIP
 		}
 		@Override
 		void visit(GVisitor gv) {
-			gv.visitStrip(this);
+			gv.visitPrim(this);
+		}
+		@Override
+		public void drawPrim(GL10 gl, FnordRenderer rend) {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+	
+	public static class Lines extends Prim {
+		FloatBuffer vb;
+		int n;
+		// =cls "GL" Lines Prim
+		Lines(Cls cls, Vec points) {
+			super(cls);
+			n = points.vec.size();
+			float[] a = new float[n*3];
+			for (int i = 0; i < n; i++) {
+				Vec coords = points.vec.get(i).mustVec();
+				a[i*3 + 0] = floatAt(coords, 0);
+				a[i*3 + 1] = floatAt(coords, 1);
+				a[i*3 + 2] = floatAt(coords, 2);
+			}
+			vb = newFloatBuffer(a);
+		}
+		// =meth LinesCls "new" new:
+		public static Lines new_(Terp t, Vec points) {
+			AndyTerp terp = (AndyTerp) t;
+			return new Lines(terp.wrapandy.clsGroup, points);
+		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitPrim(this);
+		}
+		@Override
+		public void drawPrim(GL10 gl, FnordRenderer rend) {
+			rend.drawLine(gl, n, vb);
 		}
 	}
 
