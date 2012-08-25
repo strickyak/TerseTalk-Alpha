@@ -2444,13 +2444,15 @@ meth RedPlane prototype
     Cube new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
   ).
 meth RedPlane current
-   "t= Sys secs % 100."
-   " 'PX PY PZ' say: px @ py @ pz. "
-   se prototype
-     $ pos: px @ py @ pz
-     $ scale: 3 @ 3 @ 3
-     $ rot: roll @ pitch @ yaw
-     .
+  Group new vec: VEC(
+     se prototype
+       $ pos: px @ py @ pz
+       $ scale: 3 @ 3 @ 3
+       $ rot: roll @ pitch @ yaw
+     , Lines new: (0@py@pz, 100@py@pz) $color: 0.2@0.2@0.2
+     , Lines new: (px@0@pz, px@100@pz) $color: 0.2@0.2@0.2
+     , Lines new: (px@py@0, px@py@100) $color: 0.2@0.2@0.2
+  )
 
 cls FnordFlight FnordApp
 vars FnordFlight
@@ -2469,6 +2471,7 @@ meth FnordFlight model
     plane current,
   ).
 meth FnordFlight modelGround
+  greenish = 0@0.6@0. 
   Group new vec: VEC(
     Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
     Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
@@ -2482,7 +2485,8 @@ meth FnordFlight modelGround
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
     ),
-    FOR(i: 6) MAP(i= i+1.
+    "--
+    FOR(i: 5) MAP(i= i+1.
       FOR (j: 10) MAP(j= 10*j + 5.
         Cube new $ scale: 0.2 @ 0.2 @ 0.2 $ pos:   0 @ j @ i*10 $ color: 1 @ 0 @ 0 @ 1,
         Cube new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: 100 @ j @ i*10 $ color: 0 @ 1 @ 0 @ 1,
@@ -2490,7 +2494,14 @@ meth FnordFlight modelGround
         Cube new $ scale: 0.2 @ 0.2 @ 0.2 $ pos: j @ 100 @ i*10 $ color: 1 @ 1 @ 1 @ 1,
       )
     ),
-    Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 0@1@0,
+    --"
+    FOR (k: 10) MAP(k= 10*k + 5.
+      Lines new: (k@0@0, k@0@50, k@100@50, k@100@0) $color: greenish,
+      Lines new: (0@k@0, 0@k@50, 100@k@50, 100@k@0) $color: greenish,
+    ),
+    FOR (k: 5) MAP(k= 10*k + 10.
+      Lines new: (0@0@k, 0@100@k, 100@100@k, 100@0@k, 0@0@k) $color: greenish,
+    ),
   )flat.
 
 cls DualFlight FnordFlight

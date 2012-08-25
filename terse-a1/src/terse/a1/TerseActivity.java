@@ -1272,7 +1272,7 @@ public class TerseActivity extends Activity {
 		DualView(Context context, final Obj app) {
 			super(context);
 			fv = new FnordView(context, app);
-			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 22, 22, 99, 99, 2, 'green' ), )" ).mustVec();
+			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 33, 33, 66, 38, 2, 'green' ), )" ).mustVec();
 			dv = new OverView(context, v1.vec);
 			
 			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
