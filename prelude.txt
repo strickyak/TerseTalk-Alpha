@@ -2390,12 +2390,12 @@ meth RedPlane step
   tx,ty,tz,tw = m mulv: kThrottle @ 0 @ 0 @ 1.
 
   "Lift."
-  kLift = 0.55.
+  kLift = 0.35 "0.55".
   speed= (vx, vy, vz) abs.
   lx,ly,lz,lw = m mulv: 0 @ 0 @ speed*kLift @ 1.
 
   "Gravity."
-  kGrav = -0.5.
+  kGrav = -0.60 "-0.5".
 
   "Total Acceleration (before drag)."
   ax,ay,az= tx+lx, ty+ly, tz+lz+kGrav.
