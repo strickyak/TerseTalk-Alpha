@@ -2360,7 +2360,7 @@ meth FnordMotherShip step
 
 cls RedPlane Usr
 vars RedPlane
-  gl px py pz  vx vy vz  roll pitch yaw lasttime deltaT deltaTSum DeltaTCount
+  gl px py pz  vx vy vz  roll pitch yaw lasttime deltaT deltaTSum DeltaTCount lx ly lz lw tx ty tz tw ax ay az speed fric frac tvx tvy tvz
 # http://mathworld.wolfram.com/EulerAngles.html
 #   phi about z (yaw); theta about new x (pitch); psi about new z (roll).
 #     http://en.wikipedia.org/wiki/Flight_dynamics
@@ -2401,7 +2401,7 @@ meth RedPlane step
   ax,ay,az= tx+lx, ty+ly, tz+lz+kGrav.
 
   "Velocity."
-  vx,vy,vz= vx+ax, vy+ay, vz+az.
+  tvx,tvy,tvz= vx+ax, vy+ay, vz+az.
 
   "Drag."
   kDrag= 0.1.
@@ -2410,7 +2410,7 @@ meth RedPlane step
   IF(fric > 1)THEN(fric= 1).
   frac= 1 - fric.
 
-  vx,vy,vz= frac*vx, frac*vy, frac*vz.
+  vx,vy,vz= frac*tvx, frac*tvy, frac*tvz.
  "
     'deltaT' say: deltaT.
     'roll' say: ((Mat new rot: roll @ 0 @ 0)say mulv: (1@0@0@1)).
@@ -2425,14 +2425,16 @@ meth RedPlane step
  "
 
   px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
-  IF(pz < 0)THEN(pz = 0).
-  IF(pz > 51)THEN(pz = 50).
+  "--IF(pz < 0)THEN(pz = 0).  IF(pz > 51)THEN(pz = 50). --"
+  IF(pz < 0)THEN(pz = pz + 50).
+  IF(pz > 50)THEN(pz = pz - 50).
   IF(px < 0)THEN(px = px + 100).
   IF(px > 101)THEN(px = px - 100).
   IF(py < 0)THEN(py = py + 100).
   IF(py > 101)THEN(py = py - 100).
 
-  gl eye: px - 15*tx @ py - 15*ty @ pz - 15*tz + 5.
+  "--gl eye: px - 15*tx @ py - 15*ty @ pz - 15*tz + 5.--"
+  gl eye: px - 20*tx @ py - 15*ty @ pz - 15*tz + 5.
   gl look: px @ py @ pz.
   gl up: 0 @ 0 @ 1.
 
@@ -2445,21 +2447,37 @@ meth RedPlane prototype
     "Wings along the Y axis"
     Cube new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
   ).
+meth RedPlane macro:pr:
+ bb = b value.
+ Text new: (
+   FOR(x: bb flat) MAP(
+     IF(x cls equals: Num)
+     THEN(x fmt: '%.2f')
+     ELSE(x str)
+   ) join: '  '
+ )
+
 meth RedPlane current
   deltaTSum = deltaTSum + deltaT.
   deltaTCount = deltaTCount + 1.
   Group new vec: VEC(
      se prototype
        $ pos: px @ py @ pz
-       $ scale: 3 @ 3 @ 3
+       $ scale: 2 @ 2 @ 2
        $ rot: roll @ pitch @ yaw
      , Lines new: (0@py@pz, 100@py@pz) $color: 0.2@0.2@0.2
      , Lines new: (px@0@pz, px@100@pz) $color: 0.2@0.2@0.2
      , Lines new: (px@py@0, px@py@100) $color: 0.2@0.2@0.2
-     , Text new: (('pos: ', FOR(x: px@py@pz) MAP(x fmt: '%.2f')) flat join: '  ')
-     , Text new: (('vel: ', FOR(x: vx@vy@vz) MAP(x fmt: '%.2f')) flat join: '  ')
-     , Text new: (('rot: ', FOR(x: roll@pitch@yaw) MAP(x fmt: '%.2f')) flat join: '  ')
-     , Text new: (('sw_fps: ', (1.0 / deltaT) fmt: '%.2f', (deltaTCount / deltaTSum) fmt: '%.2f', deltaTCount fmt: '(%s)', deltaT fmt: '%.3f' ) flat join: '  ')
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:   0 @  py @  pz $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos: 100 @  py @  pz $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @   0 @  pz $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @ 100 @  pz $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @  py @   0 $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @  py @ 100 $ color: 0@0.8@0
+     , PR('pos:', px, py, pz, 'vel:', vx, vy, vz, 'speed:', speed)
+     , PR('thrust:', tx, ty, tz, tw, 'lift:', lx, ly, lz, lw, 'acc:', ax, ay, az)
+     , PR('fric:', fric, 'frac:', frac, 'tmp vel:', tvx, tvy, tvz)
+     , PR('sw_fps: ', (1.0 / deltaT), (deltaTCount / deltaTSum), deltaTCount, deltaT)
   )
 
 cls FnordFlight FnordApp
