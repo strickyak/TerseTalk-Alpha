@@ -87,6 +87,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.DhcpInfo;
 import android.net.Uri;
@@ -997,7 +998,7 @@ public class TerseActivity extends Activity {
 			Paint yellow = new Paint();
 			yellow.setColor(Color.YELLOW);
 			yellow.setStrokeWidth(1);
-			yellow.setTextSize(12);
+			yellow.setTextSize(24);
 
 			for (int i = 0; i < list.size(); i++) {
 				Ur p = list.get(i);
@@ -1268,16 +1269,20 @@ public class TerseActivity extends Activity {
 	
 	public class DualView extends FrameLayout {
 		FnordView fv;
-		OverView dv;
+		OverView ov;
+		ArrayList<Print> accumulateToPrint;
+		ArrayList<Print> readyToPrint = new ArrayList<TerseActivity.Print>();
+		int carriage;
 		DualView(Context context, final Obj app) {
 			super(context);
 			fv = new FnordView(context, app);
-			Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 33, 33, 66, 38, 2, 'green' ), )" ).mustVec();
-			dv = new OverView(context, v1.vec);
+			// Vec v1 = terp.newTmp().eval("VEC( VEC('rect', 33, 33, 66, 38, 2, 'green' ), )" ).mustVec();
+			Vec v1 = new Vec(terp);
+			ov = new OverView(context, v1.vec);
 			
 			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 			addView(fv, FILL);
-			addView(dv, FILL);
+			addView(ov, FILL);
 			
 			setOnTouchListener(new OnTouchListener() {
 				@Override
@@ -1628,8 +1633,11 @@ public class TerseActivity extends Activity {
 					
 					gl.glPopMatrix();
 					
+					// ov.invalidate();
+					
 					// UI ////  Draw UI stuff on top of it  ///////////// UI
 					
+/*					
 					gl.glViewport(2, height-34, 256, 32);  // TODO
 					gl.glMatrixMode(GL10.GL_PROJECTION); // Was using this.
 					gl.glLoadIdentity();
@@ -1650,7 +1658,6 @@ public class TerseActivity extends Activity {
 					gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 
 	                gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-					
 	                setTextureWithText(gl, Static.fmt("[%.2f fps]", frameCount / ((System.currentTimeMillis() / 1000.0) - startTime)));
 					square2DVB.position(0);
 					gl.glVertexPointer(2, GL10.GL_FLOAT, 0, square2DVB);
@@ -1658,7 +1665,7 @@ public class TerseActivity extends Activity {
 					gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, square2DVB);
 					gl.glColor4f(1, 1, 1, 0.5f);
 					gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-					
+*/					
 				} catch (Exception e) {
 					terp.say("FnordRenderer::onDrawFrame CAUGHT %s",
 							Static.describe(e));
@@ -1774,13 +1781,30 @@ public class TerseActivity extends Activity {
 			Stack<Obj> colors = new Stack<Obj>();
 	        float material[] = new float[4];  // for transient reuse
 	        
+			int printY = 0;
+			//Paint yellow = new Paint();
+	        
 			GRender(GL10 gl, FnordRenderer rend) {
 				this.gl = gl;
 				this.rend = rend;
 				colors.push(terp.newVec(Static.ints(1, 1, 1, 1))); // Initially White
+//				yellow.setColor(Color.YELLOW);
+//				yellow.setStrokeWidth(1);
+//				yellow.setTextSize(32);
 			}
 			void render(Node top) {
+				accumulateToPrint = new ArrayList<Print>();
 				top.visit(this);
+				readyToPrint = accumulateToPrint;
+				terp.say("Have Set readyToPrint size %d", readyToPrint.size());
+				
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						ov.invalidate();
+					}
+				});
+				// ov.invalidate();
 			}
 			void drawCube() {
 				rend.drawCube(gl);
@@ -1805,7 +1829,7 @@ public class TerseActivity extends Activity {
 				colors.pop();
 				gl.glPopMatrix();
 			}
-			void pushTransformAndColor(Node a) {
+			void pushTransformAndColor(DddNode a) {
 				gl.glPushMatrix();
 				justTransform(a);
 				if (a.color == terp.instNil) {
@@ -1831,12 +1855,18 @@ public class TerseActivity extends Activity {
 							material, 0);  // For triangles.
 				//}
 			}
-			void justTransform(Node a) {
+			void justTransform(DddNode a) {
 				gl.glTranslatef(a.px, a.py, a.pz);
 				gl.glScalef(a.sx, a.sy, a.sz);
 				if (a.rz != 0) gl.glRotatef(a.rz, 0, 0, 1);
 				if (a.ry != 0) gl.glRotatef(a.ry, 0, 1, 0);
 				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
+			}
+			@Override
+			public void visitText(Text text) {
+				accumulateToPrint.add(text);
+				terp.say("accumulateToPrint.add: %s", text.text);
+				terp.say("accumulateToPRint.size: %s", accumulateToPrint.size());
 			}
 		}
 
@@ -1853,6 +1883,7 @@ public class TerseActivity extends Activity {
 
 		@Override
 		protected void onDraw(Canvas canvas) {
+			terp.say("OverView DRAW");
 			Paint green = new Paint();
 			green.setColor(Color.GREEN);
 			green.setStrokeWidth(2);
@@ -1864,7 +1895,7 @@ public class TerseActivity extends Activity {
 			Paint yellow = new Paint();
 			yellow.setColor(Color.YELLOW);
 			yellow.setStrokeWidth(1);
-			yellow.setTextSize(12);
+			yellow.setTextSize(32);
 
 			for (int i = 0; i < list.size(); i++) {
 				Ur p = list.get(i);
@@ -1888,6 +1919,13 @@ public class TerseActivity extends Activity {
 					canvas.drawText(text, x1, y1, yellow);
 				}
 			}
+			
+			terp.say("readyToPrint.size(): %s", readyToPrint.size());
+			carriage = 0;
+			for (int i = 0; i < readyToPrint.size(); i++) {
+				terp.say("PRINTING #%d: %s", i, readyToPrint.get(i));
+				readyToPrint.get(i).drawOnCanvas(canvas, yellow, DualView.this);
+			}
 		}
 	}  // end OverView
 } // end DualView
@@ -1899,62 +1937,103 @@ public class TerseActivity extends Activity {
 				((Node)member).visit(this);
 			}
 		}
+		abstract public void visitText(Text text);
 	}
 	public static abstract class Node extends Obj {
+		// =cls "GL" Node Obj
+		Node(Cls cls) {
+			super(cls);
+		}
+		abstract void visit(GVisitor gv);
+	}
+	public static abstract class Print extends Node {
+		// =cls "GL" Print Node
+		Print(Cls cls) {
+			super(cls);
+		}
+
+		abstract public void drawOnCanvas(Canvas canvas, Paint paint, DualView dualView);
+	}
+	public static class Text extends Print {
+		String text;
+		// =cls "GL" Text Print
+		Text(Cls cls, String text) {
+			super(cls);
+			this.text = text;
+		}
+
+		// =meth TextCls "new" new:
+		public static Text new_(Terp t, String text) {
+			AndyTerp terp = (AndyTerp) t;
+			return new Text(terp.wrapandy.clsText, text);
+		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitText(this);
+		}
+		@Override
+		public void drawOnCanvas(Canvas canvas, Paint paint, DualView dualView) {
+//			Rect bounds = new Rect();
+//			paint.getTextBounds(text, 0, 0, bounds);
+//			terp.say("Text Bounds %d %d <%s>", bounds.width(), bounds.height(), text);
+			dualView.carriage += 40; // bounds.height();
+			canvas.drawText(text, 0, dualView.carriage, paint);
+		}
+	}
+	public static abstract class DddNode extends Node {
 		float px = 0, py = 0, pz = 0;  // Translation
 		float sx = 1, sy = 1, sz = 1;  // Scale
 		float rx = 0, ry = 0, rz = 0;  // Rot (Euclid)
 		Obj color = terp().instNil;  // Vec or nil
-		// =cls "GL" Node  Obj
-		Node(Cls cls) {
+		// =cls "GL" DddNode  Node
+		DddNode(Cls cls) {
 			super(cls);
 		}
-		// =meth Node "access" pos:
+		// =meth DddNode "access" pos:
 		public void pos_(Vec a) {
 			px = Static.floatAt(a, 0);
 			py = Static.floatAt(a, 1);
 			pz = Static.floatAt(a, 2);
 		}
-		// =meth Node "access" scale:
+		// =meth DddNode "access" scale:
 		public void scale_(Vec a) {
 			sx = Static.floatAt(a, 0);
 			sy = Static.floatAt(a, 1);
 			sz = Static.floatAt(a, 2);
 		}
-		// =meth Node "access" rot:
+		// =meth DddNode "access" rot:
 		public void rot_(Vec a) {
 			rx = Static.floatAt(a, 0);
 			ry = Static.floatAt(a, 1);
 			rz = Static.floatAt(a, 2);
 		}
-		// =meth Node "access" color:
+		// =meth DddNode "access" color:
 		public void color_(Obj a) {
 			color = a;
 		}
-		// =meth Node "access" pos
+		// =meth DddNode "access" pos
 		public Vec _pos() {
 			return terp.mkFloatVec(px, py, pz);
 		}
-		// =meth Node "access" sca
+		// =meth DddNode "access" sca
 		public Vec _sca() {
 			return terp.mkFloatVec(sx, sy, sz);
 		}
-		// =meth Node "access" rot
+		// =meth DddNode "access" rot
 		public Vec _rot() {
 			return terp.mkFloatVec(rx, ry, rz);
 		}
-		// =meth Node "access" color
+		// =meth DddNode "access" color
 		public Obj _color() {
 			return color;
 		}
-		abstract void visit(GVisitor gv);
 	}
 	
-	public abstract static class Prim extends Node {
+	public abstract static class Prim extends DddNode {
 //		FloatBuffer fbuf = null;
 //		int sz = 0;
 //		int mode = GL10.GL_TRIANGLES;
-		// =cls  "GL" Prim  Node
+		// =cls  "GL" Prim  DddNode
 		Prim(Cls cls) {
 			super(cls);
 		}
@@ -1979,9 +2058,9 @@ public class TerseActivity extends Activity {
 		}
 	}
 	
-	public static class Group extends Node {
+	public static class Group extends DddNode {
 		Vec vec;
-		// =cls  "GL" Group  Node
+		// =cls  "GL" Group  DddNode
 		Group(Cls cls) {
 			super(cls);
 		}
@@ -2058,7 +2137,7 @@ public class TerseActivity extends Activity {
 		// =meth LinesCls "new" new:
 		public static Lines new_(Terp t, Vec points) {
 			AndyTerp terp = (AndyTerp) t;
-			return new Lines(terp.wrapandy.clsGroup, points);
+			return new Lines(terp.wrapandy.clsLines, points);
 		}
 		@Override
 		void visit(GVisitor gv) {

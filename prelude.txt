@@ -2360,7 +2360,7 @@ meth FnordMotherShip step
 
 cls RedPlane Usr
 vars RedPlane
-  gl px py pz  vx vy vz  roll pitch yaw lasttime
+  gl px py pz  vx vy vz  roll pitch yaw lasttime deltaT deltaTSum DeltaTCount
 # http://mathworld.wolfram.com/EulerAngles.html
 #   phi about z (yaw); theta about new x (pitch); psi about new z (roll).
 #     http://en.wikipedia.org/wiki/Flight_dynamics
@@ -2370,6 +2370,8 @@ meth RedPlane init:
   px,py,pz = 25, 25, 1.
   vx,vy,vz = 0, 0, 0.
   roll,pitch,yaw = 0,0,0.
+  deltaTSum = 0.
+  deltaTCount = 0.
   self.
 meth RedPlane step
   "self tweak."
@@ -2444,6 +2446,8 @@ meth RedPlane prototype
     Cube new $ scale: 0.3 @ 0.8 @ 0.1 $ color: 0 @ 1 @ 0 @ 1 $ pos: 0.2 @ 0 @ 0.1,
   ).
 meth RedPlane current
+  deltaTSum = deltaTSum + deltaT.
+  deltaTCount = deltaTCount + 1.
   Group new vec: VEC(
      se prototype
        $ pos: px @ py @ pz
@@ -2452,6 +2456,10 @@ meth RedPlane current
      , Lines new: (0@py@pz, 100@py@pz) $color: 0.2@0.2@0.2
      , Lines new: (px@0@pz, px@100@pz) $color: 0.2@0.2@0.2
      , Lines new: (px@py@0, px@py@100) $color: 0.2@0.2@0.2
+     , Text new: (('pos: ', FOR(x: px@py@pz) MAP(x fmt: '%.2f')) flat join: '  ')
+     , Text new: (('vel: ', FOR(x: vx@vy@vz) MAP(x fmt: '%.2f')) flat join: '  ')
+     , Text new: (('rot: ', FOR(x: roll@pitch@yaw) MAP(x fmt: '%.2f')) flat join: '  ')
+     , Text new: (('sw_fps: ', (1.0 / deltaT) fmt: '%.2f', (deltaTCount / deltaTSum) fmt: '%.2f', deltaTCount fmt: '(%s)', deltaT fmt: '%.3f' ) flat join: '  ')
   )
 
 cls FnordFlight FnordApp
