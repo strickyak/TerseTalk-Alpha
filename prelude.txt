@@ -2360,7 +2360,7 @@ meth FnordMotherShip step
 
 cls RedPlane Usr
 vars RedPlane
-  gl px py pz  vx vy vz  roll pitch yaw lasttime deltaT deltaTSum DeltaTCount lx ly lz lw tx ty tz tw ax ay az speed fric frac tvx tvy tvz
+  gl px py pz  vx vy vz  roll pitch yaw lasttime deltaT deltaTSum DeltaTCount lx ly lz lw tx ty tz tw ax ay az speed fric frac tvx tvy tvz  ex ey throttle zoom
 # http://mathworld.wolfram.com/EulerAngles.html
 #   phi about z (yaw); theta about new x (pitch); psi about new z (roll).
 #     http://en.wikipedia.org/wiki/Flight_dynamics
@@ -2372,6 +2372,9 @@ meth RedPlane init:
   roll,pitch,yaw = 0,0,0.
   deltaTSum = 0.
   deltaTCount = 0.
+  ex = ey = 50.
+  throttle = 0.
+  zoom = 50.
   self.
 meth RedPlane step
   "self tweak."
@@ -2379,18 +2382,22 @@ meth RedPlane step
   deltaT = (thistime - lasttime).
 
   "Yoke."
-  ex, ey = gl ex - 50, gl ey - 50.
+  IF(gl ey > 90)
+  THEN(throttle = gl ex / 100)
+  ELIF(gl ey < 10)
+  THEN(zoom = gl ex)
+  ELSE(ex,ey= gl ex - 50, gl ey - 50.).
+
   roll = ex / 1.5.
   pitch = ey / 1.5.
   yaw = yaw - deltaT * roll / 8.
 
   "Compute thrust in forward direction."
-  kThrottle = 1.
   m = Mat new rot: roll @ pitch @ yaw.
-  tx,ty,tz,tw = m mulv: kThrottle @ 0 @ 0 @ 1.
+  tx,ty,tz,tw = m mulv: throttle @ 0 @ 0 @ 1.
 
   "Lift."
-  kLift = 0.35 "0.55".
+  kLift = throttle * 0.35 "0.55".
   speed= (vx, vy, vz) abs.
   lx,ly,lz,lw = m mulv: 0 @ 0 @ speed*kLift @ 1.
 
@@ -2411,7 +2418,16 @@ meth RedPlane step
   frac= 1 - fric.
 
   vx,vy,vz= frac*tvx, frac*tvy, frac*tvz.
- "
+  px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
+  "--IF(pz < 0)THEN(pz = 0).  IF(pz > 51)THEN(pz = 50). --"
+  IF(pz < 0)THEN(pz = 0).
+  IF(pz > 50)THEN(pz = 50).
+  IF(px < 0)THEN(px = px + 100).
+  IF(px > 101)THEN(px = px - 100).
+  IF(py < 0)THEN(py = py + 100).
+  IF(py > 101)THEN(py = py - 100).
+
+  "
     'deltaT' say: deltaT.
     'roll' say: ((Mat new rot: roll @ 0 @ 0)say mulv: (1@0@0@1)).
     'pitch' say: ((Mat new rot: 0 @ pitch @ 0)say mulv: (1@0@0@1)).
@@ -2422,19 +2438,10 @@ meth RedPlane step
     'ax,ay,az' say: ax @ ay @ az.
     'vx,vy,vz' say: vx @ vy @ vz.
     'px,py,pz' say: px @ py @ pz.
- "
-
-  px,py,pz = px+vx*deltaT, py+vy*deltaT, pz+vz*deltaT.
-  "--IF(pz < 0)THEN(pz = 0).  IF(pz > 51)THEN(pz = 50). --"
-  IF(pz < 0)THEN(pz = pz + 50).
-  IF(pz > 50)THEN(pz = pz - 50).
-  IF(px < 0)THEN(px = px + 100).
-  IF(px > 101)THEN(px = px - 100).
-  IF(py < 0)THEN(py = py + 100).
-  IF(py > 101)THEN(py = py - 100).
+  "
 
   "--gl eye: px - 15*tx @ py - 15*ty @ pz - 15*tz + 5.--"
-  gl eye: px - 20*tx @ py - 15*ty @ pz - 15*tz + 5.
+  gl eye: px - zoom @ py @ pz + zoom / 4 + 5.
   gl look: px @ py @ pz.
   gl up: 0 @ 0 @ 1.
 
@@ -2473,11 +2480,12 @@ meth RedPlane current
      , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @   0 @  pz $ color: 0@0.8@0
      , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @ 100 @  pz $ color: 0@0.8@0
      , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @  py @   0 $ color: 0@0.8@0
-     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @  py @ 100 $ color: 0@0.8@0
+     , Cube new $ scale: 0.1 @ 0.1 @ 0.1 $ pos:  px @  py @  50 $ color: 0@0.8@0
      , PR('pos:', px, py, pz, 'vel:', vx, vy, vz, 'speed:', speed)
      , PR('thrust:', tx, ty, tz, tw, 'lift:', lx, ly, lz, lw, 'acc:', ax, ay, az)
      , PR('fric:', fric, 'frac:', frac, 'tmp vel:', tvx, tvy, tvz)
-     , PR('sw_fps: ', (1.0 / deltaT), (deltaTCount / deltaTSum), deltaTCount, deltaT)
+     , PR('sw_fps: ', (1.0 / deltaT), (deltaTCount / deltaTSum), 'f:', deltaTCount, 'ms/f:', 1000 * deltaT)
+     , PR('zoom:', zoom, 'throttle: ', throttle)
   )
 
 cls FnordFlight FnordApp
@@ -2492,17 +2500,16 @@ meth FnordFlight prePost:
 meth FnordFlight model
   m= se modelGround.
   plane step.
-  Group new vec: VEC(
-    m,
-    plane current,
-  ).
+  Group new vec: VEC( m, plane current, ).
 meth FnordFlight modelGround
-  greenish = 0@0.6@0. 
+  greenish = 0 @ 0.6 @ 0. 
+  grayish = 0.3 @ 0.3 @ 0.3 @ 1.
   Group new vec: VEC(
-    Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
-    Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: 0.3 @ 0.3 @ 0.3 @ 1,
+    "Four runways."
+    Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 25 @ 25 @ 0 $ color: grayish,
+    Cube new $ scale: 20 @ 5 @ 0.2 $ pos: 75 @ 75 @ 0 $ color: grayish,
+    Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 25 @ 75 @ 0 $ color: grayish,
+    Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: grayish,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
   	  Cube new 
@@ -2511,6 +2518,7 @@ meth FnordFlight modelGround
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
     ),
+    "Stars."
     "--
     FOR(i: 5) MAP(i= i+1.
       FOR (j: 10) MAP(j= 10*j + 5.
@@ -2521,10 +2529,12 @@ meth FnordFlight modelGround
       )
     ),
     --"
+    "Green grids - up and over the top"
     FOR (k: 10) MAP(k= 10*k + 5.
       Lines new: (k@0@0, k@0@50, k@100@50, k@100@0) $color: greenish,
       Lines new: (0@k@0, 0@k@50, 100@k@50, 100@k@0) $color: greenish,
     ),
+    "Green grids - around the edge at various elevations."
     FOR (k: 5) MAP(k= 10*k + 10.
       Lines new: (0@0@k, 0@100@k, 100@100@k, 100@0@k, 0@0@k) $color: greenish,
     ),
