@@ -1270,8 +1270,8 @@ public class TerseActivity extends Activity {
 	public class DualView extends FrameLayout {
 		FnordView fv;
 		OverView ov;
-		ArrayList<Print> accumulateToPrint;
-		ArrayList<Print> readyToPrint = new ArrayList<TerseActivity.Print>();
+		ArrayList<DdNode> accumulateDd;
+		ArrayList<DdNode> readyDd = new ArrayList<DdNode>();
 		int carriage;
 		DualView(Context context, final Obj app) {
 			super(context);
@@ -1793,10 +1793,10 @@ public class TerseActivity extends Activity {
 //				yellow.setTextSize(32);
 			}
 			void render(Node top) {
-				accumulateToPrint = new ArrayList<Print>();
+				accumulateDd = new ArrayList<DdNode>();
 				top.visit(this);
-				readyToPrint = accumulateToPrint;
-				terp.say("Have Set readyToPrint size %d", readyToPrint.size());
+				readyDd = accumulateDd;
+//				terp.say("Have Set readyDd size %d", readyDd.size());
 				
 				runOnUiThread(new Runnable() {
 					@Override
@@ -1804,7 +1804,6 @@ public class TerseActivity extends Activity {
 						ov.invalidate();
 					}
 				});
-				// ov.invalidate();
 			}
 			void drawCube() {
 				rend.drawCube(gl);
@@ -1863,10 +1862,10 @@ public class TerseActivity extends Activity {
 				if (a.rx != 0) gl.glRotatef(a.rx, 1, 0, 0);	
 			}
 			@Override
-			public void visitText(Text text) {
-				accumulateToPrint.add(text);
-				terp.say("accumulateToPrint.add: %s", text.text);
-				terp.say("accumulateToPRint.size: %s", accumulateToPrint.size());
+			public void visitDdNode(DdNode node) {
+				accumulateDd.add(node);
+//				terp.say("accumulateToPrint.add: %s", node.text);
+//				terp.say("accumulateToPRint.size: %s", accumulateToPrint.size());
 			}
 		}
 
@@ -1920,11 +1919,11 @@ public class TerseActivity extends Activity {
 				}
 			}
 			
-			terp.say("readyToPrint.size(): %s", readyToPrint.size());
-			carriage = 0;
-			for (int i = 0; i < readyToPrint.size(); i++) {
-				terp.say("PRINTING #%d: %s", i, readyToPrint.get(i));
-				readyToPrint.get(i).drawOnCanvas(canvas, yellow, DualView.this);
+			terp.say("readyToPrint.size(): %s", readyDd.size());
+			carriage = 50;
+			for (int i = 0; i < readyDd.size(); i++) {
+				terp.say("PRINTING #%d: %s", i, readyDd.get(i));
+				readyDd.get(i).drawOnCanvas(canvas, yellow, DualView.this);
 			}
 		}
 	}  // end OverView
@@ -1937,7 +1936,7 @@ public class TerseActivity extends Activity {
 				((Node)member).visit(this);
 			}
 		}
-		abstract public void visitText(Text text);
+		abstract public void visitDdNode(DdNode ddNode);
 	}
 	public static abstract class Node extends Obj {
 		// =cls "GL" Node Obj
@@ -1946,38 +1945,70 @@ public class TerseActivity extends Activity {
 		}
 		abstract void visit(GVisitor gv);
 	}
-	public static abstract class Print extends Node {
-		// =cls "GL" Print Node
-		Print(Cls cls) {
+	public static abstract class DdNode extends Node {
+		Integer x = null;
+		Integer y = null;
+		Paint paint = null; // TODO
+		// =cls "DD" DdNode Node
+		DdNode(Cls cls) {
 			super(cls);
 		}
+		@Override
+		void visit(GVisitor gv) {
+			gv.visitDdNode(this);
+		}
 
-		abstract public void drawOnCanvas(Canvas canvas, Paint paint, DualView dualView);
+		abstract public void drawOnCanvas(Canvas canvas, Paint paint2, DualView dualView);
 	}
-	public static class Text extends Print {
+	public static class Seg extends DdNode {
+		float[] coords;
+		// =cls "DD" Seg DdNode
+		Seg(Cls cls, float[] coords) {
+			super(cls);
+			this.coords = coords;
+		}
+		// =meth SegCls "new" new:
+		public static Seg new_(Terp t, Vec v) {
+			AndyTerp terp = (AndyTerp) t;
+			int n = v.vec.size();
+			float[] coords = new float[n*2];
+			for (int i=0; i < n; i++) {
+				Vec xy = v.vec.get(i).mustVec();
+				coords[i*2+0] = terp.floatAt(xy, 0);
+				coords[i*2+1] = terp.floatAt(xy, 1);
+			}
+			return new Seg(terp.wrapandy.clsSeg, coords);
+		}
+		@Override
+		public void drawOnCanvas(Canvas canvas, Paint paint2, DualView dualView) {
+			canvas.drawLines(coords, paint2);
+		}
+		
+	}
+	public static class Print extends DdNode {
 		String text;
-		// =cls "GL" Text Print
-		Text(Cls cls, String text) {
+		// =cls "GL" Print DdNode
+		Print(Cls cls, String text) {
 			super(cls);
 			this.text = text;
 		}
 
-		// =meth TextCls "new" new:
-		public static Text new_(Terp t, String text) {
+		// =meth PrintCls "new" new:
+		public static Print new_(Terp t, String text) {
 			AndyTerp terp = (AndyTerp) t;
-			return new Text(terp.wrapandy.clsText, text);
+			return new Print(terp.wrapandy.clsPrint, text);
 		}
 		@Override
-		void visit(GVisitor gv) {
-			gv.visitText(this);
-		}
-		@Override
-		public void drawOnCanvas(Canvas canvas, Paint paint, DualView dualView) {
+		public void drawOnCanvas(Canvas canvas, Paint paint2, DualView dualView) {
+			if (x == null) {
 //			Rect bounds = new Rect();
 //			paint.getTextBounds(text, 0, 0, bounds);
 //			terp.say("Text Bounds %d %d <%s>", bounds.width(), bounds.height(), text);
 			dualView.carriage += 40; // bounds.height();
-			canvas.drawText(text, 0, dualView.carriage, paint);
+			canvas.drawText(text, 0, dualView.carriage, paint2);
+			} else {
+				canvas.drawText(text, x, y, paint2);
+			}
 		}
 	}
 	public static abstract class DddNode extends Node {
