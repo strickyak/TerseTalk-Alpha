@@ -1983,7 +1983,32 @@ public class TerseActivity extends Activity {
 		public void drawOnCanvas(Canvas canvas, Paint paint2, DualView dualView) {
 			canvas.drawLines(coords, paint2);
 		}
-		
+	}
+	public static class Rec extends DdNode {
+		float[] coords;
+		// =cls "DD" Rec DdNode
+		Rec(Cls cls, float[] coords) {
+			super(cls);
+			this.coords = coords;
+		}
+		// =meth RecCls "new" new:
+		public static Rec new_(Terp t, Vec v) {
+			AndyTerp terp = (AndyTerp) t;
+			int n = v.vec.size();
+			float[] coords = new float[n*2];
+			for (int i=0; i < n; i++) {
+				Vec xy = v.vec.get(i).mustVec();
+				coords[i*2+0] = terp.floatAt(xy, 0);
+				coords[i*2+1] = terp.floatAt(xy, 1);
+			}
+			return new Rec(terp.wrapandy.clsRec, coords);
+		}
+		@Override
+		public void drawOnCanvas(Canvas canvas, Paint paint2, DualView dualView) {
+			for (int i = 0; i < coords.length / 4; i++) {
+				canvas.drawRect(coords[i*4+0], coords[i*4+3], coords[i*4+1], coords[i*4+2], paint2);
+			}
+		}
 	}
 	public static class Print extends DdNode {
 		String text;

@@ -281,6 +281,7 @@ if {$CLASS == "WrapAndy"} {
   import terse.a1.TerseActivity.DddNode;
   import terse.a1.TerseActivity.DdNode;
   import terse.a1.TerseActivity.Seg;
+  import terse.a1.TerseActivity.Rec;
   import terse.a1.TerseActivity.Print;
   import terse.a1.TerseActivity.Group;
   import terse.a1.TerseActivity.Prim;

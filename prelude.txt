@@ -2491,6 +2491,7 @@ meth RedPlane current
      , PR('sw_fps: ', (1.0 / deltaT), (deltaTCount / deltaTSum), 'f:', deltaTCount, 'ms/f:', 1000 * deltaT)
      , PR('zoom:', zoom, 'throttle: ', throttle)
      , Seg new: (0@0, throtP @0, 0@1, w@1, 0@2, throtP @2,)
+     , Rec new: (0@5, throtP @20)
      , Seg new: (0@h, zoomP@h, 0@h - 1, w@h - 1, 0@h - 2, zoomP@h - 2,)
   )
 
