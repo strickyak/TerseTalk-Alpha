@@ -2441,7 +2441,7 @@ meth RedPlane step
   "
 
   "--gl eye: px - 15*tx @ py - 15*ty @ pz - 15*tz + 5.--"
-  gl eye: px - zoom @ py @ pz + zoom / 4 + 5.
+  gl eye: px - zoom @ py - zoom sqrt @ pz + zoom / 4 + 5.
   gl look: px @ py @ pz.
   gl up: 0 @ 0 @ 1.
 

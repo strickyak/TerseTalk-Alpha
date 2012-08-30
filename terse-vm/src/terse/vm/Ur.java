@@ -1465,6 +1465,16 @@ public class Ur extends Static implements Comparable {
 			return new Num(cls.terp, num < 0 ? -num : num);
 		}
 
+		// =meth Num "math" sq
+		public Num _sq() {
+			return new Num(cls.terp, num*num);
+		}
+
+		// =meth Num "math" sqrt 
+		public Num _sqrt() {
+			return new Num(cls.terp, Math.sqrt(num));
+		}
+
 		// =meth Num "math" sin
 		public Num _sin() {
 			return new Num(cls.terp, Math.sin(num));
