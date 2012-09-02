@@ -1649,6 +1649,15 @@ public class Ur extends Static implements Comparable {
 		public int ord() {
 			return str.charAt(0);
 		}
+		
+		// =meth Str "access" explode "explode into Vec of numbers"
+		public Vec _explode() {
+			Vec z = new Vec(terp());
+			for (int i = 0; i < str.length(); i++) {
+				z.vec.add(new Num(terp(), str.charAt(i)));
+			}
+			return z;
+		}
 
 		abstract static class BinaryStrPredMeth extends JavaMeth {
 			BinaryStrPredMeth(Terp terp, String name) {
@@ -1993,6 +2002,14 @@ public class Ur extends Static implements Comparable {
 		// =meth Vec "access" append:,ap: "add new element ato end of Vec"
 		public void append_(Ur a) {
 			vec.add(a);
+		}
+		
+		// =meth Vec "access" cat: "concat with vector, changing me."
+		public void cat_(Vec a) {
+			final int n = a.vec.size();
+			for (int i = 0; i < n; ++i) {
+				this.vec.add(a.vec.get(i));
+			}
 		}
 
 		// =meth Vec "string" join:
