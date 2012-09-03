@@ -175,7 +175,7 @@ public class Cls extends Obj {
 		}
 		if (this.cls == terp().tMetacls) {
 			terp.toss(
-					"Don't define classes on Metaclasses using defineClass: self=<%s>",
+					"Don't define classes on Metaclasses using defineClass: me=<%s>",
 					this.cls.cname);
 		}
 		if (terp.clss.containsKey(newname.toLowerCase())) {

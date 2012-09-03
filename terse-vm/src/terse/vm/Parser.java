@@ -441,19 +441,6 @@ public class Parser extends Obj {
 		Expr z = null;
 		boolean shouldAdvanceAtEnd = true;
 		switch (lex.t) {
-		case RESERVED:
-			String lower = lex.w.toLowerCase();
-			if (lower.equals("nil"))
-				z = new Expr.Lit(terp.instNil);
-			else if (lower.equals("se"))
-				z = new Expr.GetSelf(terp);
-			else if (lower.equals("self"))
-				z = new Expr.GetSelf(terp);
-			else if (lower.equals("su"))
-				z = new Expr.Lit(terp.instSuper);
-			else if (lower.equals("super"))
-				z = new Expr.Lit(terp.instSuper);
-			break;
 		case NUMBER:
 			z = new Expr.Lit(new Ur.Num(terp, Double.parseDouble(lex.w)));
 			break;
@@ -486,17 +473,40 @@ public class Parser extends Obj {
 	}
 
 	private Expr getVar(String varName, String varKey) {
-		// Determine Inst or Local. Globals are never assigned.
-		// TODO: check only this class's vars, not allVars.
-		if (this.instVars.containsKey(varKey)) {
-			return new Expr.GetInstVar(terp, varName, this.instVars.get(varKey));
-		}
-		int index;
-		if (localVars.containsKey(varKey)) {
-			index = localVars.get(varKey);
-			return new Expr.GetLocalVar(terp, varName, index);
-		} else {
-			return new Expr.GetGlobalVar(terp, varKey);
+		if (varKey.equals("nil"))
+			return new Expr.Lit(terp.instNil);
+		else if (varKey.equals("me"))
+			return new Expr.GetSelf(terp);
+		else if (varKey.equals("up"))
+			return new Expr.Lit(terp.instSuper);
+		else if (varKey.equals("sp"))
+			return new Expr.Lit(terp.instSpace);
+		else if (varKey.equals("nl"))
+			return new Expr.Lit(terp.instNewline);
+		else if (varKey.equals("self"))
+			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+		else if (varKey.equals("se"))
+			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+		else if (varKey.equals("super"))
+			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+		else if (varKey.equals("su"))
+			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+		else {
+			// say("GETKEY <%s> <%s> %d", varName, varKey, varKey.length());
+			;;;
+			// Determine Inst or Local. Globals are never assigned.
+			// TODO: check only this class's vars, not allVars.
+			if (this.instVars.containsKey(varKey)) {
+				return new Expr.GetInstVar(terp, varName,
+						this.instVars.get(varKey));
+			}
+			int index;
+			if (localVars.containsKey(varKey)) {
+				index = localVars.get(varKey);
+				return new Expr.GetLocalVar(terp, varName, index);
+			} else {
+				return new Expr.GetGlobalVar(terp, varKey);
+			}
 		}
 	}
 
@@ -635,8 +645,7 @@ public class Parser extends Obj {
 		WHITE("\\s\\s*"), COMMENT("\"[^\"]*\""), STRING("'[^']*'"), NUMBER(
 				"-?[0-9][0-9]*(\\.[0-9][0-9]*)?([Ee][+-]?[0-9][0-9]*)?"), NAME(
 				"[A-Za-z][A-Za-z0-9_]*"), OTHER(
-				"/[A-Za-z][A-Za-z]|\\.\\.|\\.,|,\\.|,,|--|==|!=|<=|>=|:+|."), RESERVED(
-				"(self|se|super|su|nil)\\b", Pattern.CASE_INSENSITIVE);
+				"/[A-Za-z][A-Za-z]|\\.\\.|\\.,|,\\.|,,|--|==|!=|<=|>=|:+|.");
 
 		Pattern p;
 
@@ -751,9 +760,7 @@ public class Parser extends Obj {
 				return;
 			}
 
-			// Check for reserved words first.
-			if (attempt(Pat.RESERVED) || attempt(Pat.NAME)
-					|| attempt(Pat.NUMBER)) {
+			if (attempt(Pat.NAME) || attempt(Pat.NUMBER)) {
 				return;
 			} else if (attempt(Pat.STRING)) {
 				StringBuffer sb = new StringBuffer();

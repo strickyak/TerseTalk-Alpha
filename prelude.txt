@@ -32,17 +32,17 @@
 # --------------------------------------------------------------------------
 
 meth Obj ==
-  self eq: a
+  me eq: a
 meth Obj !=
-  self ne: a
+  me ne: a
 meth Obj <
-  self lt: a
+  me lt: a
 meth Obj <=
-  self le: a
+  me le: a
 meth Obj >
-  self gt: a
+  me gt: a
 meth Obj >=
-  self ge: a
+  me ge: a
 
 equals 23  
       1 + 22
@@ -95,24 +95,24 @@ equals 26
 	x; y = 3, 4.   x * x + y * y $ + 1.
 
 meth Vec a0
-  self at: 0
+  me at: 0
 meth Vec a1
-  self at: 1
+  me at: 1
 meth Vec a2
-  self at: 2
+  me at: 2
 meth Vec a3
-  self at: 3
+  me at: 3
 
 meth Vec eq:
   (a cls name equals: 'Vec')
     n: ['Vec.== expected Vec argument, but got' err: VEC(a, a cls, a cls name, a cls name equals: 'Vec') ]
     y: [
-      self len == a len
-        n: ['Vec.== got different length Vecs' err: VEC(self, a)]
+      me len == a len
+        n: ['Vec.== got different length Vecs' err: VEC(me, a)]
         y: [
           z= Vec new.
-          self len do: [i :
-	    z append: ((self at: i) == (a at: i)).
+          me len do: [i :
+	    z append: ((me at: i) == (a at: i)).
           ].
           z
         ]
@@ -123,8 +123,8 @@ equals 1, 1, 0
 
 meth Vec collect:
     "Goldberg & Robson, 1989. p215"
-    z= self cls new.
-    self do: [x :
+    z= me cls new.
+    me do: [x :
       z ap: ( a value: x ) ] .
     z
 
@@ -133,8 +133,8 @@ equals VEC( 100, 400, 900. )
 
 meth Vec select:
     "Goldberg & Robson, 1989. p216"
-    z= self cls new .
-    self do: [x : .
+    z= me cls new .
+    me do: [x : .
       ( a value: x ) y: [
         z ap: x ] ] .
     z
@@ -155,16 +155,16 @@ equals 'once-upon-a-time'
 
 meth Vec flat
   z= Vec new.
-  self flattenTo: z.
+  me flattenTo: z.
   z.
 meth Obj flattenTo:
-  a ap: se.
-  se.
+  a ap: me.
+  me.
 meth Vec flattenTo:
-  FOR(x: se) DO(
+  FOR(x: me) DO(
     x flattenTo: a
   ).
-  se.
+  me.
 equals VEC(10, )
   VEC(10, )flat
 equals VEC(10, 20, 30, 40, 50)
@@ -172,13 +172,13 @@ equals VEC(10, 20, 30, 40, 50)
   
 cls Orphan Usr
 meth Orphan handle:query:
-  'This class (', se cls name, ') is an Orphan.
+  'This class (', me cls name, ') is an Orphan.
   Check its superclass.')jam err.
 
   DICT{
     'type', 'text';
     'value', (
-      'This class <', se cls name, '> is an Orphan.
+      'This class <', me cls name, '> is an Orphan.
       Check its superclass.')jam;
   }
 
@@ -525,12 +525,12 @@ meth DemoLife numX
 meth DemoLife numY
   15
 meth DemoLife delX
-  self canX idiv: self numX
+  me canX idiv: me numX
 meth DemoLife delY
-  self canY idiv: self numY
+  me canY idiv: me numY
 meth DemoLife initP
-  self numX range collect: [x:
-    self numY range collect: [y:
+  me numX range collect: [x:
+    me numY range collect: [y:
       t = x + y * 13 .
       OR((t imod: 4) == 0,
          (t imod: 5) == 0,
@@ -539,11 +539,11 @@ meth DemoLife initP
   ].
 
 meth DemoLife draw
-  dx,dy= self delX, self delY.
-  IF(state is: nil) THEN(state = self initP).
+  dx,dy= me delX, me delY.
+  IF(state is: nil) THEN(state = me initP).
 
-  nextState = self numX range collect: [x:
-        self numY range collect: [y:
+  nextState = me numX range collect: [x:
+        me numY range collect: [y:
            nei = 0.
            3 do: [i:  i = i - 1 + x.
              3 do: [j:  j = j - 1 + y.
@@ -558,8 +558,8 @@ meth DemoLife draw
       ].
   state = nextState.
   v = Vec new.
-  self numX do: [x:
-    self numY do: [y:
+  me numX do: [x:
+    me numY do: [y:
       (state at: x) at: y $
         y: [
              xx = x * dx + (dx idiv: 2).
@@ -579,10 +579,10 @@ meth DemoLife draw
 meth DemoLife handle:query:
   DICT(
     'type', 'draw';
-    'width', self canX;
-    'height', self canY;
-    'value', self draw;
-    'url', ( '/', self cls name, '.', self oid str ) jam;
+    'width', me canX;
+    'height', me canY;
+    'value', me draw;
+    'url', ( '/', me cls name, '.', me oid str ) jam;
   ).
 
 cls DrawRect App
@@ -679,8 +679,8 @@ cls ListUnicodePages App
 meth ListUnicodePages handle:query:
   ww= a split: '.' .
   IF( ww len == 2 ) 
-  THEN( self drawPage: (ww at: 1) num )
-  ELSE( self listPages ).
+  THEN( me drawPage: (ww at: 1) num )
+  ELSE( me listPages ).
 
 
 meth ListUnicodePages listPages
@@ -765,30 +765,30 @@ meth DrawApp handle:query:
   query = b.
   stuff = Vec new.
 
-  self basicInit.
-  self basicStep.
+  me basicInit.
+  me basicStep.
 
   DICT(
     'type', 'draw';
-    'title', self cls name;
+    'title', me cls name;
     'value', stuff;
-    'url', ( '/', self cls name, '.', self oid str ) jam;
+    'url', ( '/', me cls name, '.', me oid str ) jam;
   ).
   
 meth DrawApp basicInit
   IF (didInit not) THEN (
-    self init.
+    me init.
     didInit = 1.
   ).
  
 meth DrawApp basicStep
-  self step.
+  me step.
  
 meth DrawApp init
-  self.  "Subclass should override."
+  me.  "Subclass should override."
  
 meth DrawApp step
-  self.  "Subclass should override."
+  me.  "Subclass should override."
  
 meth DrawApp line:to:
   x1, y1 = a.
@@ -816,7 +816,7 @@ meth DrawApp recall
 
 cls DemoStar DrawApp
 meth DemoStar init
-  self.
+  me.
  
 meth DemoStar step
   FOR( i : Num pi * 60 ) DO(
@@ -824,8 +824,8 @@ meth DemoStar step
     x = theta cos * 200 + 222.
     y = theta sin * 200 + 222.
     
-    self line: (200, 200) to: (x, y).
-    "self text: i str sw: (x, y)."
+    me line: (200, 200) to: (x, y).
+    "me text: i str sw: (x, y)."
   )
  
 
@@ -834,13 +834,13 @@ vars DemoLissajous
   numPoints
 meth DemoLissajous init
   numPoints = 40.
-  se dumpVarMap.
-  'init: meths = ' say: (se cls meths).
+  me dumpVarMap.
+  'init: meths = ' say: (me cls meths).
 meth DemoLissajous step
   FOR(i : numPoints) DO(
     b = i / 5 $ cos * 500 + 500,
         i / 3 $ sin * 240 + 240.
-    self text: i str sw: b.
+    me text: i str sw: b.
     a = b.
   ).
   numPoints = numPoints + 40.
@@ -854,7 +854,7 @@ meth LiveApp scr
   scr.
 meth LiveApp init
   "nothing to do."
-  self.
+  me.
 meth LiveApp onLive
   red= scr newInk: 900.
   green= scr newInk: 90.
@@ -863,16 +863,16 @@ meth LiveApp onLive
   black= scr newInk: 0.
 
   'draw...' say: ('src=', scr) jam.
-  self draw.
+  me draw.
   scr post.
-  self.
+  me.
 meth LiveApp handle:query:
   block= [scr:
-    self onLive].
+    me onLive].
   DICT(
     'type', 'live';
     'value', block;
-    'event', self eventBlk).
+    'event', me eventBlk).
   
 
 meth LiveApp red
@@ -898,85 +898,85 @@ meth LiveApp clear:
 
 cls DemoLiveLissajous LiveApp
 meth DemoLiveLissajous draw
-  w= se scr width / 2.
-  h= se scr height / 2.
-  self clear: 0.
+  w= me scr width / 2.
+  h= me scr height / 2.
+  me clear: 0.
   prev= w*2, h.
   n = 1000.
   start = Sys secs.
   FOR(i : n) DO(
     xy= i / 19 $ cos * w + w,
         i / 7 $ sin * h + h.
-    self newInk: i 
+    me newInk: i 
       $ line: prev to: xy
       $ fontSize: 24
       $ text: i str sw: xy.
     prev= xy.
-    self post.
+    me post.
   ).
   finish= Sys secs.
   time= finish - start.
   fps= n / time.
   msg= (n, ' frames / ', time, 's = ', fps, ' fps') jam.
-  self white fontSize: 32 $ text: msg sw: (100,100). 
+  me white fontSize: 32 $ text: msg sw: (100,100). 
 
 cls DemoLiveLissajousSimple LiveApp
 meth DemoLiveLissajousSimple draw
-  w= se scr width / 2.
-  h= se scr height / 2.
-  self clear: 313.
+  w= me scr width / 2.
+  h= me scr height / 2.
+  me clear: 313.
   prev= w*2, h.
   FOR(i : 1000) DO(
     xy= i / 19 $ cos * w + w,
         i / 7 $ sin * h + h.
-    self white line: prev to: xy.
+    me white line: prev to: xy.
     prev= xy.
-    self post.
+    me post.
   ).
 
 cls DemoLiveHappyRect LiveApp
 meth DemoLiveHappyRect draw
-  w= se scr width.
-  h= se scr height.
-  self clear: 0.
+  w= me scr width.
+  h= me scr height.
+  me clear: 0.
   WHILE(1) DO(
     c = Num rand: 1000.
     x1 = Num rand: w.
     x2 = Num rand: w.
     y1 = Num rand: h.
     y2 = Num rand: h.
-    self newInk: c $ rect: x1@y1 to: x2@y2.
-    self post.
+    me newInk: c $ rect: x1@y1 to: x2@y2.
+    me post.
   ).
 
 cls DemoLiveHappyLine LiveApp
 meth DemoLiveHappyLine draw
-  w= se scr width.
-  h= se scr height.
-  self clear: 0.
+  w= me scr width.
+  h= me scr height.
+  me clear: 0.
   WHILE(1) DO(
     c = Num rand: 1000.
     x1 = Num rand: w.
     x2 = Num rand: w.
     y1 = Num rand: h.
     y2 = Num rand: h.
-    self newInk: c $ line: x1@y1 to: x2@y2.
-    self post.
+    me newInk: c $ line: x1@y1 to: x2@y2.
+    me post.
   ).
 
 
 cls DemoLiveSierpinski LiveApp
 meth DemoLiveSierpinski draw
-  self clear: 323.
-  self post.
+  me clear: 323.
+  me post.
   d1 = d2 = d3 = d4 = 0.
   colors = 900, 90, 9.
-  ink = self newInk: (colors at: 0).
+  ink = me newInk: (colors at: 0).
   corners = 0, 0; 500, 380; 700, 100.
   x, y = corners at: 0.
   n = 100000.
   k = 200.
-  self green thick: 2.
+  me green thick: 2.
   start = Sys secs.
   FOR(i : n) DO(
     r = Num rand: corners len.
@@ -984,32 +984,32 @@ meth DemoLiveSierpinski draw
     x = (x + cx) / 2.
     y = (y + cy) / 2.
     ink color: (colors at: d4) $dot: (x, y).
-    IF(i % k $not) THEN(self post).
+    IF(i % k $not) THEN(me post).
     d1, d2, d3, d4 = r, d1, d2, d3.
   ).
   finish= Sys secs.
   time= finish - start.
   fps= n / k / time.
   msg= (n / k, ' frames / ', time, 's = ', fps, ' fps') jam.
-  self white fontSize: 32 $ text: msg sw: (100,100). 
+  me white fontSize: 32 $ text: msg sw: (100,100). 
 
 
 cls DemoLivePaint LiveApp
 meth DemoLivePaint draw
-  self clear: 212. "323."
+  me clear: 212. "323."
   FOR(i:50) DO(
   FOR(j:30) DO(
-    se green text: (i*10+j) str sw: (i*20, j*20).
-    self post.
+    me green text: (i*10+j) str sw: (i*20, j*20).
+    me post.
   )).
 
 meth DemoLivePaint eventBlk
   [kind: xy:
-   self onEvent: kind at: xy]
+   me onEvent: kind at: xy]
 
 meth DemoLivePaint onEvent:at:
   " 'DemoLivePaint------onEvent' say: (a, b). "
-  self white text: a str sw: b.
+  me white text: a str sw: b.
 
 #### More HT Constructors
 
@@ -1081,22 +1081,22 @@ meth WebApp wQuery
 
 meth WebApp handle:query:
  path,query = a,b.
- self wResult.
+ me wResult.
 meth WebApp wResult
  DICT(
    'type', 'html';
-   'value', self wHtml;
-   'title', self wTitle;
+   'value', me wHtml;
+   'title', me wTitle;
  ).
 
 meth WebApp wTitle
-  self opath
+  me opath
 meth WebApp wHtml
-  TAG('html', self wHead, self wBody)
+  TAG('html', me wHead, me wBody)
 meth WebApp wHead
   HT{
-    TAG{'title', self wTitle},
-    TAG{'style', self wStyle},
+    TAG{'title', me wTitle},
+    TAG{'style', me wStyle},
   }
 meth WebApp wBgColor
   'black'
@@ -1110,11 +1110,11 @@ meth WebApp wFontWeight
   '200'
 meth WebApp wStyle
   ('body{
-      color:', se wFgColor, ';
-      background-color:', se wBgColor, ';
-      font-family:', se wFontFamily, ';
-      font-size:', se wFontSize, ';
-      font-weight:', se wFontWeight, ';
+      color:', me wFgColor, ';
+      background-color:', me wBgColor, ';
+      font-family:', me wFontFamily, ';
+      font-size:', me wFontSize, ';
+      font-weight:', me wFontWeight, ';
     }
     h1{
       font-family: serif;
@@ -1125,17 +1125,17 @@ meth WebApp wStyle
 
 meth WebApp wBody
   TAG('body',
-    TAG('p', HT{self wTop}),
-    TAG('p', HT{self wMid}),
+    TAG('p', HT{me wTop}),
+    TAG('p', HT{me wMid}),
     TAG('hr'),
-    TAG('p', HT{self wBottom}))
+    TAG('p', HT{me wBottom}))
 meth WebApp wTop
-  TAG('h3', self wTitle)
+  TAG('h3', me wTitle)
 meth WebApp wMid
   HT('Hello World!  This is WebApp:wMid. Override me.')
 meth WebApp wBottom
   HT(
-    FOR(url,label: se wFootLinks)
+    FOR(url,label: me wFootLinks)
     MAP(
       ' [',
       TAG('a'; 'href',url; label),
@@ -1145,7 +1145,7 @@ meth WebApp wBottom
   )
 meth WebApp wFootLinks
   '/Top', 'Top';
-  '/Inspect.' ap: se opath, 'InspectSelf';
+  '/Inspect.' ap: me opath, 'InspectSelf';
   '/InspectClasses', 'InspectClasses';
   '/Browse', 'Browse';
   '/BrowseClasses', 'Classes';
@@ -1159,7 +1159,7 @@ meth SaidWhat wMid
 
 cls Inspect WebApp
 meth Inspect wResult
-  ww= se wPath split: '.'.
+  ww= me wPath split: '.'.
   CASE{ww len}OF{
     1,
       (InspectRoot new wResult);
@@ -1195,7 +1195,7 @@ vars InspectInst
   targ 
 meth InspectInst targ:
   targ = a.
-  se.
+  me.
 meth InspectInst title
   ('Inspecting ', targ oname)jam
 meth InspectInst wMid
@@ -1207,7 +1207,7 @@ vars InspectClass
   targ 
 meth InspectClass targ:
   targ = a.
-  se.
+  me.
 meth InspectClass title
   ('Inspecting ', targ name)jam
 meth InspectClass wMid
@@ -1219,7 +1219,7 @@ vars InspectSimple
   msg 
 meth InspectSimple msg:
   msg = a.
-  se.
+  me.
 meth InspectSimple title
   ('Inspect: ', msg str)jam
 meth InspectSimple wMid
@@ -1236,38 +1236,38 @@ meth Foo y
 meth Foo z
   z
 meth Foo x:
-  x = a. se
+  x = a. me
 meth Foo y:
-  y = a. se
+  y = a. me
 meth Foo z:
-  z = a. se
+  z = a. me
 
 meth Foo one
-  se x: 10
-  se y: 100
-  se z: 1000
+  me x: 10
+  me y: 100
+  me z: 1000
 
 cls Bar Foo 
 vars Bar 
   r s
 meth Bar x
-  su x
+  up x
 meth Bar r
   r
 meth Bar s
   s
 meth Bar one
-  r = 1. s = 11. super one.  
+  r = 1. s = 11. up one.  
   
-  se x: 2 * se x.
-  se y: 2 * se y.
-  se z: 2 * se z.
-  se.
+  me x: 2 * me x.
+  me y: 2 * me y.
+  me z: 2 * me z.
+  me.
 
 meth Foo two
   x + y + z
 meth Bar two
-  su two + r + s
+  up two + r + s
 
 inst Bar bar1
   DICT('x',111; 'y',222; 'z',333; 'r',1111; 's',2222;)
@@ -1294,14 +1294,14 @@ vars DemoLiveLife
 meth DemoLiveLife state
   state
 meth DemoLiveLife state:
-  state= a. se.
+  state= a. me.
 meth DemoLiveLife embargo
   embargo
 meth DemoLiveLife embargo:
-  embargo= a. se.
+  embargo= a. me.
 
 meth DemoLiveLife numX
-  se numY * se scr width / se scr height  $round
+  me numY * me scr width / me scr height  $round
 meth DemoLiveLife numY
   23
 
@@ -1315,23 +1315,23 @@ meth DemoLiveLifeLarge numY
 
 
 meth DemoLiveLife delX
-  self scr width  idiv:  self numX
+  me scr width  idiv:  me numX
 meth DemoLiveLife delY
-  self scr height  idiv:  self numY
+  me scr height  idiv:  me numY
 
 meth DemoLiveLife initState
-  FOR(x: self numX)MAP(
-    FOR(y: self numY)MAP(
+  FOR(x: me numX)MAP(
+    FOR(y: me numY)MAP(
       Num rand < 0.3
   ) ).
       
 meth DemoLiveLife lifeStep
-  dx,dy= self delX, self delY.
+  dx,dy= me delX, me delY.
   dx2,dy2= dx idiv: 2, dy idiv: 2.
   rx,ry= dx2 - 1, dy2 - 1.
 
-  nextState = FOR(x: self numX)MAP(
-        FOR(y: self numY)MAP(
+  nextState = FOR(x: me numX)MAP(
+        FOR(y: me numY)MAP(
            nei = 0.
 	   FOR(i: 3)DO(
              i = i - 1 + x.
@@ -1348,26 +1348,26 @@ meth DemoLiveLife lifeStep
       ].
   "Update state, unless embargo is in place."
   IF{embargo < Sys secs}THEN{state = nextState}.
-  FOR(x: self numX)DO{
-    FOR(y: self numY)DO{
+  FOR(x: me numX)DO{
+    FOR(y: me numY)DO{
       IF{(state at: x) at: y}
         THEN{
              xx = x * dx + dx2.
              yy = y * dy + dy2.
-	     self green rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
+	     me green rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
         }
         ELSE{
              xx = x * dx + dx2.
              yy = y * dy + dy2.
-	     self black rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
+	     me black rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
         }
     }
   }.
 
 meth DemoLiveLife eventBlk
   [kind:ij: i,j= ij.
-   x = i idiv: self delX.
-   y = j idiv: self delY.
+   x = i idiv: me delX.
+   y = j idiv: me delY.
    old= (state at: x) at: y.
    IF{old not}THEN{
      (state at: x) at: y put: 1.
@@ -1378,11 +1378,11 @@ meth DemoLiveLife eventBlk
 
 meth DemoLiveLife draw
   embargo= 0.
-  self black color: 111.
-  IF(state is: nil) THEN(state = self initState).
+  me black color: 111.
+  IF(state is: nil) THEN(state = me initState).
   FOR(i: 1000000)DO(
-    self lifeStep.
-    self post.
+    me lifeStep.
+    me post.
   ).
 
 #####################################
@@ -1390,25 +1390,25 @@ meth DemoLiveLife draw
 cls DemoLiveLifeRedBlue DemoLiveLife
 
 meth DemoLiveLifeRedBlue initState
-  FOR{x: self numX}MAP{
-    FOR{y: self numY}MAP{
+  FOR{x: me numX}MAP{
+    FOR{y: me numY}MAP{
       IF{Num rand < 0.3}
       THEN{
-        IF{x < self numX / 2} THEN{11} ELSE{101}
+        IF{x < me numX / 2} THEN{11} ELSE{101}
       }ELSE{0}.
   } }.
 
 meth DemoLiveLifeRedBlue lifeStep
-  dx,dy= self delX, self delY.
+  dx,dy= me delX, me delY.
   dx2,dy2= dx idiv: 2, dy idiv: 2.
   rx,ry= dx2 - 1, dy2 - 1.
 
   pop = popR = popB = 0.  
   nextState = 
-     FOR{x: self numX}
+     FOR{x: me numX}
      MAP{
        xx = x * dx + dx2.
-       FOR{y: self numY}
+       FOR{y: me numY}
        MAP{
          yy = y * dy + dy2.
          colored = 0.
@@ -1416,13 +1416,13 @@ meth DemoLiveLifeRedBlue lifeStep
            i = i - 1 + x.
 	   FOR(j: 3)DO{
              j = j - 1 + y.
-             colored = colored + ((self state at: i) at: j).
+             colored = colored + ((me state at: i) at: j).
            }.
          }.
 	 "Notice cell x,y can count as a colored".
 	 "Simple neighbor count (no color)".
          bw = colored % 10.
-         old= (self state at: x) at: y.
+         old= (me state at: x) at: y.
 
          z= IF{old}
             THEN{ OR{bw == 3;  bw == 4;} }
@@ -1436,10 +1436,10 @@ meth DemoLiveLifeRedBlue lifeStep
              bc = (colored idiv: 100) % 10.
          }.
          z= COND{
-           z == 0 , (clr = self black. 0);
-           rc > bc, (pop=pop+1. popR=popR+1. clr = self red. 11);
-           rc < bc, (pop=pop+1. popB=popB+1. clr = self blue. 101);
-           1      , (pop=pop+1. clr = self white.  1);
+           z == 0 , (clr = me black. 0);
+           rc > bc, (pop=pop+1. popR=popR+1. clr = me red. 11);
+           rc < bc, (pop=pop+1. popB=popB+1. clr = me blue. 101);
+           1      , (pop=pop+1. clr = me white.  1);
          }.
          clr rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
          z.
@@ -1447,7 +1447,7 @@ meth DemoLiveLifeRedBlue lifeStep
     }. "next x"
 
   'FINISHED lifeStep' say: (pop, popR, popB).
-  self state: nextState.
+  me state: nextState.
 
 #####################################
 
@@ -1513,10 +1513,10 @@ meth BrowseClasses wMid
   
 cls BrowseClass WebApp
 meth BrowseClass wTitle
-  cn= se w1.
+  cn= me w1.
   ('Browse Class <', cn, '>') jam.
 meth BrowseClass wMid
-  cn= se w1.
+  cn= me w1.
   c= Cls at: cn lower.
   HT{
     TAG('b', 'Methods: ');
@@ -1596,9 +1596,9 @@ meth BrowseClass wMid
 cls SubmitInstVars WebApp
 meth SubmitInstVars nonMain
 meth SubmitInstVars wResult
-  cn= se w1.
+  cn= me w1.
   c= Cls at: cn.
-  vars= se wQuery at: 'vars'.
+  vars= me wQuery at: 'vars'.
 
   c defvars: vars.
 
@@ -1609,9 +1609,9 @@ meth SubmitInstVars wResult
 cls SubmitNewMethod WebApp
 meth SubmitNewMethod nonMain
 meth SubmitNewMethod wResult
-  cn,mn= se w1, se wQuery at: 'method'.
+  cn,mn= me w1, me wQuery at: 'method'.
   c= Cls at: cn.
-  clsmeth= se wQuery at: 'clsmeth'.
+  clsmeth= me wQuery at: 'clsmeth'.
 
   IF{ clsmeth }THEN{ x = c cls }ELSE{ x = c }.
   x defineMethod: mn abbrev: '' doc: '' code: '"TODO"' .
@@ -1623,10 +1623,10 @@ meth SubmitNewMethod wResult
   
 cls BrowseMethod WebApp
 meth BrowseMethod wTitle
-  cn,mn= se w1, se w2.
+  cn,mn= me w1, me w2.
   ('Browse Method <', cn, ' ', mn, '>') jam.
 meth BrowseMethod wMid
-  cn,mn= se w1, se w2.
+  cn,mn= me w1, me w2.
   c= Cls all at: cn lower.
   m= c meths at: mn lower.
   HT{  
@@ -1651,7 +1651,7 @@ meth ConfigCls load
     z d: Dict new.
     z save.
   }.
-  z d: (self eval: (File read: 'c_config.txt')).
+  z d: (me eval: (File read: 'c_config.txt')).
   z.
 
 meth Config d
@@ -1721,26 +1721,26 @@ meth BrowseWorlds wMid
     TAG('p');
     Ht bold: 'Local Worlds: ';
     Ht linkLabelPairs: FOR{f: onlyLocal}
-      MAP{('/BrowseLocalWorld', f) join: '.';  f;  se notes: f};
+      MAP{('/BrowseLocalWorld', f) join: '.';  f;  me notes: f};
     TAG('p');
 
     Ht bold: 'Local+Remote Worlds: ';
     Ht linkLabelPairs: FOR{f: both}
-      MAP{('/BrowseBothWorld', f) join: '.';  f;  se notes: f};
+      MAP{('/BrowseBothWorld', f) join: '.';  f;  me notes: f};
     TAG('p');
 
     Ht bold: 'Remote Worlds: ';
     Ht linkLabelPairs: FOR{f: onlyHub}
-      MAP{('/BrowseRemoteWorld', f) join: '.';  f;  se notes: f};
+      MAP{('/BrowseRemoteWorld', f) join: '.';  f;  me notes: f};
     TAG('p');
   }.
 
 cls BrowseLocalWorld WebApp
 meth BrowseLocalWorld wTitle
-  wn=se w1.
+  wn=me w1.
   ('Local World:', wn) join
 meth BrowseLocalWorld wMid
-  wn=se w1.
+  wn=me w1.
   cfg= Config load.
 
   mode= cfg d at: wn.
@@ -1760,10 +1760,10 @@ meth BrowseLocalWorld wMid
 
 cls BrowseBothWorld WebApp
 meth BrowseBothWorld wTitle
-  wn=se w1.
+  wn=me w1.
   ('Local+Remote World:', wn) join
 meth BrowseBothWorld wMid
-  wn=se w1.
+  wn=me w1.
   cfg= Config load.
 
   mode= cfg d at: wn.
@@ -1781,10 +1781,10 @@ meth BrowseBothWorld wMid
 
 cls BrowseRemoteWorld WebApp
 meth BrowseRemoteWorld wTitle
-  wn=se w1.
+  wn=me w1.
   ('Remote World:', wn) join
 meth BrowseRemoteWorld wMid
-  wn=se w1.
+  wn=me w1.
   cfg= Config load.
 
   mode= cfg d at: wn.
@@ -1800,10 +1800,10 @@ meth BrowseRemoteWorld wMid
 
 cls WorldShareUp WebApp
 meth WorldShareUp wTitle
-  wn=se w1.
+  wn=me w1.
   ('Share World:', wn) join.
 meth WorldShareUp wMid
-  wn=se w1.
+  wn=me w1.
   cfg= Config load.
   cfg d at: wn put: 's'.
   cfg save.
@@ -1818,10 +1818,10 @@ meth WorldShareUp wMid
 
 cls WorldSyncUp WebApp
 meth WorldSyncUp wTitle
-  wn=se w1.
+  wn=me w1.
   ('SyncUp World:', wn) join.
 meth WorldSyncUp wMid
-  wn=se w1.
+  wn=me w1.
   fn= ('w_', wn lower, '.txt')jam.
 
   Hub write: fn value: (File read: fn).
@@ -1834,10 +1834,10 @@ meth WorldSyncUp wMid
 
 cls WorldFetch WebApp
 meth WorldFetch wTitle
-  wn=se w1.
+  wn=me w1.
   ('Fetch World:', wn) join.
 meth WorldFetch wMid
-  wn=se w1.
+  wn=me w1.
   fn= ('w_', wn lower, '.txt')jam.
   'filename' say: fn.
   nl=VEC{10,} implode.
@@ -1868,10 +1868,10 @@ meth WorldFetch wMid
 
 cls FormCreateSubclass WebApp
 meth FormCreateSubclass wTitle
-  cn= se w1.
+  cn= me w1.
   ('Create Subclass of', cn) join.
 meth FormCreateSubclass wMid
-  cn= se w1.
+  cn= me w1.
   TAG('form';
       'method','GET';
       'action',('/SubmitCreateSubclass',cn)join:'.';
@@ -1886,14 +1886,14 @@ meth FormCreateSubclass wMid
 
 cls SubmitCreateSubclass WebApp
 meth SubmitCreateSubclass wTitle
-  cn= se w1.
-  subcn= se wQuery at: 'subcls'.
+  cn= me w1.
+  subcn= me wQuery at: 'subcls'.
   ('Created subclass', subcn, 'of', cn) join.
 meth SubmitCreateSubclass wMid
-  cn= se w1.
+  cn= me w1.
   c= cls at: cn.
 
-  subcn= se wQuery at: 'subcls'.
+  subcn= me wQuery at: 'subcls'.
   subc= Cls at: subcn.
   IF{ subc }THEN{
     supsubc= subc supercls.
@@ -1922,17 +1922,17 @@ meth gamefoo draw
        ( (-1,0); (0,0); (0,-1);  (-1,-1) );
        ( (-1,0); (0,0); (1,0);  (0,1) ).
  n = num rand: (zoo len).
- wid = se scr width.
- hei = se scr height.
+ wid = me scr width.
+ hei = me scr height.
  cx,cy = 8,8.
 
  t = Sys secs.
  WHILE{1} DO{
-   self clear: 312.
+   me clear: 312.
    FOR{x,y: zoo at: n} DO{
-     self square: (cx+x,cy+y) ink: self green }.
-   self showZoo.
-   self post.
+     me square: (cx+x,cy+y) ink: me green }.
+   me showZoo.
+   me post.
    IF{ t + 1 < Sys secs }THEN{
      cy = cy + 1.
      t = Sys secs.
@@ -1944,7 +1944,7 @@ meth GameFoo showZoo
   FOR(shape: zoo) DO (
     i=i+40.
     FOR(x,y: shape) DO (
-      self white rect: (x*10+i, y*10+i) to: (x*10+i+8, y*10+i+8).
+      me white rect: (x*10+i, y*10+i) to: (x*10+i+8, y*10+i+8).
     ).
   ).
       
@@ -1955,7 +1955,7 @@ meth GameFoo square:ink:
 
 meth GameFoo eventBlk
   [kind: xy:
-   self onEvent: kind at: xy]
+   me onEvent: kind at: xy]
 
 meth GameFoo onEvent:at:
   x,y= b say.
@@ -1977,8 +1977,8 @@ vars GamePong
   n s e w ww hei wid bx by vx vy  pad  hit miss
 
 meth GamePong draw
-  hei= se scr height.
-  wid= se scr width.
+  hei= me scr height.
+  wid= me scr width.
   ww= 20.  "wall width."
   "north, south, east, west boundaries, where ball reflects."
   n= ww.
@@ -1986,22 +1986,22 @@ meth GamePong draw
   e= wid - ww.
   w= ww.
   hit= miss= 0.
-  se white fontSize: 48.
+  me white fontSize: 48.
 
   "Determine fps by posting twice."
   bx, by = ww neg, ww neg.
   vx, vy = 0, 0.
   pad = hei / 2.
-  se drawPong.
-  se post.
-  se drawPong.
-  se post.
-  se resetBall.
+  me drawPong.
+  me post.
+  me drawPong.
+  me post.
+  me resetBall.
 
   WHILE{1} DO{
-    se moveBall.
-    se drawPong.
-    se post.
+    me moveBall.
+    me drawPong.
+    me post.
     vx = vx * 1.001.
   }.
 
@@ -2012,21 +2012,21 @@ meth GamePong resetBall
 
 
 meth GamePong drawPong
-  se clear: 213.
-  se white rect: (0,0) to: (wid,ww). "top"
-  se white rect: (0,s) to: (wid,hei). "bottom"
-  se white rect: (0,n) to: (w,s). "left"
+  me clear: 213.
+  me white rect: (0,0) to: (wid,ww). "top"
+  me white rect: (0,s) to: (wid,hei). "bottom"
+  me white rect: (0,n) to: (w,s). "left"
   w2 = ww / 2.
-  se blue rect: (bx-w2, by-w2) to: (bx+w2, by+w2).
-  se green rect: (e, pad - ww*1.8) to: (wid, pad + ww*1.8).
-  fps = se scr fps.
+  me blue rect: (bx-w2, by-w2) to: (bx+w2, by+w2).
+  me green rect: (e, pad - ww*1.8) to: (wid, pad + ww*1.8).
+  fps = me scr fps.
   IF{fps is: nil $not}THEN{fps= fps fmt: '%.2f'}.
-  se white
+  me white
     text: (hit str, ':', miss str, '   (', fps, 'fps)')join 
     sw: (2*ww, hei - 2*ww).
 
 meth GamePong moveBall
-  fps= se scr fps.
+  fps= me scr fps.
   fps= IF{fps is: nil} THEN{20} ELSE {fps}.
   bx, by = bx + vx*30 / fps, by + vy*30 / fps.
   IF(bx <= w)THEN(bx= w + (w-bx). vx = vx neg.).
@@ -2043,13 +2043,13 @@ meth GamePong moveBall
     }ELSE{
       "paddle miss."
       miss = miss + 1.
-      se resetBall.
+      me resetBall.
     }
   }.
   
 meth GamePong eventBlk
   [kind: xy:
-   self onEvent: kind at: xy]
+   me onEvent: kind at: xy]
 
 meth GamePong onEvent:at:
   x,y= b say.
@@ -2062,19 +2062,19 @@ vars GameTroids
   aa bb ship hei wid
 
 meth GameTroids newAster
-  TroidsAster new $ink: se white $sz: 30 $init: se.
+  TroidsAster new $ink: me white $sz: 30 $init: me.
 
 meth GameTroids newBullet
-  TroidsThing new $ink: se red $sz: 3 $ttl: 12.0 $init: se.
+  TroidsThing new $ink: me red $sz: 3 $ttl: 12.0 $init: me.
 
 meth GameTroids newShip
-  TroidsThing new $ink: se green $sz: 10 $init: se.
+  TroidsThing new $ink: me green $sz: 10 $init: me.
 
 meth GameTroids draw
-  hei= se scr height.
-  wid= se scr width.
-  se setup.
-  WHILE{1}DO{se step.}.
+  hei= me scr height.
+  wid= me scr width.
+  me setup.
+  WHILE{1}DO{me step.}.
 
 meth GameTroids setup
   aa = Vec new.
@@ -2082,7 +2082,7 @@ meth GameTroids setup
   FOR{x: 100, w2, wid - 100}DO{
     FOR{y: 100, h2, hei - 100}DO{
       IF{OR{x ne: w2; y ne: h2}}THEN{
-        a= se newAster
+        a= me newAster
            $px: x $py: y
            $vx: Num rand * 2 - 1
            $vy: Num rand * 2 - 1.
@@ -2091,27 +2091,27 @@ meth GameTroids setup
     }.
   }.
   bb = Vec new.
-  "bb ap: (se newBullet $px: wid/2 $py: hei/2 $vx: 1 $vy: 0.3)."
-  se white fontSize: 24.
-  ship= (se newShip $px: wid/2 $py: hei/2 $vx: 0 $vy: 0).
+  "bb ap: (me newBullet $px: wid/2 $py: hei/2 $vx: 1 $vy: 0.3)."
+  me white fontSize: 24.
+  ship= (me newShip $px: wid/2 $py: hei/2 $vx: 0 $vy: 0).
 
 meth GameTroids step
-  se clear: COND{ship ttl < 0, 400; aa len < 1, 40; 1, 202;}.
+  me clear: COND{ship ttl < 0, 400; aa len < 1, 40; 1, 202;}.
   FOR{ast: aa} DO{
-    ast step: se.
-    ast draw: se.
+    ast step: me.
+    ast draw: me.
   }.
   FOR{bul: bb} DO{
-    bul step: se.
-    bul draw: se.
+    bul step: me.
+    bul draw: me.
   }.
-  ship step: se.
-  ship draw: se.
+  ship step: me.
+  ship draw: me.
 
   "frames per sec"
-  se white text: ((se scr fps ifNil:[0]) fmt: '%.2f fps') str sw: (20,40).
+  me white text: ((me scr fps ifNil:[0]) fmt: '%.2f fps') str sw: (20,40).
 
-  se post.
+  me post.
 
   "check collisions."
   FOR{ast: aa} DO{
@@ -2127,7 +2127,7 @@ meth GameTroids step
     dy= ast py - ship py $abs.
     IF{dx+dy < ast sz + ship sz} THEN{
       ship ttl: -1.
-      ship ink: se red.
+      ship ink: me red.
     }.
   }.
   
@@ -2140,7 +2140,7 @@ meth GameTroids step
 
 meth GameTroids eventBlk
   [kind: xy:
-   IF{kind==0}THEN{self onEvent: kind at: xy}.
+   IF{kind==0}THEN{me onEvent: kind at: xy}.
   ]
 
 meth GameTroids onEvent:at:
@@ -2149,7 +2149,7 @@ meth GameTroids onEvent:at:
   hyp= x*x + y*y pow: 0.5.
   p,q = x / hyp, y / hyp.
   IF{bb len < 4} THEN{
-    bb ap: (se newBullet $px: ship px $py: ship py $vx: p + ship vx $vy: q + ship vy).
+    bb ap: (me newBullet $px: ship px $py: ship py $vx: p + ship vx $vy: q + ship vy).
   }.
   ship vx: ship vx - p * 0.2 .
   ship vy: ship vy - q * 0.2 .
@@ -2181,21 +2181,21 @@ meth TroidsThing ttl "time to live"
 
 
 meth TroidsThing px:
-  px= a. se.
+  px= a. me.
 meth TroidsThing py:
-  py= a. se.
+  py= a. me.
 meth TroidsThing vx:
-  vx= a. se.
+  vx= a. me.
 meth TroidsThing vy:
-  vy= a. se.
+  vy= a. me.
 meth TroidsThing sz:
-  sz= a. se.
+  sz= a. me.
 meth TroidsThing ink:
-  ink= a. se.
+  ink= a. me.
 meth TroidsThing xyxy:
-  xyxy= a. se.
+  xyxy= a. me.
 meth TroidsThing ttl:
-  ttl= a. se.
+  ttl= a. me.
 
 meth TroidsThing init:
   hei= a scr height.
@@ -2209,7 +2209,7 @@ meth TroidsThing init:
   ww= wid neg, 0, wid.
   hh= hei neg, 0, hei.
   IF{ttl is: nil}THEN{ttl= 999999999}.
-  se.
+  me.
 
 meth TroidsThing draw:
   FOR{w: ww}DO{
@@ -2233,22 +2233,22 @@ cls TroidsAster TroidsThing
 vars TroidsAster
 
 meth TroidsAster init:
-  super init: a.
+  up init: a.
   sixty= Num pi / 3.
-  se xyxy: FOR{i:6}MAP{
+  me xyxy: FOR{i:6}MAP{
     r= 0.5 + 0.5 * Num rand.
-    rad,theta= se sz * r, i * sixty.
+    rad,theta= me sz * r, i * sixty.
     (rad * theta cos, rad * theta sin).
   }.
-  se.
+  me.
 
 meth TroidsAster draw:
-  x1,y1= se xyxy at: -1.
-  FOR{x2,y2: se xyxy} DO{
-    FOR{w: se ww}DO{
-      FOR{h: se hh}DO{
-        se ink line: (w + se px+x1, h + se py+y1)
-                to: (w + se px+x2, h + se py+y2).
+  x1,y1= me xyxy at: -1.
+  FOR{x2,y2: me xyxy} DO{
+    FOR{w: me ww}DO{
+      FOR{h: me hh}DO{
+        me ink line: (w + me px+x1, h + me py+y1)
+                to: (w + me px+x2, h + me py+y2).
       }.
     }.
     x1,y1= x2,y2.
@@ -2263,30 +2263,30 @@ meth FnordApp gl
 meth FnordApp handle:query:
   DICT(
     'type', 'fnord';
-    'value', self;
+    'value', me;
   ). 
 meth FnordApp run:
-  self say: 'FnordApp--run:'.
+  me say: 'FnordApp--run:'.
   gl = a.
-  self init.
-  while(1) do(self step).
+  me init.
+  while(1) do(me step).
 meth FnordApp init
-  se gl ambient: 0.4 @ 0.4 @ 0.4.
-  se gl diffuse: 0.9 @ 0.9 @ 0.9.
-  se gl light: 100 @ 100 @ 100.
+  me gl ambient: 0.4 @ 0.4 @ 0.4.
+  me gl diffuse: 0.9 @ 0.9 @ 0.9.
+  me gl light: 100 @ 100 @ 100.
 meth FnordApp prePost:
-  x = se gl ex.
-  y = se gl ey.
-  se gl light: x @ y @ 100.
-  se gl eye: x @ y @ (x - y)abs * 3.
-  se gl look: 100 - y @ 100 - x @ 0.
+  x = me gl ex.
+  y = me gl ey.
+  me gl light: x @ y @ 100.
+  me gl eye: x @ y @ (x - y)abs * 3.
+  me gl look: 100 - y @ 100 - x @ 0.
 
 meth FnordApp post:
-  se prePost: a.
-  se gl post: a.
+  me prePost: a.
+  me gl post: a.
 
 meth FnordApp step
-  se post: se model.
+  me post: me model.
 
 meth FnordApp model
   v1 = ().
@@ -2308,7 +2308,7 @@ meth FnordApp model
 
 cls FnordTwo FnordApp
 meth FnordTwo init
-  super init.
+  up init.
 
 
 meth FnordTwo model
@@ -2329,7 +2329,7 @@ meth FnordTwo model
 
 cls FnordRandom FnordApp
 meth FnordRandom init
-  super init.
+  up init.
 meth FnordRandom model
   v1 = ().
   for(i: 5) do(
@@ -2354,9 +2354,9 @@ vars FnordMotherShip
 meth FnordMotherShip step
   "Only make the model once."
   IF(model equals: nil) THEN(
-    model = se model.
+    model = me model.
   ).
-  se post: model.
+  me post: model.
 
 cls RedPlane Usr
 vars RedPlane
@@ -2375,9 +2375,9 @@ meth RedPlane init:
   ex = ey = 50.
   throttle = 0.
   zoom = 50.
-  self.
+  me.
 meth RedPlane step
-  "self tweak."
+  "me tweak."
   thistime = Sys secs.
   deltaT = (thistime - lasttime).
 
@@ -2472,7 +2472,7 @@ meth RedPlane current
   throtP = throttle * w.
   zoomP = zoom / 100 * w.
   Group new vec: VEC(
-     se prototype
+     me prototype
        $ pos: px @ py @ pz
        $ scale: 2 @ 2 @ 2
        $ rot: roll @ pitch @ yaw
@@ -2499,13 +2499,13 @@ cls FnordFlight FnordApp
 vars FnordFlight
   plane
 meth FnordFlight init
-  su init.
-  plane= RedPlane new init: se gl.
+  up init.
+  plane= RedPlane new init: me gl.
 meth FnordFlight prePost:
-  "su prePost: a."
+  "up prePost: a."
 
 meth FnordFlight model
-  m= se modelGround.
+  m= me modelGround.
   plane step.
   Group new vec: VEC( m, plane current, ).
 meth FnordFlight modelGround
@@ -2552,7 +2552,7 @@ cls DualFlight FnordFlight
 meth DualFlight handle:query:
   DICT(
     'type', 'dual';
-    'value', self;
+    'value', me;
   ). 
 
 ##END

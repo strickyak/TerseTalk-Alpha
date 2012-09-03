@@ -197,14 +197,14 @@ public class ExprTest extends TestCase {
     public void testTriangleNumber() {
         Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "USR defSub: 'Foo' . Foo trace: 1 . "
                 + " Foo defmeth: 'trIaNgle:' a: '' d: '' c:  ' " + "   g = 0 . "
-                + "   a gt: 0 $ y: [ g = se triangle: ( a - 1 ) $+ a  ] . " + "   g' . "
+                + "   a gt: 0 $ y: [ g = me triangle: ( a - 1 ) $+ a  ] . " + "   g' . "
                 + "   Foo new TRIANGLE: 6  ");
         assertEquals(21.0, eval(top).asNum().num);
     }
     public void testSuper() {
         Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "USR defSub:'Foo'. Foo defSub:'Bar'. "
                 + "Foo defmeth:'mumble' a:'' d:'' c:' ''Hello'' '.  "
-                + "Bar defmeth:'mumble' a:'' d:'' c:' super mumble ap: '' World'' '.  " + "Bar new mumble");
+                + "Bar defmeth:'mumble' a:'' d:'' c:' up mumble ap: '' World'' '.  " + "Bar new mumble");
         assertEquals("Hello World", eval(top).asStr().str);
     }
     public void testMacroVec() {

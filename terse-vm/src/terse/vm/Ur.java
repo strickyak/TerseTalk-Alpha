@@ -330,7 +330,7 @@ public class Ur extends Static implements Comparable {
 	public boolean does_(String a) {
 		Meth meth = Expr.Send.findMeth(this, a, false);
 		if (meth == null) return false;
-		// TODO: consider empty and "just self" meths false.
+		// TODO: consider empty and "just me" meths false.
 		return true;
 	}
 

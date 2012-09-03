@@ -113,6 +113,8 @@ public abstract class Terp extends Static {
 	public Num instFalse;
 	public Undefined instNil;
 	Ur.Super instSuper;
+	public Str instSpace;
+	public Str instNewline;
 	
 	Exception loadWorldException;
 
@@ -203,6 +205,8 @@ public abstract class Terp extends Static {
 		this.instFalse = newNum(0);
 		this.instNil = new Undefined(tUndefined);
 		this.instSuper = new Ur.Super(this);
+		this.instSpace = new Str(this, " ");
+		this.instNewline = new Str(this, "\n");
 
 		// TODO: Convert all methods to "wrap" style, and get rid of all these
 		// static inits.
@@ -231,6 +235,7 @@ public abstract class Terp extends Static {
 	final static int LOG_LEN = 128;
 	String[] logArray = new String[LOG_LEN];
 	int logPtr = 0;
+
 	protected void recordLog(String msg) {
 //		double t = (System.nanoTime() % (100 * 1000000000)) / 1000000000.0;
 		double t = (System.currentTimeMillis() % (100 * 1000)) / 1000.0;
@@ -320,7 +325,7 @@ public abstract class Terp extends Static {
 		@Override
 		public String toString() {
 			StringBuffer sb = new StringBuffer("FRAME{");
-			sb.append(fmt("self=<%s>; ", self));
+			sb.append(fmt("me=<%s>; ", self));
 			for (int i = 0; i < locals.length; i++) {
 				sb.append(fmt("\"%d\"<%s>; ", i, locals[i]));
 			}
@@ -459,22 +464,22 @@ public abstract class Terp extends Static {
 			long before = tickCounter;
 			long nanosBefore = System.nanoTime();
 			if (inst != null) {
-				result_ur = inst.eval(fmt("self handle: (%s) query: (%s)",
+				result_ur = inst.eval(fmt("me handle: (%s) query: (%s)",
 						urlRepr, qDictRepr));
 			} else if (Send.understands(cls, "handle:query:")) {
 				say("CLS <%s> understands handle:query: so sending to class.", cls);
 				// First try sending to the class.
-				result_ur = cls.eval(fmt("self handle: (%s) query: (%s)",
+				result_ur = cls.eval(fmt("me handle: (%s) query: (%s)",
 						urlRepr, qDictRepr));
 			} else {
-				Ur instance = cls.eval("self new");
+				Ur instance = cls.eval("me new");
 				Usr usrInst = instance.asUsr();
 				// TODO: LRU & mention() conflict with Cls.insts map.
 				id = usrInst == null ? 0 : usrInst.omention(); // LRU Cache
 
 				// Next try creating new instance, and send to it.
 				result_ur = instance.asObj().eval(
-						fmt("self handle: (%s) query: (%s)",
+						fmt("me handle: (%s) query: (%s)",
 								newStr(url).repr(), qDict.repr()));
 			}
 			result = result_ur.asDict();

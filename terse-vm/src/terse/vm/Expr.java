@@ -464,7 +464,7 @@ public abstract class Expr extends Obj {
 		}
 
 		public String toString() {
-			return fmt("self");
+			return fmt("me");
 		}
 	}
 
@@ -495,7 +495,10 @@ public abstract class Expr extends Obj {
 		public Ur eval(Frame f) {
 			Ur z = f.terp().clss.get(key);
 			if (z == null) {
-				toss("Global Variable <%s> was never set.", key);
+				if (key.equals("me")) {
+					toss("STUPID me ERROR");
+				}
+				toss("Global Variable <%s> was never set. (%d)", key, key.length());
 			}
 			return z;
 		}
