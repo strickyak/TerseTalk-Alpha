@@ -616,6 +616,8 @@ public abstract class Expr extends Obj {
 			} else {
 				// Use call-site cache.
 				if (r.cls == cacheCls && r.cls.generation == cacheGeneration) {
+					// TODO: it seems generation should depend on cls match,
+					// so quit checking for cls match.
 					m = cacheMeth;
 				} else {
 					m = findMeth(r, msg, true);

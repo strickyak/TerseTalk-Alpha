@@ -810,17 +810,16 @@ public class TerseActivity extends Activity {
 					TerseSurfView tsv = new TerseSurfView(this, blk, event);
 					setContentView(tsv);
 					return;
-				} else if (type.str.equals("fnord")) {
+				} else if (type.str.equals("fnord") || type.str.equals("dual")) {
 					Obj app = value.mustObj();
-					//FnordView fnord = new FnordView(this, app);
-					DualView fnord = new DualView(this, app);
-					setContentView(fnord);
+					DualView view = new DualView(this, app);
+					setContentView(view);
 					return;
-				} else if (type.str.equals("dual")) {
-					Obj app = value.mustObj();
-					DualView fnord = new DualView(this, app);
-					setContentView(fnord);
-					return;
+//				} else if (type.str.equals("usr")) {
+//					Obj app = value.mustObj();
+//					UsrView view = new UsrView(this, app);
+//					setContentView(view);
+//					return;
 				} else if (type.str.equals("world") && value instanceof Str) {
 					String newWorld = value.toString();
 					if (Terp.WORLD_P.matcher(newWorld).matches()) {
@@ -1266,6 +1265,24 @@ public class TerseActivity extends Activity {
 		zz.position(0);
 		return zz;
 	}
+	
+//	public class UsrView extends FrameLayout {
+//		// TODO
+//		View v1, v2, v3;
+//		public UsrView(Context context, final Obj app) {
+//			super(context);
+//			v1 = new DualView(context, app);
+//			v2 = new TextView(context);
+//			v3 = new ListView(context);
+//
+//			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT,
+//					LayoutParams.FILL_PARENT);
+//			addView(v1, FILL);
+//			addView(v2, FILL);
+//			addView(v3, FILL);
+//			
+//		}
+//	}
 	
 	public class DualView extends FrameLayout {
 		FnordView fv;
