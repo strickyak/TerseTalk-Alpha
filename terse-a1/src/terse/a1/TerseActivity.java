@@ -20,7 +20,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 // --------------------------------------------------------------------------
 package terse.a1;
-
+// tag 2013-05-23
 import java.lang.Runnable;
 import java.io.BufferedReader;
 import java.io.File;
@@ -815,11 +815,13 @@ public class TerseActivity extends Activity {
 					DualView view = new DualView(this, app);
 					setContentView(view);
 					return;
-//				} else if (type.str.equals("usr")) {
-//					Obj app = value.mustObj();
-//					UsrView view = new UsrView(this, app);
-//					setContentView(view);
-//					return;
+					/*
+				} else if (type.str.equals("usr")) {
+					Obj app = value.mustObj();
+					UsrView view = new UsrView(this, viewObj);
+					setContentView(view);
+					return;
+					*/
 				} else if (type.str.equals("world") && value instanceof Str) {
 					String newWorld = value.toString();
 					if (Terp.WORLD_P.matcher(newWorld).matches()) {
@@ -1266,23 +1268,23 @@ public class TerseActivity extends Activity {
 		return zz;
 	}
 	
-//	public class UsrView extends FrameLayout {
-//		// TODO
-//		View v1, v2, v3;
-//		public UsrView(Context context, final Obj app) {
-//			super(context);
-//			v1 = new DualView(context, app);
-//			v2 = new TextView(context);
-//			v3 = new ListView(context);
-//
-//			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT,
-//					LayoutParams.FILL_PARENT);
-//			addView(v1, FILL);
-//			addView(v2, FILL);
-//			addView(v3, FILL);
-//			
-//		}
-//	}
+	public class UsrView extends FrameLayout {
+		// TODO
+		View v1, v2, v3;
+		public UsrView(Context context, final Obj app) {
+			super(context);
+			v1 = new DualView(context, app);
+			v2 = new TextView(context);
+			v3 = new ListView(context);
+
+			LayoutParams FILL = new LayoutParams(LayoutParams.FILL_PARENT,
+					LayoutParams.FILL_PARENT);
+			addView(v1, FILL);
+			addView(v2, FILL);
+			addView(v3, FILL);
+			
+		}
+	}
 	
 	public class DualView extends FrameLayout {
 		FnordView fv;
