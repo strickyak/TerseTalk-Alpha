@@ -214,6 +214,7 @@ meth Top handle:query:
     'title' , 'TOP';
     'value' , VEC{
       '/BrowseCLASSES (NEW)';
+      '/FnordCheeseDemo';
       '/FnordApp';
       '/FnordTwo';
       '/FnordMotherShip';
@@ -2306,6 +2307,37 @@ meth FnordApp model
   v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 1@0@0 ).
   Group new vec: v1.
 
+cls FnordCheeseDemo FnordApp
+vars FnordCheeseDemo
+  t
+
+meth FnordCheeseDemo init
+  up init.
+  t= 0.
+
+meth FnordCheeseDemo model
+  t= t + 2.
+  Group new vec:
+    for(i: 8) map(
+      for (j: 8) map(
+        for (k: 8) map(
+	      Cube new
+	         $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
+	         $ scale: 5 @ 3 @ 1
+	         $ rot: i*10+t @ j*10+2*t @ k*10+3*t
+	         $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
+        )
+      )
+    ) flat.
+
+meth FnordCheeseDemo prePost:
+  x = 25 + (t / 3 / 10) sin * 30.
+  y = 25 + (t / 3 / 7) cos * 30.
+  z = 25 + (t / 3 / 23) cos * 30.
+  me gl light: x @ y @ z.
+  me gl eye: x @ y @ z.
+  me gl look: 30 @ 30 @ 30.
+
 cls FnordTwo FnordApp
 meth FnordTwo init
   up init.
@@ -2336,7 +2368,7 @@ meth FnordRandom model
     for (j: 5) do(
       for (k: 5) do(
         v1 ap: (
-	  Cube new 
+	  Cube new
 	    $ pos: 30 + (Num rand: 40) @ 30 + (Num rand: 40) @ (Num rand: 20)
 	    $ scale: 10 * Num rand @ 10 * Num rand @ 10 * Num rand
 	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
@@ -2509,7 +2541,7 @@ meth FnordFlight model
   plane step.
   Group new vec: VEC( m, plane current, ).
 meth FnordFlight modelGround
-  greenish = 0 @ 0.6 @ 0. 
+  greenish = 0 @ 0.6 @ 0.
   grayish = 0.3 @ 0.3 @ 0.3 @ 1.
   Group new vec: VEC(
     "Four runways."
@@ -2519,7 +2551,7 @@ meth FnordFlight modelGround
     Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: grayish,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
-  	  Cube new 
+  	  Cube new
   	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
   	    $ scale: 9 @ 9 @ 1
   	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
