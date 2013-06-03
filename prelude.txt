@@ -2099,7 +2099,7 @@ meth GameTroids step
   ship draw: me.
 
   "frames per sec"
-  me white text: ((me scr fps ifNil:[0]) fmt: '%.2f fps') str sw: (20,40).
+  me white text: ((IF( me scr fps is: nil)THEN(0)ELSE(me scr fps)) fmt: '%.2f fps') str sw: (20,40).
 
   me post.
 
