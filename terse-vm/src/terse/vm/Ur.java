@@ -416,7 +416,11 @@ public class Ur extends Static implements Comparable {
 			}
 		}
 
-		// =meth Obj "macro" macro:try:catch:
+		// =meth Obj "macro" macro:fn:
+		public Blk macroFn(Frame f, Blk b) {
+			return b;
+		}
+		
 		public Ur macroTryCatch(Frame f, Blk b, Blk c) {
 			try {
 				return b.evalWithoutArgs();
@@ -1420,16 +1424,6 @@ public class Ur extends Static implements Comparable {
 			return new Vec(t, arr);
 		}
 
-		// =meth Num "num" do:
-		// "do the block self times, passing 1 arg, from 0 to self-1"
-		public void do_(Blk blk) {
-			Terp t = terp();
-			double stop = this.toNearestInt();
-			for (int i = 0; i < stop; i++) {
-				blk.evalWith1Arg(new Num(t, i));
-			}
-		}
-
 		// =meth Num "convert" num
 		public Num _num() {
 			return this;
@@ -2072,17 +2066,6 @@ public class Ur extends Static implements Comparable {
 					sb.append(x.toString());
 				}
 			}
-		}
-
-		// =meth Vec "control" doWithEach:,do:
-		// "Iterate the block with one argument, for each item in self."
-		public Undefined doWithEach_(Blk b) {
-			int n = this.vec.size();
-			for (int i = 0; i < n; i++) {
-				b.evalWith1Arg(this.vec.get(i));
-			}
-			return terp().instNil;
-			
 		}
 
 		// =meth VecCls "access" new "create a new, empty Vec"

@@ -104,40 +104,23 @@ meth Vec a3
   me at: 3
 
 meth Vec eq:
-  (a cls name equals: 'Vec')
-    n: ['Vec.== expected Vec argument, but got' err: VEC(a, a cls, a cls name, a cls name equals: 'Vec') ]
-    y: [
-      me len == a len
-        n: ['Vec.== got different length Vecs' err: VEC(me, a)]
-        y: [
-          z= Vec new.
-          me len do: [i :
-	    z append: ((me at: i) == (a at: i)).
-          ].
-          z
-        ]
-      ].
+  IF( a cls name equals: 'Vec' )THEN(
+      IF( me len == a len )THEN(
+          FOR( i: me len )MAP(
+	        (me at: i) == (a at: i).
+          ).
+        )ELSE(
+          'Vec.== got different length Vecs' err: VEC(me len, a len)
+		)
+    )ELSE(
+       'Vec.== expected Vec argument, but got' err: a cls
+	)
 
 equals 1, 1, 0
   Vec('foo', 100, 'z') == Vec('foo'; 100; 'zoo')
 
-meth Vec collect:
-    "Goldberg & Robson, 1989. p215"
-    z= me cls new.
-    me do: [x :
-      z ap: ( a value: x ) ] .
-    z
-
 equals VEC( 100, 400, 900. )
-  VEC( 10, 20, 30. ) collect: [x :  x * x]
-
-meth Vec select:
-    "Goldberg & Robson, 1989. p216"
-    z= me cls new .
-    me do: [x : .
-      ( a value: x ) y: [
-        z ap: x ] ] .
-    z
+  FOR( y: 10, 20, 30 )MAP( y*y )
 
 meth VecCls pairs:
   z= Vec new.
@@ -146,9 +129,8 @@ meth VecCls pairs:
   }.
   z.
 
-equals 10, 20
-  ( 10, 20, 30. ) select: [x:  x < 25]
-
+equals 100, 400
+  FOR( x: 10, 20, 30 )MAP( x*x )IF( x < 25 )
 
 equals 'once-upon-a-time'
   ('once', 'upon', 'a', 'time') join: '-'
@@ -215,6 +197,8 @@ meth Top handle:query:
     'value' , VEC{
       '/BrowseCLASSES (NEW)';
       '/FnordCheeseDemo';
+      '/FnordCannon';
+      '/FnordDebugRot';
       '/FnordApp';
       '/FnordTwo';
       '/FnordMotherShip';
@@ -248,8 +232,9 @@ meth Top handle:query:
 
 cls BrowseFiles App
 meth BrowseFiles handle:query:
-  v= Ht linkLabelPairs: FOR(fname,time,size: File dir)MAP(
-           ('/BrowseFile', fname) join: '.',   fname ).
+  v= Ht linkLabelPairs:
+      FOR( fname,time,size: File dir )
+	  MAP( ('/BrowseFile', fname) join: '.',   fname ).
   DICT(
     'type', 'html';
     'title', 'BrowseFIles';
@@ -276,8 +261,9 @@ meth BrowseFile handle:query:
 
 cls BrowseHub App
 meth BrowseHub handle:query:
-  v= Ht linkLabelPairs: FOR(fname,time,size: Hub dir)MAP(
-           ('/BrowseHubFile', fname) join: '.',   fname ).
+  v= Ht linkLabelPairs:
+      FOR( fname,time,size: Hub dir )
+	  MAP( ('/BrowseHubFile', fname) join: '.',   fname ).
   DICT(
     'type', 'html';
     'title', 'BrowseHub';
@@ -307,36 +293,32 @@ meth Browse handle:query:
   v len == 1 $must: (v, '#1').
   v at: 0 $len == 2 $must: (v, '#2').
 
-  ( wl == 1 ) y: [
+  IF( wl == 1 )THEN(
     "gk are Good Keys, those that are classes."
-    gk= clss dir select: [i:
-        AND( clss at: i $ cls name ends: 'Cls';
-             OR( clss at: i $ name ends: 'Cls' $ not;
-                 clss at: i $ cls name == 'ClsCls' ) )
-    ].
+    gk= FOR( i: clss dir )MAP( i )IF(
+          AND( clss at: i $ cls name ends: 'Cls';
+               OR( clss at: i $ name ends: 'Cls' $ not;
+                   clss at: i $ cls name == 'ClsCls' ) )
+    ).
 
-    gk do: [k:
+    FOR( k: gk )DO(
         kc= clss at: k .
         kn= kc name .
         tmp = ('|link|/Browse.', kn, '|', kn, '|') jam, kc meths dir  join: ' '.
-	tmp len == 2 $must: (tmp, '#3').
+	    tmp len == 2 $must: (tmp, '#3').
         v ap: tmp.
-	v do: [each: each len == 2 $must: (v, each, '#4')].
-    ].
+	    FOR( each: v )DO( each len == 2 $must: (v, each, '#4') ).
+    ).
 
     z= Dict new
         $ at: 'type' put: 'list'
         $ at: 'title' put: 'Browsing All Classes'
-        "$ at: 'extra' put: ( clss )"
-        "$ at: 'extraKeys' put: ( clss dir )"
-        "$ at: 'extraCollect' put: ( clss dir collect: [i:  ( clss at: i ) cls cls name ] )"
-        "$ at: 'extraSelect' put: gk"
         $ at: 'value' put: v
 	.
 
-  ] .
+  ) .
   
-  ( wl == 2 ) y: [
+  IF( wl == 2 )THEN(
     cn= ww at: 1 .  "class name"
     co= clss at: cn lower .   "class object"
     v ap: ( ('|link|/', cn, '|[RUN]|')jam, '[RUN]').
@@ -345,21 +327,21 @@ meth Browse handle:query:
             ('==== class ', cn, ' ====')jam ).
 
     d= co cls meths .
-    d dir do: [x:  "For each class method"
+    FOR( x: d dir )DO(  "For each class method"
       v ap: ( ( '|link|/EditMethod.', cn, 'Cls.', x, '|[method] cls ', x, '|' ) jam, d at: x $ str ) .
-    ] .
+    ).
 
     d= co meths .
-    d dir do: [x:   "For each instance method"
+    FOR( x: d dir )DO(   "For each instance method"
       v ap: ( ( '|link|/EditMethod.', cn, '.', x, '|[method] ', x, '|' ) jam, d at: x $ str ) .
-    ] .
+    ).
 
     z= Dict new  at: 'type' put: 'list'
           $ at: 'title' put: ( 'Browsing Class' ap: cn )
           $ at: 'value' put: v
         .
 
-  ] .
+  ) .
   z .
 
 
@@ -501,11 +483,11 @@ meth OldStar handle:query:
   ex = IF( ex equals: nil )THEN( 300 )ELSE( ex num ).
   ey = IF( ey equals: nil )THEN( 300 )ELSE( ey num ).
 
-  v = 100 range collect: [i:  theta = i / 10 .
+  v = FOR( i: 100 )MAP( theta = i / 10 .
       x= theta sin * 290 + 300.
       y= theta cos * 290 + 300.
       VEC('line', ex, ey, x, y).
-  ] .
+  ) .
  
   DICT( 'type', 'draw';
 	'title', 'Drawing a line';
@@ -530,51 +512,50 @@ meth DemoLife delX
 meth DemoLife delY
   me canY idiv: me numY
 meth DemoLife initP
-  me numX range collect: [x:
-    me numY range collect: [y:
+  FOR( x: me numX )MAP(
+    FOR( y: me numY )MAP(
       t = x + y * 13 .
       OR((t imod: 4) == 0,
          (t imod: 5) == 0,
          (t imod: 7) == 0).
-    ]
-  ].
+    )
+  ).
 
 meth DemoLife draw
   dx,dy= me delX, me delY.
   IF(state is: nil) THEN(state = me initP).
 
-  nextState = me numX range collect: [x:
-        me numY range collect: [y:
+  nextState =
+      FOR( x: me numX )MAP(
+        FOR( y: me numY )MAP(
            nei = 0.
-           3 do: [i:  i = i - 1 + x.
-             3 do: [j:  j = j - 1 + y.
+           FOR( i: 3) DO(  i = i - 1 + x.
+             FOR( j: 3) DO(  j = j - 1 + y.
                nei = nei + ((state at: i) at: j).
-             ].
-           ].
+             ).
+           ).
 	   "Notice cell x,y can count as a nei."
            IF((state at: x) at: y)
              THEN( OR(nei == 3;  nei == 4;) )
              ELSE( nei == 3 ).
-        ].
-      ].
+        ).
+      ).
   state = nextState.
   v = Vec new.
-  me numX do: [x:
-    me numY do: [y:
-      (state at: x) at: y $
-        y: [
+  FOR( x: me numX )DO(
+    FOR( y: me numY )DO(
+      IF( (state at: x) at: y )THEN(
              xx = x * dx + (dx idiv: 2).
              yy = y * dy + (dy idiv: 2).
              v ap: VEC( 'rect',  xx - 12,  yy - 12, 24, 24,).
-        ]
-        n: [
+        )ELSE(
              xx = x * dx + (dx idiv: 2).
              yy = y * dy + (dy idiv: 2).
              v ap: VEC( 'line',  xx - 2,  yy - 2,
                                  xx + 2,  yy + 2,).
-        ].
-    ].
-  ].
+        ).
+    ).
+  ).
   v.
 
 meth DemoLife handle:query:
@@ -2306,6 +2287,90 @@ meth FnordApp model
   ).
   v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 1@0@0 ).
   Group new vec: v1.
+
+
+cls FnordDebugRot FnordApp
+vars FnordDebugRot
+  g green balls
+
+meth FnordDebugRot init
+  up init.
+  g = 0.
+  green = 0@1@0@1.
+  balls = Vec new.
+
+meth FnordDebugRot prePost:
+  ex = me gl ex.
+  ey = me gl ey.
+  me gl up: 0 @ 1 @ 0.
+  me gl light: 50 @ 50 @ 50.
+  me gl eye: ex @ ey @ 20.
+  me gl look: 50 @ 50 @ -100.
+  me gl wires: Sys secs / 2 % 1.
+
+meth FnordDebugRot model
+  Group new vec: VEC(
+    FOR( i: 8 )MAP( x = 2*i.
+	  FOR( j: 8 )MAP( y = 2*j.
+	    FOR( k: 8 )MAP( z = 2*k.
+          Cube new
+		      $ pos: x*10 @ y*10 @ z*-10 
+		      $ rot: x*10 @ y*10 @ z*10 
+		      $ scale: 8 @ 2 @ 0.5 
+		      $ color: 1 - x / 8  @  1 - y / 8  @  1 - z / 8
+		)
+      )
+	)
+  ) flat
+  
+
+
+cls FnordCannon FnordApp
+vars FnordCannon
+  g green balls
+
+meth FnordCannon init
+  up init.
+  g = 0.
+  green = 0@1@0@1.
+  balls = Vec new.
+
+meth FnordCannon model
+  g = g + 1.
+  ry= me gl ey - 50.
+  rz= me gl ex - 50.
+  IF( g % 200 == 0 )THEN(
+    balls ap: (Cube new
+	    $ pos: 30 @ 20 @ 20
+		$ scale: 0.3 @ 0.3 @ 0.3
+		$ color: 1 @ 0 @ 0 @ 1
+		).
+  ).
+  FOR( b : balls ) DO (
+    x,y,z= b pos.
+	x = x + 0.02.
+	b pos: x@y@z.
+  ).
+  Group new vec: VEC(
+    Cube new
+		$ pos: 15 @ 20 @ 20 
+		$ scale: 10 @ 2 @ 2 
+		$ color: green,
+    Cube new 
+		$ pos: 25 @ 20 @ 20 
+		$ scale: 8 @ 0.8 @ 0.8 
+	    $ color: green
+		$ rot: 0 @ ry*2 @ rz*2,
+    balls,
+  ) flat
+
+meth FnordCannon prePost:
+  x = me gl ex.
+  y = me gl ey.
+  me gl up: 0 @ 0 @ 1.
+  me gl light: 25 @ -10 @ 25.
+  me gl eye: 40 @ 0 @ 35.
+  me gl look: 20 @ 25 @ 20.
 
 cls FnordCheeseDemo FnordApp
 vars FnordCheeseDemo

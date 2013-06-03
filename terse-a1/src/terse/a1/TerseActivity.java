@@ -1943,11 +1943,11 @@ public class TerseActivity extends Activity {
 					gl.glTranslatef(a.px, a.py, a.pz);
 					gl.glScalef(a.sx, a.sy, a.sz);
 					if (a.rz != 0)
-						gl.glRotatef(a.rz, 0, 0, 1);
+						gl.glRotatef(a.rz, 0, 0, 1);  // Z angle in degrees.
 					if (a.ry != 0)
-						gl.glRotatef(a.ry, 0, 1, 0);
+						gl.glRotatef(a.ry, 0, 1, 0);  // Y angle in degrees.
 					if (a.rx != 0)
-						gl.glRotatef(a.rx, 1, 0, 0);
+						gl.glRotatef(a.rx, 1, 0, 0);  // X angle in degrees.
 				}
 
 				@Override
