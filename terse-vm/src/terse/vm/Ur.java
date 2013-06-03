@@ -420,7 +420,8 @@ public class Ur extends Static implements Comparable {
 		public Blk macroFn(Frame f, Blk b) {
 			return b;
 		}
-		
+
+		// =meth Obj "macro" macro:try:catch:
 		public Ur macroTryCatch(Frame f, Blk b, Blk c) {
 			try {
 				return b.evalWithoutArgs();
@@ -891,70 +892,6 @@ public class Ur extends Static implements Comparable {
 		// =meth Obj "basic" not
 		public Num _not() {
 			return terp().boolObj(!this.truth());
-		}
-
-		// =meth Obj "control" ifNil:,ifn:
-		public Ur ifNil_(Blk a) {
-			if (this.asNil() != null) {
-				return a.body.eval(a.f);
-			} else {
-				return this;
-			}
-		}
-
-		// =meth Obj "control" ifNotNil:,ifnn:
-		public Ur ifNotNil_(Blk a) {
-			if (this.asNil() == null) {
-				return a.body.eval(a.f);
-			} else {
-				return this;
-			}
-		}
-
-		// =meth Obj "control" ifNil:ifNotNil:,ifn:ifnn:
-		public Ur ifNil_ifNotNil_(Blk a, Blk b) {
-			Blk blk = this.asNil() == null ? b : a;
-			say("ifNil:ifNotNil: --> Choosing block %d: %s",
-					this.asNil() == null ? 1 : 0, blk);
-			return blk.body.eval(blk.f);
-		}
-
-		// =meth Obj "control" ifNotNil:ifNil:,ifnn:ifn:
-		public Ur ifNotNil_ifNil_(Blk a, Blk b) {
-			Blk blk = this.asNil() == null ? a : b;
-			say("ifNotNil:ifNil: --> Choosing block %d: %s",
-					this.asNil() == null ? 0 : 1, blk);
-			return blk.body.eval(blk.f);
-		}
-
-		// =meth Obj "control" ifTrue:,y:
-		public Ur ifTrue_(Blk a) {
-			if (this.truth()) {
-				return a.evalWithoutArgs();
-			} else {
-				return terp().instNil;
-			}
-		}
-
-		// =meth Obj "control" ifFalse_:,n:
-		public Ur ifFalse_(Blk a) {
-			if (this.truth()) {
-				return terp().instNil;
-			} else {
-				return a.evalWithoutArgs();
-			}
-		}
-
-		// =meth Obj "control" ifTrue:ifFalse:,y:n:
-		public Ur ifTrue_ifFalse_(Blk a, Blk b) {
-			Blk blk = this.truth() ? a : b;
-			return blk.body.eval(blk.f);
-		}
-
-		// =meth Obj "control" ifFalse:ifTrue:,n:y:
-		public Ur ifFalse_ifTrue_(Blk a, Blk b) {
-			Blk blk = this.truth() ? b : a;
-			return blk.body.eval(blk.f);
 		}
 
 		// =meth Obj "basic" isa:

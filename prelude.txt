@@ -1,3 +1,4 @@
+# vim: set expandtab:sw=2:ts=2
 # --------------------------------------------------------------------------
 # Copyright (c) 2012 Henry Strickland & Thomas Shanks
 # 
@@ -58,41 +59,30 @@ equals 142
 equals 142  
       m= Dict new. m at: 4 + 6 put: 10 * 10. (m at: 10) + 42
 
-equals 'ok'    
-      3 < 5   y::[ 'ok' ] n:: [ 'oops' ]
-equals 'oops'    
-      8 < 0 y::[ 'ok' ] n:: [ 'oops' ]
-equals 'ok'    
-      2 < 3   y::[ 'ok' ]
-equals nil    
-      8 < 0    y::[ 'ok' ]
-equals nil    
-      -8 < 0    n::[ 'ok' ]
-
 equals 'Vec'
-	Vec name
+    Vec name
 
 equals 4, 7, 9
     2 * 2; 7; 3 * 3;
 
 equals 'Vec'
-	() cls name
+    () cls name
 equals 0
-	() len
+    () len
 equals 'Vec'
-	(8;) cls name
+    (8;) cls name
 equals 1
-	(8;) len
+    (8;) len
 equals 'Vec'
-	(8,) cls name
+    (8,) cls name
 equals 1
-	(8,) len
+    (8,) len
 equals 25
-	x, y = Vec(3, 4).   x * x + y * y.
+    x, y = Vec(3, 4).   x * x + y * y.
 equals 26
-	x, y = 3; 4.   x * x + y * y $ + 1.
+    x, y = 3; 4.   x * x + y * y $ + 1.
 equals 26
-	x; y = 3, 4.   x * x + y * y $ + 1.
+    x; y = 3, 4.   x * x + y * y $ + 1.
 
 meth Vec a0
   me at: 0
@@ -107,14 +97,14 @@ meth Vec eq:
   IF( a cls name equals: 'Vec' )THEN(
       IF( me len == a len )THEN(
           FOR( i: me len )MAP(
-	        (me at: i) == (a at: i).
+            (me at: i) == (a at: i).
           ).
         )ELSE(
           'Vec.== got different length Vecs' err: VEC(me len, a len)
-		)
+        )
     )ELSE(
        'Vec.== expected Vec argument, but got' err: a cls
-	)
+    )
 
 equals 1, 1, 0
   Vec('foo', 100, 'z') == Vec('foo'; 100; 'zoo')
@@ -234,7 +224,7 @@ cls BrowseFiles App
 meth BrowseFiles handle:query:
   v= Ht linkLabelPairs:
       FOR( fname,time,size: File dir )
-	  MAP( ('/BrowseFile', fname) join: '.',   fname ).
+      MAP( ('/BrowseFile', fname) join: '.',   fname ).
   DICT(
     'type', 'html';
     'title', 'BrowseFIles';
@@ -263,7 +253,7 @@ cls BrowseHub App
 meth BrowseHub handle:query:
   v= Ht linkLabelPairs:
       FOR( fname,time,size: Hub dir )
-	  MAP( ('/BrowseHubFile', fname) join: '.',   fname ).
+      MAP( ('/BrowseHubFile', fname) join: '.',   fname ).
   DICT(
     'type', 'html';
     'title', 'BrowseHub';
@@ -305,16 +295,16 @@ meth Browse handle:query:
         kc= clss at: k .
         kn= kc name .
         tmp = ('|link|/Browse.', kn, '|', kn, '|') jam, kc meths dir  join: ' '.
-	    tmp len == 2 $must: (tmp, '#3').
+        tmp len == 2 $must: (tmp, '#3').
         v ap: tmp.
-	    FOR( each: v )DO( each len == 2 $must: (v, each, '#4') ).
+        FOR( each: v )DO( each len == 2 $must: (v, each, '#4') ).
     ).
 
     z= Dict new
         $ at: 'type' put: 'list'
         $ at: 'title' put: 'Browsing All Classes'
         $ at: 'value' put: v
-	.
+    .
 
   ) .
   
@@ -352,7 +342,7 @@ meth EditMethod handle:query:
   wl= ww len .
   clss= Cls all .
 
-  ( wl ne: 3 ) y: [ 'wrong words len in EditMethod' err: ww ] .
+  IF( wl ne: 3 )THEN( 'wrong words len in EditMethod' err: ww ).
 
   cn= ww at: 1 .  "class name"
   mn= ww at: 2 .  "method name"
@@ -466,12 +456,12 @@ meth SubmitEditFile handle:query:
 cls DrawLine App
 meth DrawLine handle:query:
   DICT( 'type', 'draw';
-	'title', 'Drawing a line';
-	'value', Vec(
+    'title', 'Drawing a line';
+    'value', Vec(
            VEC( 'line', 10, 400, 50, 300, 2 );
-	);
-	'width', 300;
-	'height', 500;
+    );
+    'width', 300;
+    'height', 500;
   )
 
 cls OldStar App
@@ -490,10 +480,10 @@ meth OldStar handle:query:
   ) .
  
   DICT( 'type', 'draw';
-	'title', 'Drawing a line';
-	'value', v;
-	'width', 600;
-	'height', 600;
+    'title', 'Drawing a line';
+    'value', v;
+    'width', 600;
+    'height', 600;
   ).
 
 cls DemoLife App
@@ -534,7 +524,7 @@ meth DemoLife draw
                nei = nei + ((state at: i) at: j).
              ).
            ).
-	   "Notice cell x,y can count as a nei."
+       "Notice cell x,y can count as a nei."
            IF((state at: x) at: y)
              THEN( OR(nei == 3;  nei == 4;) )
              ELSE( nei == 3 ).
@@ -577,10 +567,10 @@ meth DrawRect handle:query:
     ).
   ).
   DICT( 'type', 'draw';
-	'title', 'Drawing 100 Rectangles';
-	'value', v;
-	'width', 300;
-	'height', 500;
+    'title', 'Drawing 100 Rectangles';
+    'value', v;
+    'width', 300;
+    'height', 500;
   ).
 
 
@@ -595,17 +585,17 @@ meth DrawRect handle:query:
   s = Tag('input'; 'type', 'submit'; 'value', '250 OK').
   form1 = Tag('form'; 'method', 'post'; 'action', '/DemoFormSubmit';
           Ht entity: 'alpha'; i1; br;
-	  Ht entity: 'beta'; i2; br;
-	  Ht entity: 'gamma'; i3; br;
-	  s).
+      Ht entity: 'beta'; i2; br;
+      Ht entity: 'gamma'; i3; br;
+      s).
   i1 = Tag('input'; 'name', 'one'; 'value', 'eins').
   i2 = Tag('input'; 'name', 'two'; 'value', 'zwei').
   i3 = Tag('input'; 'name', 'three'; 'value', 'drei').
   form2 = Tag('form'; 'method', 'get'; 'action', '/DemoFormSubmit';
           Ht entity: 'alpha'; i1; br;
-	  Ht entity: 'beta'; i2; br;
-	  Ht entity: 'gamma'; i3; br;
-	  s).
+      Ht entity: 'beta'; i2; br;
+      Ht entity: 'gamma'; i3; br;
+      s).
   body = HT('form1:', TAG('pre', form1 str), p, form1, p,
             'form2a:', TAG('pre', form2 str), p, form2, p,
             'form2b:', TAG('pre', form2 str), p, form2, p,
@@ -649,9 +639,9 @@ meth DemoHt handle:query:
     TAG('body';
         'bgcolor', '#222222';
         'text', '#DDDDDD';
-	TAG('big',
-	  TAG('big',
-	    TAG('ul', guts))))).
+    TAG('big',
+      TAG('big',
+        TAG('ul', guts))))).
 
  DICT('type', 'html';
    'title', 'DemoHt Title';
@@ -672,8 +662,8 @@ meth ListUnicodePages listPages
     (link, label).
   ).
   DICT( 'type', 'list';
-	'title', 'Unicode Pages.';
-	'value', v;
+    'title', 'Unicode Pages.';
+    'value', v;
   ).
   
 
@@ -683,8 +673,8 @@ meth ListUnicodePages drawPage:
     (i str, ' [', i, '] ').
   ) implode.
   DICT( 'type', 'text';
-	'title', 'Unicode Page ' append: a str;
-	'value', txt;
+    'title', 'Unicode Page ' append: a str;
+    'value', txt;
   ).
 
 cls SwitchWorld App
@@ -849,8 +839,7 @@ meth LiveApp onLive
   scr post.
   me.
 meth LiveApp handle:query:
-  block= [scr:
-    me onLive].
+  block= FN( scr: me onLive ).
   DICT(
     'type', 'live';
     'value', block;
@@ -986,8 +975,7 @@ meth DemoLivePaint draw
   )).
 
 meth DemoLivePaint eventBlk
-  [kind: xy:
-   me onEvent: kind at: xy]
+  FN( kind: xy:  me onEvent: kind at: xy)
 
 meth DemoLivePaint onEvent:at:
   " 'DemoLivePaint------onEvent' say: (a, b). "
@@ -1142,22 +1130,24 @@ meth SaidWhat wMid
 cls Inspect WebApp
 meth Inspect wResult
   ww= me wPath split: '.'.
-  CASE{ww len}OF{
-    1,
-      (InspectRoot new wResult);
-    2,
+  CASE( ww len )OF(
+    1 @
+      (InspectRoot new wResult),
+    2 @
       (
         t = Sys find: (ww at: 1).
-        COND{
-          t is: nil,
-            (InspectSimple new msg: 'nil' $wResult);
-          t isa: Cls,
-            (InspectClass new targ: t $wResult);
-          1,
-            (InspectInst new targ: t $wResult);
-        }
-      );
-  }ELSE{Sys throw: 'bad path:' ap: ww repr}
+        COND(
+          (t is: nil) @
+            (InspectSimple new msg: 'nil' $wResult),
+          (t isa: Cls) @
+            (InspectClass new targ: t $wResult),
+          1 @
+            (InspectInst new targ: t $wResult),
+        )
+      ),
+  )ELSE(
+    'bad path:' err: ww repr
+  )
 
 cls InspectRoot WebApp
 meth InspectRoot title
@@ -1315,14 +1305,14 @@ meth DemoLiveLife lifeStep
   nextState = FOR(x: me numX)MAP(
         FOR(y: me numY)MAP(
            nei = 0.
-	   FOR(i: 3)DO(
+       FOR(i: 3)DO(
              i = i - 1 + x.
-	     FOR(j: 3)DO(
+         FOR(j: 3)DO(
                j = j - 1 + y.
                nei = nei + ((state at: i) at: j).
              ].
            ].
-	   "Notice cell x,y can count as a nei."
+       "Notice cell x,y can count as a nei."
            IF((state at: x) at: y)
              THEN( OR(nei == 3;  nei == 4;) )
              ELSE( nei == 3 ).
@@ -1336,27 +1326,27 @@ meth DemoLiveLife lifeStep
         THEN{
              xx = x * dx + dx2.
              yy = y * dy + dy2.
-	     me green rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
+         me green rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
         }
         ELSE{
              xx = x * dx + dx2.
              yy = y * dy + dy2.
-	     me black rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
+         me black rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
         }
     }
   }.
 
 meth DemoLiveLife eventBlk
-  [kind:ij: i,j= ij.
+  FN( kind:ij: i,j= ij.
    x = i idiv: me delX.
    y = j idiv: me delY.
    old= (state at: x) at: y.
-   IF{old not}THEN{
+   IF( old not )THEN(
      (state at: x) at: y put: 1.
      embargo= Sys secs + 1.
      'Life evBlk' say: (kind, i, j, '->', x, y, embargo).
-   }
-  ]  
+   )
+  )  
 
 meth DemoLiveLife draw
   embargo= 0.
@@ -1374,10 +1364,11 @@ cls DemoLiveLifeRedBlue DemoLiveLife
 meth DemoLiveLifeRedBlue initState
   FOR{x: me numX}MAP{
     FOR{y: me numY}MAP{
-      IF{Num rand < 0.3}
-      THEN{
+      IF{ Num rand < 0.3 }THEN{
         IF{x < me numX / 2} THEN{11} ELSE{101}
-      }ELSE{0}.
+      }ELSE{
+        0
+      }.
   } }.
 
 meth DemoLiveLifeRedBlue lifeStep
@@ -1394,15 +1385,15 @@ meth DemoLiveLifeRedBlue lifeStep
        MAP{
          yy = y * dy + dy2.
          colored = 0.
-	 FOR(i: 3)DO{
+     FOR(i: 3)DO{
            i = i - 1 + x.
-	   FOR(j: 3)DO{
+       FOR(j: 3)DO{
              j = j - 1 + y.
              colored = colored + ((me state at: i) at: j).
            }.
          }.
-	 "Notice cell x,y can count as a colored".
-	 "Simple neighbor count (no color)".
+     "Notice cell x,y can count as a colored".
+     "Simple neighbor count (no color)".
          bw = colored % 10.
          old= (me state at: x) at: y.
 
@@ -1537,7 +1528,7 @@ meth BrowseClass wMid
         'Variable Names (space separated):';
         TAG('input';
             'name','vars';
-	    'value', c vars join);
+        'value', c vars join);
         TAG('p');
         TAG('input';
             'type','submit';
@@ -1749,15 +1740,17 @@ meth BrowseBothWorld wMid
   cfg= Config load.
 
   mode= cfg d at: wn.
-  COND{
-    (mode equals: 's'),(
-      p= ('/WorldSyncUp', wn) join: '.'; '(SyncUp)'.);
-    (mode equals: 'd'),(
-      p= ('/WorldSyncDown', wn) join: '.'; '(SyncDown)'.);
-    (1),(
+  CASE( mode )OF(
+    's' @ (
+      p= ('/WorldSyncUp', wn) join: '.', '(SyncUp)'
+    ),
+    'd' @ (
+      p= ('/WorldSyncDown', wn) join: '.', '(SyncDown)'
+    ),
+  )ELSE(
       "neither up nor down: they just have the same name."
-      p= ('/WorldCONFLICT', wn) join: '.'; '(CONFLICT)'.);
-  }.
+      p= ('/WorldCONFLICT', wn) join: '.', '(CONFLICT)'
+  ).
 
   Ht linkLabelPairs: (p,).
 
@@ -1936,8 +1929,7 @@ meth GameFoo square:ink:
 
 
 meth GameFoo eventBlk
-  [kind: xy:
-   me onEvent: kind at: xy]
+  FN( kind: xy:  me onEvent: kind at: xy)
 
 meth GameFoo onEvent:at:
   x,y= b say.
@@ -2030,8 +2022,7 @@ meth GamePong moveBall
   }.
   
 meth GamePong eventBlk
-  [kind: xy:
-   me onEvent: kind at: xy]
+  FN( kind: xy:  me onEvent: kind at: xy)
 
 meth GamePong onEvent:at:
   x,y= b say.
@@ -2078,7 +2069,11 @@ meth GameTroids setup
   ship= (me newShip $px: wid/2 $py: hei/2 $vx: 0 $vy: 0).
 
 meth GameTroids step
-  me clear: COND{ship ttl < 0, 400; aa len < 1, 40; 1, 202;}.
+  me clear: COND(
+      ship ttl < 0 @ 400,
+      aa len < 1 @ 40,
+      1 @ 202,
+  ).
   FOR{ast: aa} DO{
     ast step: me.
     ast draw: me.
@@ -2121,9 +2116,9 @@ meth GameTroids step
 
 
 meth GameTroids eventBlk
-  [kind: xy:
+  FN( kind: xy:
    IF{kind==0}THEN{me onEvent: kind at: xy}.
-  ]
+  )
 
 meth GameTroids onEvent:at:
   x,y= b.
@@ -2276,12 +2271,12 @@ meth FnordApp model
     for (j: 6) do(
       for (k: 6) do(
         v1 ap: (
-	  Cube new 
-	    $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
-	    $ scale: 5 @ 3 @ 1
-	    $ rot: i*10 @ j*10 @ k*10
-	    $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
-	)
+      Cube new 
+        $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
+        $ scale: 5 @ 3 @ 1
+        $ rot: i*10 @ j*10 @ k*10
+        $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
+    )
       )
     )
   ).
@@ -2311,16 +2306,16 @@ meth FnordDebugRot prePost:
 meth FnordDebugRot model
   Group new vec: VEC(
     FOR( i: 8 )MAP( x = 2*i.
-	  FOR( j: 8 )MAP( y = 2*j.
-	    FOR( k: 8 )MAP( z = 2*k.
+      FOR( j: 8 )MAP( y = 2*j.
+        FOR( k: 8 )MAP( z = 2*k.
           Cube new
-		      $ pos: x*10 @ y*10 @ z*-10 
-		      $ rot: x*10 @ y*10 @ z*10 
-		      $ scale: 8 @ 2 @ 0.5 
-		      $ color: 1 - x / 8  @  1 - y / 8  @  1 - z / 8
-		)
+              $ pos: x*10 @ y*10 @ z*-10 
+              $ rot: x*10 @ y*10 @ z*10 
+              $ scale: 8 @ 2 @ 0.5 
+              $ color: 1 - x / 8  @  1 - y / 8  @  1 - z / 8
+        )
       )
-	)
+    )
   ) flat
   
 
@@ -2341,26 +2336,26 @@ meth FnordCannon model
   rz= me gl ex - 50.
   IF( g % 200 == 0 )THEN(
     balls ap: (Cube new
-	    $ pos: 30 @ 20 @ 20
-		$ scale: 0.3 @ 0.3 @ 0.3
-		$ color: 1 @ 0 @ 0 @ 1
-		).
+        $ pos: 30 @ 20 @ 20
+        $ scale: 0.3 @ 0.3 @ 0.3
+        $ color: 1 @ 0 @ 0 @ 1
+        ).
   ).
   FOR( b : balls ) DO (
     x,y,z= b pos.
-	x = x + 0.02.
-	b pos: x@y@z.
+    x = x + 0.02.
+    b pos: x@y@z.
   ).
   Group new vec: VEC(
     Cube new
-		$ pos: 15 @ 20 @ 20 
-		$ scale: 10 @ 2 @ 2 
-		$ color: green,
+        $ pos: 15 @ 20 @ 20 
+        $ scale: 10 @ 2 @ 2 
+        $ color: green,
     Cube new 
-		$ pos: 25 @ 20 @ 20 
-		$ scale: 8 @ 0.8 @ 0.8 
-	    $ color: green
-		$ rot: 0 @ ry*2 @ rz*2,
+        $ pos: 25 @ 20 @ 20 
+        $ scale: 8 @ 0.8 @ 0.8 
+        $ color: green
+        $ rot: 0 @ ry*2 @ rz*2,
     balls,
   ) flat
 
@@ -2386,11 +2381,11 @@ meth FnordCheeseDemo model
     for(i: 8) map(
       for (j: 8) map(
         for (k: 8) map(
-	      Cube new
-	         $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
-	         $ scale: 5 @ 3 @ 1
-	         $ rot: i*10+t @ j*10+2*t @ k*10+3*t
-	         $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
+          Cube new
+             $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
+             $ scale: 5 @ 3 @ 1
+             $ rot: i*10+t @ j*10+2*t @ k*10+3*t
+             $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
         )
       )
     ) flat.
@@ -2413,12 +2408,12 @@ meth FnordTwo model
   for(i: 10) do(
     for (j: 10) do(
         v1 ap: (
-	  Cube new 
-	    $ rot: 10*i + 5 @ 10*j + 5 @ 0
-	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
-	    $ scale: 8 @ 8 @ 1
-	    $ color: i / 10 + 0.05 @ 0.2 @ i / 10 + 0.05 @ 1
-	)
+      Cube new 
+        $ rot: 10*i + 5 @ 10*j + 5 @ 0
+        $ pos: 10*i + 5 @ 10*j + 5 @ -1
+        $ scale: 8 @ 8 @ 1
+        $ color: i / 10 + 0.05 @ 0.2 @ i / 10 + 0.05 @ 1
+    )
     )
   ).
   v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 0@0@1 ).
@@ -2433,12 +2428,12 @@ meth FnordRandom model
     for (j: 5) do(
       for (k: 5) do(
         v1 ap: (
-	  Cube new
-	    $ pos: 30 + (Num rand: 40) @ 30 + (Num rand: 40) @ (Num rand: 20)
-	    $ scale: 10 * Num rand @ 10 * Num rand @ 10 * Num rand
-	    $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
-	    $ color: Num rand @ Num rand @ Num rand @ 1
-	)
+      Cube new
+        $ pos: 30 + (Num rand: 40) @ 30 + (Num rand: 40) @ (Num rand: 20)
+        $ scale: 10 * Num rand @ 10 * Num rand @ 10 * Num rand
+        $ rot: 180 * Num rand @ 180 * Num rand @ 180 * Num rand
+        $ color: Num rand @ Num rand @ Num rand @ 1
+    )
       )
     )
   ).
@@ -2616,10 +2611,10 @@ meth FnordFlight modelGround
     Cube new $ scale: 5 @ 20 @ 0.2 $ pos: 75 @ 25 @ 0 $ color: grayish,
     FOR(i: 10) MAP(
       FOR (j: 10) MAP(
-  	  Cube new
-  	    $ pos: 10*i + 5 @ 10*j + 5 @ -1
-  	    $ scale: 9 @ 9 @ 1
-  	    $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
+        Cube new
+          $ pos: 10*i + 5 @ 10*j + 5 @ -1
+          $ scale: 9 @ 9 @ 1
+          $ color: i / 10 + 0.05 @ 0.2 @ j / 10 + 0.05 @ 1
       )
     ),
     "Stars."
