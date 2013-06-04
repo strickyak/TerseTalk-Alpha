@@ -691,7 +691,7 @@ public abstract class Terp extends Static {
 			Cls clsObj = clss.get(className.toLowerCase());
 			Cls supObj = clss.get(superName.toLowerCase());
 			if (more.trim().length() > 0) {
-				toss("Was not expecting more: <%s>");
+				toss("'cls' line was not expecting more: <%s>", more);
 			}
 			if (supObj == null) {
 				toss("loadInitFile: Cannot define subclass <%s> of <%s>: class <%s> does not exist.",

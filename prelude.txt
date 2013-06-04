@@ -196,6 +196,7 @@ meth Top handle:query:
       '/DualFlight';
       '/GameFoo';
       '/GamePong';
+      '/PongGame';
       '/GameTroids';
       '/SnapshotWorld';
       '/EVAL CODE (DoIt, PrintIt)';
@@ -2659,5 +2660,158 @@ meth DualFlight handle:query:
     'type'@ 'dual',
     'value'@ me,
   ). 
+
+############################
+cls Pane App
+vars Pane
+  wid hei path query
+meth Pane wid:
+  wid= a
+meth Pane hei:
+  hei= a
+meth Pane wid
+  wid
+meth Pane hei
+  hei
+
+############################
+cls CanvPane Pane
+vars CanvPane
+  scr red blue green white black
+meth CanvPane handle:query:
+  path,query= a,b.
+  DICT(
+    'type'@ 'live',
+    'value'@ FN( scr: me runApp
+                 "Dirty: Sets scr!"
+	           ),
+    'event'@ me eventBlk).
+
+meth CanvPane eventBlk
+  FN( event: xy:
+      me on: event at: xy)
+meth CanvPane on:at:
+  me
+  
+meth CanvPane red
+  red.
+meth CanvPane green
+  green.
+meth CanvPane blue
+  blue.
+meth CanvPane white
+  white.
+meth CanvPane black
+  black.
+meth CanvPane newInk:
+  scr newInk: a
+meth CanvPane post
+  scr post
+meth CanvPane clear:
+  scr clear: a
+
+meth CanvPane runApp
+  red= scr newInk: 900.
+  green= scr newInk: 90.
+  blue= scr newInk: 9.
+  white= scr newInk: 999.
+  black= scr newInk: 0.
+
+  'draw...' say: ('src=', scr) jam.
+  me draw.  "NOOOOOOOOOOOOOOOO"
+  scr post.  "NOOOOOOOOOOOOOOOO"
+  me.
+
+############################
+cls GrafPane Pane
+vars GrafPane
+  gl graf
+
+############################
+
+cls PongGame CanvPane
+vars PongGame
+  n s e w ww bx by vx vy  pad  hit miss
+
+meth PongGame init
+  up init
+
+meth PongGame draw
+  "NOOOOOOOOOOOOOOOOOOOOO"
+  ww= 20.  "wall width."
+  "north, south, east, west boundaries, where ball reflects."
+  n= ww.
+  s= hei - ww.
+  e= wid - ww.
+  w= ww.
+  hit= miss= 0.
+  me white fontSize: 48.
+
+  "Determine fps by posting twice."
+  bx, by = ww neg, ww neg.
+  vx, vy = 0, 0.
+  pad = hei / 2.
+  me drawPong.
+  me post.
+  me drawPong.
+  me post.
+  me resetBall.
+
+  WHILE{1} DO{
+    me moveBall.
+    me drawPong.
+    me post.
+    vx = vx * 1.001.
+  }.
+
+
+meth PongGame resetBall
+  bx, by = 2 * ww, ww + (Num rand: hei - 2*ww). "ball position."
+  vx, vy = 8, 4. "ball velocity."
+
+
+meth PongGame drawPong
+  me clear: 213.
+  me white rect: (0,0) to: (wid,ww). "top"
+  me white rect: (0,s) to: (wid,hei). "bottom"
+  me white rect: (0,n) to: (w,s). "left"
+  w2 = ww / 2.
+  me blue rect: (bx-w2, by-w2) to: (bx+w2, by+w2).
+  me green rect: (e, pad - ww*1.8) to: (wid, pad + ww*1.8).
+  fps = me scr fps.
+  IF{fps is: nil $not}THEN{fps= fps fmt: '%.2f'}.
+  me white
+    text: (hit str, ':', miss str, '   (', fps, 'fps)')join 
+    sw: (2*ww, hei - 2*ww).
+
+meth PongGame moveBall
+  fps= me scr fps.
+  fps= IF{fps is: nil} THEN{20} ELSE {fps}.
+  bx, by = bx + vx*30 / fps, by + vy*30 / fps.
+  IF(bx <= w)THEN(bx= w + (w-bx). vx = vx neg.).
+  IF(by <= n)THEN(by= n + (n-by). vy = vy neg.).
+  IF(by >= s)THEN(by= s - (by-s). vy = vy neg.).
+
+  IF{bx >= e}THEN{
+    IF{by - pad $abs <= ww*1.8} THEN{
+      "paddle hit."
+      bx= e - (bx-e).
+      vy = vx * (by - pad) / ww.
+      vx = vx neg.
+      hit = hit + 1.
+    }ELSE{
+      "paddle miss."
+      miss = miss + 1.
+      me resetBall.
+    }
+  }.
+  
+meth PongGame onEvent:at:
+  x,y= b say.
+  "pad= x / wid * hei."
+  pad= y.
+
+############################
+
 
 ##END
