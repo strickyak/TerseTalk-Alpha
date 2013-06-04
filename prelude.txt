@@ -857,7 +857,7 @@ meth LiveApp white
 meth LiveApp black
   black.
 meth LiveApp eventBlk
-  nil.   "Return a blk [kind: xy: ...] if you accept events"
+  nil.   "Return a blk FN(kind: xy: ...) if you accept events"
 
 # Methods from Screen are available here.
 meth LiveApp newInk:
@@ -1310,14 +1310,14 @@ meth DemoLiveLife lifeStep
          FOR(j: 3)DO(
                j = j - 1 + y.
                nei = nei + ((state at: i) at: j).
-             ].
-           ].
+             ).
+           ).
        "Notice cell x,y can count as a nei."
            IF((state at: x) at: y)
              THEN( OR(nei == 3,  nei == 4,) )
              ELSE( nei == 3 ).
-        ].
-      ].
+        ).
+      ).
   "Update state, unless embargo is in place."
   IF{embargo < Sys secs}THEN{state = nextState}.
   FOR(x: me numX)DO{
@@ -1832,9 +1832,9 @@ meth WorldFetch wMid
 
   guts= Hub read: fn.
   'guts cls' say: guts cls.
-  guts must: [
+  guts must: FN(
     VEC{'Cannot read world', wn, 'from the Hub.'}join
-  ].
+  ).
 
   lines= guts split: nl.
   sb= Buf new.

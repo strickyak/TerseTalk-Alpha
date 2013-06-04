@@ -186,7 +186,7 @@ public class Parser extends Obj {
 		Expr[] v = emptyExprs;
 		skipStmtEndersReturningTrueIfMissing();
 		while (lex.t != null) {
-			if (lex.closesBlock() || lex.closesParen())
+			if (lex.closesParen())
 				break;
 
 			Expr s = parseStmt();
@@ -254,7 +254,7 @@ public class Parser extends Obj {
 		while (lex.isLister()) {
 			itsAList = true;
 			lex.advance();
-			if (lex.endsStmt() || lex.closesBlock() || lex.closesParen()
+			if (lex.endsStmt() || lex.closesParen()
 					|| lex.isEOF()) {
 				break;
 			}
@@ -278,7 +278,7 @@ public class Parser extends Obj {
 		while (lex.isTupler()) {
 			itsATuple = true;
 			lex.advance();
-			if (lex.isLister() || lex.endsStmt() || lex.closesBlock()
+			if (lex.isLister() || lex.endsStmt()
 					|| lex.closesParen() || lex.isEOF()) {
 				break;
 			}
@@ -448,8 +448,7 @@ public class Parser extends Obj {
 			z = new Expr.Lit(new Ur.Str(terp, lex.w));
 			break;
 		case OTHER:
-			z = lex.opensBlock() ? parseBlock(false)
-					: lex.opensParen() ? parseParen() : null;
+			z = lex.opensParen() ? parseParen() : null;
 			break;
 		case NAME:
 			if (lex.isMacro()) {
@@ -510,8 +509,8 @@ public class Parser extends Obj {
 		}
 	}
 
-	private Expr parseBlock(boolean useParens) {
-		assert useParens ? lex.opensParen() : lex.opensBlock();
+	private Expr parseBlock() {
+		assert lex.opensParen();
 		lex.advance();
 		Expr[] params = exprs();
 
@@ -528,7 +527,7 @@ public class Parser extends Obj {
 			}
 		}
 		Expr body = parseExpr();
-		assert useParens ? lex.closesParen() : lex.closesBlock() : fmt(
+		assert lex.closesParen() : fmt(
 				"lex=%s<%s> body=<%s>", lex.t, lex.w, body);// Do not advance;
 															// parsePrim() does
 															// that after
@@ -558,10 +557,10 @@ public class Parser extends Obj {
 			names.add(lex.w);
 			locs = append(locs, lex.frontLocation());
 			lex.advance();
-			assert lex.opensParen() || lex.opensBlock();
-			Expr.Block b = (Expr.Block) parseBlock(lex.opensParen());
+			assert lex.opensParen();
+			Expr.Block b = (Expr.Block) parseBlock();
 			blocks.add(b);
-			assert lex.closesParen() || lex.closesBlock();
+			assert lex.closesParen();
 			lex.advance();
 		}
 		final int sz = names.size();
@@ -664,10 +663,6 @@ public class Parser extends Obj {
 	}
 
 	static final class TLex extends Static {
-		static Pattern ASSIGNISH = Pattern
-				.compile("[A-Za-z][A-Za-z0-9,\\s]*(--|[=] )");
-		// TODO: need to say "not followed by =, instead of space hack.
-
 		Terp terp;
 
 		// The parser will use these fields:
@@ -795,10 +790,6 @@ public class Parser extends Obj {
 			}
 		}
 
-		boolean isAssignish() {
-			return ASSIGNISH.matcher(w + rest).lookingAt();
-		}
-
 		boolean isEOF() {
 			return t == null;
 		}
@@ -842,33 +833,19 @@ public class Parser extends Obj {
 			char c = w.charAt(0);
 			return c == '$' || c == ',' && w.equals(",,");
 		}
-
-		boolean opensBlock() {
-			if (t != Pat.OTHER)
-				return false;
-			char c = w.charAt(0);
-			return c == '[' || c == '{';
-		}
-
-		boolean closesBlock() {
-			if (t != Pat.OTHER)
-				return false;
-			char c = w.charAt(0);
-			return c == ']' || c == '}';
-		}
-
+		
 		boolean opensParen() {
 			if (t != Pat.OTHER)
 				return false;
 			char c = w.charAt(0);
-			return c == '(' || c == '!';
+			return c == '(' || c == '[' || c == '{' || c == '!';
 		}
 
 		boolean closesParen() {
 			if (t != Pat.OTHER)
 				return false;
 			char c = w.charAt(0);
-			return c == ')' || c == '?';
+			return c == ')' || c == ']' || c == '}' || c == '?';
 		}
 
 		boolean isBinop3() {
@@ -924,7 +901,7 @@ public class Parser extends Obj {
 			assert (t == Pat.NAME);
 			storeState();
 			advance();
-			boolean z = opensParen() || opensBlock();
+			boolean z = opensParen();
 			recallState();
 			return z;
 		}
