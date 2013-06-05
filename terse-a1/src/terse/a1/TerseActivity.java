@@ -244,10 +244,29 @@ public class TerseActivity extends Activity {
 			@Override
 			public void run() {
 				// terp.say("ThenBgThenFg: Running BG for %s", name);
+				String bgErr = null;
 				if (bg != null)
-					bg.run();
+					try {
+						bg.run();
+					} catch (Exception e) {
+						e.printStackTrace();
+						bgErr = Static.GetStackTrace(e);
+					}
 				// terp.say("ThenBgThenFg: Scheduling FG in UI for %s", name);
-				runOnUiThread(fg);
+				if (bgErr == null) {
+					runOnUiThread(fg);
+				} else {
+					final String finalBgErr = bgErr;
+					runOnUiThread(new Runnable() {
+						public void run() {
+							TextView tv = new TextView(TerseActivity.this);
+							tv.setText(Static.fmt(
+									"EXCEPTION IN Background <%s>:\n\n%s",
+									bg, finalBgErr));
+							SetContentViewWithHomeButtonAndScroll(tv);
+						}
+					});
+				}
 			}
 		}
 		// terp.say("ThenBgThenFg: Starting BG thread for %s", name);

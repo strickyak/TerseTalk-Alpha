@@ -21,6 +21,9 @@
 // --------------------------------------------------------------------------
 package terse.vm;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,6 +46,19 @@ public class Static {
 
 	public static String fmt(String s, Object... objects) {
 		return String.format(s, objects);
+	}
+
+	public static String GetStackTrace(final Throwable e) {
+		final StringBuilder sb = new StringBuilder();
+		final OutputStream out = new OutputStream() {
+			@Override
+			public void write(int ch) throws IOException {
+				sb.append((char) ch);
+			}
+		};
+		final PrintStream ps = new PrintStream(out);
+		e.printStackTrace(ps);
+		return sb.toString();
 	}
 
 	public static String htmlEscape(String s) {

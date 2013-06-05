@@ -155,10 +155,15 @@ public class Parser extends Obj {
 		this.localVars = new HashMap<String, Integer>();
 		this.localVarSpelling = new HashMap<String, String>();
 		this.instVars = new HashMap<String, Integer>();
-		for (String k : onCls.myVarNames) {
-			Integer i = onCls.allVarMap.get(k);
-			assert i != null : k + "@" + onCls.cname;
-			this.instVars.put(k.toLowerCase(), i);
+		// Include instVars from superclasses, like Python does.
+		Cls c = onCls;
+		while (c != null) {
+			for (String k : c.myVarNames) {
+				Integer i = onCls.allVarMap.get(k);
+				assert i != null : k + "@" + onCls.cname;
+				this.instVars.put(k.toLowerCase(), i);
+			}
+			c = c.supercls;
 		}
 	}
 

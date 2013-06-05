@@ -2693,16 +2693,22 @@ meth CanvPane eventBlk
 meth CanvPane on:at:
   me
   
+meth CanvPane scr
+  scr
+meth CanvPane wid
+  wid
+meth CanvPane hei
+  hei
 meth CanvPane red
-  red.
+  red
 meth CanvPane green
-  green.
+  green
 meth CanvPane blue
-  blue.
+  blue
 meth CanvPane white
-  white.
+  white
 meth CanvPane black
-  black.
+  black
 meth CanvPane newInk:
   scr newInk: a
 meth CanvPane post
@@ -2711,6 +2717,9 @@ meth CanvPane clear:
   scr clear: a
 
 meth CanvPane runApp
+  wid = scr width.
+  hei = scr height.
+
   red= scr newInk: 900.
   green= scr newInk: 90.
   blue= scr newInk: 9.
@@ -2737,6 +2746,8 @@ meth PongGame init
   up init
 
 meth PongGame draw
+  wid = me wid.
+  hei = me hei.
   "NOOOOOOOOOOOOOOOOOOOOO"
   ww= 20.  "wall width."
   "north, south, east, west boundaries, where ball reflects."
@@ -2806,7 +2817,7 @@ meth PongGame moveBall
     }
   }.
   
-meth PongGame onEvent:at:
+meth PongGame on:at:
   x,y= b say.
   "pad= x / wid * hei."
   pad= y.
