@@ -133,7 +133,7 @@ public class Parser extends Obj {
 	static Pattern EQUALS = Pattern.compile("--");
 	static Pattern SEMICOLON = Pattern.compile("\\.,|,\\.");
 	static Pattern BANG = Pattern.compile("!");
-	static Pattern HUH = Pattern.compile("\\?");
+	static Pattern HUNH = Pattern.compile("\\?");
 	static Pattern BANG_EQ = Pattern.compile("\\(=");
 
 	static public String bigraphSubst(String s) {
@@ -142,7 +142,7 @@ public class Parser extends Obj {
 		z = replace(EQUALS, "=", z);
 		z = replace(SEMICOLON, ";", z);
 		z = replace(BANG, "(", z);
-		z = replace(HUH, ")", z);
+		z = replace(HUNH, ")", z);
 		z = replace(BANG_EQ, "!=", z);
 		return z;
 	}
@@ -399,16 +399,39 @@ public class Parser extends Obj {
 	private Expr parseBinary2(Expr receiver) {
 		receiver = parseBinary1(receiver);
 		Expr e = receiver;
-		while (lex.isBinop2()) {
-			String front = lex.front; String white = lex.white;
-			String op = lex.w;
-			int[] locs = ints(lex.frontLocation());
-			lex.advance();
-			Expr unary = parseUnary();
-			Expr a = parseBinary1(unary);
-			e = new Expr.Send(e, op, exprs(a), locs);
-			e.front = front; e.white = white;
-			e.rest = lex.rest;
+		String prevRest = receiver.rest;
+		while (lex.isBinop2() || lex.t == Pat.NUMBER && lex.w.charAt(0) == '-') {
+			if (lex.t == Pat.NUMBER) {
+				// Handle special case like "x-2" where "-2" gets parsed as NUMBER.
+				try {
+					String front = lex.front;
+					String op = "-";
+					int[] locs = ints(lex.frontLocation());
+					Expr a = new Expr.Lit(new Ur.Num(terp,
+							Double.parseDouble(lex.w.substring(1))));
+					a.front = front + "-";
+					a.white = e.white;
+					a.rest = lex.rest;
+					e = new Expr.Send(e, op, exprs(a), locs);
+					e.front = front;
+					e.white = "";
+					e.rest = prevRest.substring(1);
+				} catch (RuntimeException ex) {
+					ex.printStackTrace();
+					throw ex;
+				}
+			} else {
+				String front = lex.front; String white = lex.white;
+				String op = lex.w;
+				int[] locs = ints(lex.frontLocation());
+				lex.advance();
+				Expr unary = parseUnary();
+				Expr a = parseBinary1(unary);
+				e = new Expr.Send(e, op, exprs(a), locs);
+				e.front = front; e.white = white;
+				e.rest = lex.rest;
+			}
+			prevRest = e.rest;
 		}
 		return e;
 	}

@@ -2675,7 +2675,9 @@ meth Pane wid
 meth Pane hei
   hei
 
-############################
+#################################
+# New Pane framework begins here.
+#################################
 cls DrawPane Pane
 vars DrawPane
   scr red blue green white black stop
