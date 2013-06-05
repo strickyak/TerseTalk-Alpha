@@ -254,8 +254,11 @@ public class TerseActivity extends Activity {
 					}
 				// terp.say("ThenBgThenFg: Scheduling FG in UI for %s", name);
 				if (bgErr == null) {
+					// Continue with the fg.
 					runOnUiThread(fg);
 				} else {
+					// An error occurred in the bg, so don't do the fg.
+					// Instead, display the error.
 					final String finalBgErr = bgErr;
 					runOnUiThread(new Runnable() {
 						public void run() {

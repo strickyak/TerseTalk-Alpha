@@ -1176,6 +1176,7 @@ public class Ur extends Static implements Comparable {
 				((Expr.LValue) params[0]).store(f, k);
 				((Expr.LValue) params[1]).store(f, v);
 			}
+			// If params.length == 0, that's OK too.
 		}
 
 		// =meth Blk "eval" value

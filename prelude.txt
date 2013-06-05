@@ -197,6 +197,7 @@ meth Top handle:query:
       '/GameFoo';
       '/GamePong';
       '/PongGame';
+      '/DrawPane';
       '/GameTroids';
       '/SnapshotWorld';
       '/EVAL CODE (DoIt, PrintIt)';
@@ -2675,50 +2676,53 @@ meth Pane hei
   hei
 
 ############################
-cls CanvPane Pane
-vars CanvPane
-  scr red blue green white black
-meth CanvPane handle:query:
+cls DrawPane Pane
+vars DrawPane
+  scr red blue green white black stop
+meth DrawPane handle:query:
   path,query= a,b.
   DICT(
     'type'@ 'live',
-    'value'@ FN( scr: me runApp
-                 "Dirty: Sets scr!"
+    'value'@ FN( theScreen: me runApp: theScreen
 	           ),
     'event'@ me eventBlk).
 
-meth CanvPane eventBlk
+meth DrawPane eventBlk
   FN( event: xy:
       me on: event at: xy)
-meth CanvPane on:at:
+meth DrawPane on:at:
   me
   
-meth CanvPane scr
+meth DrawPane stop: a
+  stop= a
+meth DrawPane scr
   scr
-meth CanvPane wid
+meth DrawPane wid
   wid
-meth CanvPane hei
+meth DrawPane hei
   hei
-meth CanvPane red
+meth DrawPane red
   red
-meth CanvPane green
+meth DrawPane green
   green
-meth CanvPane blue
+meth DrawPane blue
   blue
-meth CanvPane white
+meth DrawPane white
   white
-meth CanvPane black
+meth DrawPane black
   black
-meth CanvPane newInk:
+meth DrawPane newInk:
   scr newInk: a
-meth CanvPane post
+meth DrawPane post
   scr post
-meth CanvPane clear:
+meth DrawPane clear:
   scr clear: a
 
-meth CanvPane runApp
-  wid = scr width.
-  hei = scr height.
+meth DrawPane runApp:
+  scr= a.
+  wid= scr width.
+  hei= scr height.
+  stop= 0.
 
   red= scr newInk: 900.
   green= scr newInk: 90.
@@ -2726,10 +2730,23 @@ meth CanvPane runApp
   white= scr newInk: 999.
   black= scr newInk: 0.
 
-  'draw...' say: ('src=', scr) jam.
-  me draw.  "NOOOOOOOOOOOOOOOO"
-  scr post.  "NOOOOOOOOOOOOOOOO"
+  me init.
+  while(stop not) DO(
+  	me step.
+    me post.
+  ).
   me.
+
+meth DrawPane init
+  me.
+meth DrawPane step
+  me say: 'Drawing a red X on blue bg.  You should subclass DrawPane or define <step>.'.
+  me clear: 3.
+  me red line: 0@0 to: wid - 1@hei - 1. 
+  me red line: wid - 1@0 to: 0@hei - 1. 
+  me stop: 1.
+  me.
+
 
 ############################
 cls GrafPane Pane
@@ -2738,17 +2755,12 @@ vars GrafPane
 
 ############################
 
-cls PongGame CanvPane
+cls PongGame DrawPane
 vars PongGame
   n s e w ww bx by vx vy  pad  hit miss
 
 meth PongGame init
-  up init
-
-meth PongGame draw
-  wid = me wid.
-  hei = me hei.
-  "NOOOOOOOOOOOOOOOOOOOOO"
+  up init.
   ww= 20.  "wall width."
   "north, south, east, west boundaries, where ball reflects."
   n= ww.
@@ -2762,19 +2774,18 @@ meth PongGame draw
   bx, by = ww neg, ww neg.
   vx, vy = 0, 0.
   pad = hei / 2.
-  me drawPong.
-  me post.
-  me drawPong.
-  me post.
-  me resetBall.
 
-  WHILE{1} DO{
-    me moveBall.
+  FOR(2)DO(
+    me resetBall.
     me drawPong.
     me post.
-    vx = vx * 1.001.
-  }.
+  ).
+  me resetBall.
 
+meth PongGame step
+  me moveBall.
+  me drawPong.
+  vx = vx * 1.001.
 
 meth PongGame resetBall
   bx, by = 2 * ww, ww + (Num rand: hei - 2*ww). "ball position."
