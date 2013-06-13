@@ -1,0 +1,369 @@
+diff --git a/prelude.txt b/prelude.txt
+index a3570a1..60ee995 100644
+--- a/prelude.txt
++++ b/prelude.txt
+@@ -190,6 +190,7 @@ meth Top handle:query:
+       '/FnordCannon';
+       '/FnordDebugRot';
+       '/FnordApp';
++      '/BlocksDemo';
+       '/FnordTwo';
+       '/FnordMotherShip';
+       '/FnordFlight';
+@@ -197,7 +198,7 @@ meth Top handle:query:
+       '/GameFoo';
+       '/GamePong';
+       '/PongGame';
+-      '/DrawPane';
++      '/DrawView';
+       '/GameTroids';
+       '/SnapshotWorld';
+       '/EVAL CODE (DoIt, PrintIt)';
+@@ -2663,25 +2664,25 @@ meth DualFlight handle:query:
+   ). 
+ 
+ ############################
+-cls Pane App
+-vars Pane
++cls View App
++vars View
+   wid hei path query
+-meth Pane wid:
++meth View wid:
+   wid= a
+-meth Pane hei:
++meth View hei:
+   hei= a
+-meth Pane wid
++meth View wid
+   wid
+-meth Pane hei
++meth View hei
+   hei
+ 
+ #################################
+-# New Pane framework begins here.
++# New View framework begins here.
+ #################################
+-cls DrawPane Pane
+-vars DrawPane
++cls DrawView View
++vars DrawView
+   scr red blue green white black stop
+-meth DrawPane handle:query:
++meth DrawView handle:query:
+   path,query= a,b.
+   DICT(
+     'type'@ 'live',
+@@ -2689,38 +2690,38 @@ meth DrawPane handle:query:
+ 	           ),
+     'event'@ me eventBlk).
+ 
+-meth DrawPane eventBlk
++meth DrawView eventBlk
+   FN( event: xy:
+       me on: event at: xy)
+-meth DrawPane on:at:
++meth DrawView on:at:
+   me
+   
+-meth DrawPane stop: a
++meth DrawView stop: a
+   stop= a
+-meth DrawPane scr
++meth DrawView scr
+   scr
+-meth DrawPane wid
++meth DrawView wid
+   wid
+-meth DrawPane hei
++meth DrawView hei
+   hei
+-meth DrawPane red
++meth DrawView red
+   red
+-meth DrawPane green
++meth DrawView green
+   green
+-meth DrawPane blue
++meth DrawView blue
+   blue
+-meth DrawPane white
++meth DrawView white
+   white
+-meth DrawPane black
++meth DrawView black
+   black
+-meth DrawPane newInk:
++meth DrawView newInk:
+   scr newInk: a
+-meth DrawPane post
++meth DrawView post
+   scr post
+-meth DrawPane clear:
++meth DrawView clear:
+   scr clear: a
+ 
+-meth DrawPane runApp:
++meth DrawView runApp:
+   scr= a.
+   wid= scr width.
+   hei= scr height.
+@@ -2739,10 +2740,10 @@ meth DrawPane runApp:
+   ).
+   me.
+ 
+-meth DrawPane init
++meth DrawView init
+   me.
+-meth DrawPane step
+-  me say: 'Drawing a red X on blue bg.  You should subclass DrawPane or define <step>.'.
++meth DrawView step
++  me say: 'Drawing a red X on blue bg.  You should subclass DrawView or define <step>.'.
+   me clear: 3.
+   me red line: 0@0 to: wid - 1@hei - 1. 
+   me red line: wid - 1@0 to: 0@hei - 1. 
+@@ -2751,13 +2752,8 @@ meth DrawPane step
+ 
+ 
+ ############################
+-cls GrafPane Pane
+-vars GrafPane
+-  gl graf
+ 
+-############################
+-
+-cls PongGame DrawPane
++cls PongGame DrawView
+ vars PongGame
+   n s e w ww bx by vx vy  pad  hit miss
+ 
+@@ -2836,6 +2832,69 @@ meth PongGame on:at:
+   pad= y.
+ 
+ ############################
++cls GrafView View
++vars GrafView
++  gl graf stop
++
++meth GrafView eventBlk
++  FN( event: xy:
++      me on: event at: xy)
++
++meth GrafView handle:query:
++  DICT(
++    'type', 'fnord';
++    'value', me;
++  ). 
++# TODO: runApp:
++meth GrafView run:
++  me say: 'GrafView--run:' @ a.
++  gl = a.
++  me init.
++  WHILE(stop not) DO(
++    me step.
++    me prePost: graf.
++    me post: graf.
++  ).
++meth GrafView gl
++  gl
++meth GrafView init
++  me gl ambient: 0.4 @ 0.4 @ 0.4.
++  me gl diffuse: 0.9 @ 0.9 @ 0.9.
++  me gl light: 100 @ 100 @ 100.
++meth GrafView prePost:
++  x = me gl ex.
++  y = me gl ey.
++  me gl light: x @ y @ 100.
++  me gl eye: x @ y @ (x - y)abs * 3.
++  me gl look: 100 - y @ 100 - x @ 0.
++
++meth GrafView post:
++  me prePost: a.
++  me gl post: a.
++
++############################
++cls BlocksDemo GrafView
++meth BlocksDemo step
++  graf= me model.  "TODO"
++  "stop= 1."
+ 
++meth BlocksDemo model
++  v1 = ().
++  for(i: 6) do(
++    for (j: 6) do(
++      for (k: 6) do(
++        v1 ap: (
++      Cube new 
++        $ pos: 20 + 10*i @ 20 + 10*j @ 10*k - 20
++        $ scale: 5 @ 3 @ 1
++        $ rot: i*10 @ j*10 @ k*10
++        $ color: 0.1+i/6 @ 0.1+j/6 @ 0.1+k/6 @ 0.9
++    )
++      )
++    )
++  ).
++  v1 ap: ( Lines new: VEC(10@10@10, 90@10@10, 90@90@10, 10@90@10, 10@10@10, 50@50@50, 50@50@99) $color: 1@0@0 ).
++  Group new vec: v1.
+ 
++############################
+ ##END
+diff --git a/terse-a1/src/terse/a1/TerseActivity.java b/terse-a1/src/terse/a1/TerseActivity.java
+index 03236d4..5d3e19d 100644
+--- a/terse-a1/src/terse/a1/TerseActivity.java
++++ b/terse-a1/src/terse/a1/TerseActivity.java
+@@ -78,6 +78,7 @@ import terse.vm.Ur.Str;
+ import terse.vm.Ur.Vec;
+ import terse.vm.Usr;
+ 
++import android.annotation.SuppressLint;
+ import android.app.Activity;
+ import android.app.ListActivity;
+ import android.content.Context;
+@@ -136,6 +137,7 @@ import android.widget.Toast;
+ import javax.microedition.khronos.egl.EGLConfig;
+ import javax.microedition.khronos.opengles.GL10;
+ 
++@SuppressLint("DrawAllocation")
+ public class TerseActivity extends Activity {
+ 
+ 	public static Thread singleWorkThread;
+@@ -1091,8 +1093,8 @@ public class TerseActivity extends Activity {
+ 
+ 	public static class Screen extends Obj {
+ 		AndyTerp aterp;
+-		public SurfaceHolder holder;
+-		public View view;
++		public SurfaceHolder holder = null;
++		public View view = null;
+ 		private Bitmap bm = null;
+ 		private Canvas canv = null;
+ 		// =get Screen int width width
+@@ -1103,7 +1105,8 @@ public class TerseActivity extends Activity {
+ 		public double lastPost = 0;
+ 		public int numPosts = 0;
+ 
+-		// =cls "draw" Screen Usr
++		// =cls "draw" Screen Obj
++		/** Screen for an entire view */
+ 		public Screen(AndyTerp terp, SurfaceHolder holder, View view,
+ 				int width, int height) {
+ 			super(terp.wrapandy.clsScreen);
+@@ -1114,6 +1117,17 @@ public class TerseActivity extends Activity {
+ 			this.height = height;
+ 		}
+ 
++		/** Screen for just a canvas, a Slave in some bigger view */
++		public Screen(AndyTerp terp, Canvas canv, /*View view,*/
++				int width, int height) {
++			super(terp.wrapandy.clsScreen);
++			this.aterp = terp;
++			this.canv = canv;
++			// this.view = view;
++			this.width = width;
++			this.height = height;
++		}
++
+ 		// =meth Screen . newInk:
+ 		public Ink newInk_(int colorRgbDecimal) {
+ 			return new Ink(aterp, this, colorRgbDecimal);
+@@ -1139,6 +1153,9 @@ public class TerseActivity extends Activity {
+ 
+ 		// =meth Screen "draw" post
+ 		public synchronized void post() {
++			if (holder == null || view == null) {
++				toss("Calling post on Slave Screen.");
++			}
+ 			canvas(); // allocate bm & canv, if needed.
+ 			bm.prepareToDraw();
+ 			Canvas locked = holder.lockCanvas();
+@@ -2411,6 +2428,89 @@ public class TerseActivity extends Activity {
+ 		}
+ 		startActivity(intent);
+ 	}
++	
++	/** SlaveView holds a TerseTalk view and forwards methods to it. */
++	public class SlaveView extends View {
++		private Obj master;
++		private AndyTerp terp;
++		private boolean didInit = false;
++		SlaveView(Context cx, Obj master) {
++			super(cx);
++			this.master = master;
++			terp = (AndyTerp)master.terp();
++		}
++		
++		@Override public void onDraw(Canvas canv) {
++			Screen screen = new Screen(terp, canv, canv.getWidth(), canv.getHeight());
++			master.apply_args_("scr:", Static.urs(screen));
++			master.apply_args_("dim:", Static.urs(terp.newNum(canv.getWidth()), terp.newNum(canv.getHeight())));
++			if (!(didInit)) {
++				master.apply_args_("init", Static.emptyUrs);
++				didInit = true;
++			}
++			master.apply_args_("step", Static.emptyUrs);
++		}
++	}
++	
++	public class BaseV extends Usr { // Should be abstract.
++		// =cls BaseV Usr
++		public BaseV(Cls cls) {
++			super(cls);
++		}
++
++		public View slaveView() {
++			toss("subclassResponsibility");
++			return null;
++		}
++	}
++	
++	public class LinearV extends BaseV {
++		private SlaveLinearView slave = new SlaveLinearView(context(), this);
++
++		// =cls LinearV BaseV
++		public LinearV(Cls cls) {
++			super(cls);
++		}
++		@Override public View slaveView() {
++			return slave;
++		}
++		
++		// =meth LinearV vert
++		public void vert() {
++			slave.vert();
++		}
++		
++		// =meth LinearV horz
++		public void horz() {
++			slave.horz();
++		}
++		
++		// =meth LinearV ap:
++		public void ap_(BaseV a) {
++			slave.addView(a.slaveView());
++		}
++		
++		// =meth LinearV setView
++		public void setView() {
++			setContentView(slave);
++		}
++	}
++
++	public class SlaveLinearView extends LinearLayout {
++		LinearV master;
++		
++		protected SlaveLinearView(Context context, LinearV master) {
++			super(context);
++			this.master = master;
++		}
++
++		void vert() {
++			setOrientation(LinearLayout.VERTICAL);
++		}
++		void horz() {
++			setOrientation(LinearLayout.HORIZONTAL);
++		}
++	}	
+ 
+ 	static String stringAt(Ur p, String i) {
+ 		return Static.stringAt(p, i);
