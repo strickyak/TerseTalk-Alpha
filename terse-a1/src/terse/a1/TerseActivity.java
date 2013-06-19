@@ -837,13 +837,13 @@ public class TerseActivity extends Activity {
 					DualView view = new DualView(this, app);
 					setContentView(view);
 					return;
-					/*
+					
 				} else if (type.str.equals("usr")) {
 					Obj app = value.mustObj();
-					UsrView view = new UsrView(this, viewObj);
-					setContentView(view);
+					VuBase view = new VuBase(terp.wrapandy.clsViewProxy);
+					setContentView(view.slave);
 					return;
-					*/
+					
 				} else if (type.str.equals("world") && value instanceof Str) {
 					String newWorld = value.toString();
 					if (Terp.WORLD_P.matcher(newWorld).matches()) {
@@ -2573,4 +2573,48 @@ public class TerseActivity extends Activity {
 		socket.receive(p);
 		return buf;
 	}
+	
+	////////////////////////////////////////////////
+	
+    /** SlaveView holds a TerseTalk view and forwards methods to it. */
+    public class SlaveView extends View {
+        private VuBase master;
+        private AndyTerp terp;
+    	private Paint red = new Paint();
+        
+        SlaveView(Context cx, VuBase master) {
+            super(cx);
+            this.master = master;
+            terp = (AndyTerp)master.terp();
+        	red.setColor(Color.RED);
+        }   
+    
+        @Override public void onDraw(Canvas canv) {
+        	canv.drawColor(Color.CYAN);
+        	canv.drawLine(0, 0, canv.getWidth(), canv.getHeight(), red);
+        	canv.drawLine(canv.getWidth(), 0, 0, canv.getHeight(), red);
+        }   
+    }
+    
+    public class VuBase extends Obj {
+    	SlaveView slave;
+
+    	// =cls "Android" VuBase Usr
+		public VuBase(Cls cls) {
+			super(cls);
+			slave = new SlaveView(context(), this);
+		}
+		
+		// =meth VuBase newView
+		public Obj _newView() {
+			return new VuBase(terp.wrapandy.clsViewProxy);
+		}
+		
+		// =meth VuBase main
+		public void _main() {
+			setContentView(slave);
+		}
+    	
+    }
+
 }

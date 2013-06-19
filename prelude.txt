@@ -186,6 +186,7 @@ meth Top handle:query:
     'title' , 'TOP';
     'value' , VEC{
       '/BrowseCLASSES (NEW)';
+	  '/VuDemo';
       '/FnordCheeseDemo';
       '/FnordCannon';
       '/FnordDebugRot';
@@ -2884,4 +2885,12 @@ meth BlocksDemo model
   Group new vec: v1.
 
 ############################
+cls VuDemo Act
+meth VuDemo handle:query:
+  DICT(
+    'type', 'usr';
+	'value', me;
+  )
+
 ##END
+
