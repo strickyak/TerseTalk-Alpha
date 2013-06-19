@@ -148,10 +148,10 @@ meth Orphan handle:query:
   Check its superclass.')jam err.
 
   DICT{
-    'type'@ 'text',
-    'value'@ (
+    'type', 'text';
+    'value', (
       'This class <', me cls name, '> is an Orphan.
-      Check its superclass.')jam,
+      Check its superclass.')jam;
   }
 
 cls App Usr
@@ -1133,17 +1133,17 @@ cls Inspect WebApp
 meth Inspect wResult
   ww= me wPath split: '.'.
   CASE( ww len )OF(
-    1@
+    1 @
       (InspectRoot new wResult),
-    2@
+    2 @
       (
         t = Sys find: (ww at: 1).
         COND(
-          (t is: nil)@
+          (t is: nil) @
             (InspectSimple new msg: 'nil' $wResult),
-          (t isa: Cls)@
+          (t isa: Cls) @
             (InspectClass new targ: t $wResult),
-          1@
+          1 @
             (InspectInst new targ: t $wResult),
         )
       ),
@@ -1254,8 +1254,8 @@ meth BarApp handle:query:
   g = ((o=Bar new) one two, '=', o x, o y, o z, o r, o s) join: '  ,,  '.
 
   dict(
-    'type'@ 'text',
-    'value'@ g str,
+    'type', 'text';
+    'value', g str;
   )
 
 
@@ -1316,7 +1316,7 @@ meth DemoLiveLife lifeStep
            ).
        "Notice cell x,y can count as a nei."
            IF((state at: x) at: y)
-             THEN( OR(nei == 3,  nei == 4,) )
+             THEN( OR(nei == 3;  nei == 4;) )
              ELSE( nei == 3 ).
         ).
       ).
@@ -1400,7 +1400,7 @@ meth DemoLiveLifeRedBlue lifeStep
          old= (me state at: x) at: y.
 
          z= IF{old}
-            THEN{ OR{bw == 3,  bw == 4,} }
+            THEN{ OR{bw == 3;  bw == 4;} }
             ELSE{ bw == 3 }.
          IF{old} THEN{
              rc = (old idiv: 10) % 10.
@@ -1410,16 +1410,12 @@ meth DemoLiveLifeRedBlue lifeStep
              rc = (colored idiv: 10) % 10.
              bc = (colored idiv: 100) % 10.
          }.
-         z= COND(
-           (z == 0)@
-		     (clr = me black. 0),
-           (rc > bc)@
-		     (pop=pop+1. popR=popR+1. clr = me red. 11),
-           (rc < bc)@
-		     (pop=pop+1. popB=popB+1. clr = me blue. 101),
-           1@
-		     (pop=pop+1. clr = me white.  1),
-         ).
+         z= COND{
+           z == 0 , (clr = me black. 0);
+           rc > bc, (pop=pop+1. popR=popR+1. clr = me red. 11);
+           rc < bc, (pop=pop+1. popB=popB+1. clr = me blue. 101);
+           1      , (pop=pop+1. clr = me white.  1);
+         }.
          clr rect: (xx - rx, yy - ry) to: (xx + rx, yy + ry).
          z.
       }. "next y"
@@ -1443,10 +1439,7 @@ meth BrowseClasses wMid
       ('/BrowseClass', c name)join:'.',
       c name
    }IF{
-     AND(
-	   c at: 'nonmain' $not,
-	   c isa: AppCls,
-	 )
+     AND{c at: 'nonmain' $not;   c isa: AppCls;}
    },
 
    TAG('p'),
@@ -1457,10 +1450,7 @@ meth BrowseClasses wMid
       ('/BrowseClass', c name)join:'.',
       c name
    }IF{
-     AND(
-	   c at: 'nonmain',
-	   c isa: AppCls,
-	 )
+     AND{c at: 'nonmain';   c isa: AppCls;}
    },
 
    TAG('p'),
@@ -1471,7 +1461,7 @@ meth BrowseClasses wMid
       ('/BrowseClass', c name)join:'.',
       c name
    }IF{
-     AND{c isa: UsrCls,   c isa: AppCls $not,}
+     AND{c isa: UsrCls;   c isa: AppCls $not;}
    },
 
    TAG('p'),
@@ -1481,7 +1471,7 @@ meth BrowseClasses wMid
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{ AND{c isa: UsrCls $not,  c cls is: MetaCls $not}
+   }IF{ AND{c isa: UsrCls $not;  c cls is: MetaCls $not}
    },
 
    TAG('p'),
@@ -1491,7 +1481,7 @@ meth BrowseClasses wMid
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{ AND{c cls is: MetaCls,}
+   }IF{ AND{c cls is: MetaCls;}
    },
 
   }
@@ -1503,79 +1493,79 @@ meth BrowseClass wTitle
 meth BrowseClass wMid
   cn= me w1.
   c= Cls at: cn lower.
-  HT(
-    TAG('b', 'Methods: '),
+  HT{
+    TAG('b', 'Methods: ');
     FOR{ name:m: c meths }MAP{
       HT{
         Ht link: m name
            to: ('/BrowseMethod.', cn, '.', m name)jam,
         ' ', Ht entity: 'nbsp', ' '
       }
-    },
+    };
 
-    TAG('p'),
-    TAG('b', 'Class Methods: '),
+    TAG('p');
+    TAG('b', 'Class Methods: ');
     FOR{ name:m: c cls meths }MAP{
       HT{
         Ht link: ('cls', m name)join
            to: ('/BrowseMethod.', cn, 'Cls.', m name)jam,
         ' ', Ht entity: 'nbsp', ' '
       }
-    },
+    };
 
-    TAG('p'),
-    TAG('hr'),
+    TAG('p');
+    TAG('hr');
     IF{ c isa: AppCls }THEN{
       Ht link: 'RUN this App.' to: ('/', c name)jam
-    }ELSE{ '' },
+    }ELSE{ '' };
 
-    TAG('p'),
-    TAG('hr'),
+    TAG('p');
+    TAG('hr');
 
-    TAG('b', 'Instance Variables: '),
-    TAG('br'),
-    TAG('form',
-        'method'@ 'GET',
-        'action'@ (('/SubmitInstVars',cn)join:'.'),
-        'Variable Names (space separated):',
-        TAG('input',
-            'name'@ 'vars',
-            'value'@  c vars join,),
-        TAG('p'),
-        TAG('input',
-            'type'@ 'submit',
-            'value'@ 'Define',),
-    ),
+    TAG('b', 'Instance Variables: ');
+    TAG('br');
+    TAG('form';
+        'method','GET';
+        'action',('/SubmitInstVars',cn)join:'.';
+        'Variable Names (space separated):';
+        TAG('input';
+            'name','vars';
+        'value', c vars join);
+        TAG('p');
+        TAG('input';
+            'type','submit';
+            'value','Define';);
+    );
 
-    TAG('p'),
-    TAG('hr'),
+    TAG('p');
+    TAG('hr');
 
     TAG('b', 'Define New Method: '),
-    TAG('br'),
-    TAG('form',
-        'method'@ 'GET',
-        'action'@ (('/SubmitNewMethod',cn)join:'.'),
-        'Name of method: ',
-        TAG('input',
-            'name'@ 'method',),
-        TAG('p'),
-        TAG('input',
-            'type'@ 'checkbox',
-            'name'@ 'clsmeth',
-            'value'@ '1',),
-        'Class Method',
-        TAG('p'),
-        TAG('input',
-            'type'@ 'submit',
-            'value'@ 'Define',),
-    ),
+    TAG('br');
+    TAG('form';
+        'method','GET';
+        'action',('/SubmitNewMethod',cn)join:'.';
+        'Name of method: ';
+        TAG('input';
+            'name','method';);
+        TAG('p');
+        TAG('input';
+            'type','checkbox';
+            'name','clsmeth';
+            'value','1';);
+        'Class Method';
+        TAG('p');
+        TAG('input';
+            'type','submit';
+            'value','Define';);
+    );
 
-    TAG('p'),
-    TAG('hr'),
+    TAG('p');
+    TAG('hr');
     
     Ht link: 'Define a subclass.'
-       to: (('/FormCreateSubclass', c name) join: '.'),
-  )
+       to: (('/FormCreateSubclass', c name) join: '.');
+  }
 
  
 cls SubmitInstVars WebApp
@@ -1615,10 +1605,10 @@ meth BrowseMethod wMid
   c= Cls all at: cn lower.
   m= c meths at: mn lower.
   HT{  
-    TAG{'pre', m str},
-    TAG{'hr'},
+    TAG{'pre', m str};
+    TAG{'hr'};
     Ht link: 'EDIT' to: ((
-      '/EditMethod', cn, mn) join: '.'),
+      '/EditMethod', cn, mn) join: '.');
   }
  
 
@@ -1702,25 +1692,22 @@ meth BrowseWorlds wMid
   cfg= Config load.
 
   HT{
-    notice,
-    TAG('p'),
-    Ht bold: 'Local Worlds: ',
-    Ht linkLabelPairs:
-	  FOR{f: onlyLocal}
-      MAP{('/BrowseLocalWorld', f) join: '.',  f,  me notes: f},
-    TAG('p'),
+    notice;
+    TAG('p');
+    Ht bold: 'Local Worlds: ';
+    Ht linkLabelPairs: FOR{f: onlyLocal}
+      MAP{('/BrowseLocalWorld', f) join: '.';  f;  me notes: f};
+    TAG('p');
 
-    Ht bold: 'Local+Remote Worlds: ',
-    Ht linkLabelPairs:
-	  FOR{f: both}
-      MAP{('/BrowseBothWorld', f) join: '.',  f,  me notes: f},
-    TAG('p'),
+    Ht bold: 'Local+Remote Worlds: ';
+    Ht linkLabelPairs: FOR{f: both}
+      MAP{('/BrowseBothWorld', f) join: '.';  f;  me notes: f};
+    TAG('p');
 
-    Ht bold: 'Remote Worlds: ',
-    Ht linkLabelPairs:
-	  FOR{f: onlyHub}
-      MAP{('/BrowseRemoteWorld', f) join: '.',  f,  me notes: f},
-    TAG('p'),
+    Ht bold: 'Remote Worlds: ';
+    Ht linkLabelPairs: FOR{f: onlyHub}
+      MAP{('/BrowseRemoteWorld', f) join: '.';  f;  me notes: f};
+    TAG('p');
   }.
 
 cls BrowseLocalWorld WebApp
@@ -1734,15 +1721,15 @@ meth BrowseLocalWorld wMid
   mode= cfg d at: wn.
   IF{ mode equals: 's' }THEN{
     "already shared; offer sync."
-    p= ('/WorldSyncUp', wn) join: '.', '(SyncUp)'.
+    p= ('/WorldSyncUp', wn) join: '.'; '(SyncUp)'.
   }ELSE{
     "not yet shared; offer share."
-    p= ('/WorldShareUp', wn) join: '.', '(Share)'.
+    p= ('/WorldShareUp', wn) join: '.'; '(Share)'.
   }.
 
   HT{
-    Ht linkLabelPairs: (p,),
-    TAG{'p'},
+    Ht linkLabelPairs: (p,);
+    TAG{'p'};
     "dict change world?"
   }.
 
@@ -1780,10 +1767,10 @@ meth BrowseRemoteWorld wMid
   mode= cfg d at: wn.
   IF{ mode equals: 'd' }THEN{
     "already downloaded; offer sync."
-    p= ('/WorldSyncDown', wn) join: '.', '(SyncDown)'.
+    p= ('/WorldSyncDown', wn) join: '.'; '(SyncDown)'.
   }ELSE{
     "not yet fetched; offer fetch."
-    p= ('/WorldFetch', wn) join: '.', '(Fetch)'.
+    p= ('/WorldFetch', wn) join: '.'; '(Fetch)'.
   }.
 
   Ht linkLabelPairs: (p,).
@@ -1798,11 +1785,11 @@ meth WorldShareUp wMid
   cfg d at: wn put: 's'.
   cfg save.
 
-  p= ('/WorldSyncUp', wn) join: '.', '(SyncUp)'.
+  p= ('/WorldSyncUp', wn) join: '.'; '(SyncUp)'.
   HT{
-    'World marked to sync up.',
-    TAG{'p'},
-    Ht linkLabelPairs: (p,),
+    'World marked to sync up.';
+    TAG{'p'};
+    Ht linkLabelPairs: (p,);
   }
 
 
@@ -1815,11 +1802,11 @@ meth WorldSyncUp wMid
   fn= ('w_', wn lower, '.txt')jam.
 
   Hub write: fn value: (File read: fn).
-  p= '/BrowseWorlds', '(BrowseWorlds)'.
+  p= '/BrowseWorlds'; '(BrowseWorlds)'.
   HT{
-    'Sync up successful.',
-    TAG{'p'},
-    Ht linkLabelPairs: (p,),
+    'Sync up successful.';
+    TAG{'p'};
+    Ht linkLabelPairs: (p,);
   }
 
 cls WorldFetch WebApp
@@ -1849,11 +1836,11 @@ meth WorldFetch wMid
   }.
   File write: fn value: sb str.
 
-  p= '/BrowseWorlds', '(BrowseWorlds)'.
+  p= '/BrowseWorlds'; '(BrowseWorlds)'.
   HT{
-    'Sync down successful.',
-    TAG{'p'},
-    Ht linkLabelPairs: (p,),
+    'Sync down successful.';
+    TAG{'p'};
+    Ht linkLabelPairs: (p,);
   }
 
 cls FormCreateSubclass WebApp
@@ -1862,16 +1849,16 @@ meth FormCreateSubclass wTitle
   ('Create Subclass of', cn) join.
 meth FormCreateSubclass wMid
   cn= me w1.
-  TAG('form',
-      'method'@ 'GET',
-      'action'@ (('/SubmitCreateSubclass',cn)join:'.'),
-      'Name of subclass: ',
-      TAG('input',
-          'name'@ 'subcls',),
-      TAG('p'),
-      TAG('input',
-          'type'@ 'submit',
-          'value'@ 'Create Subclass',),
+  TAG('form';
+      'method','GET';
+      'action',('/SubmitCreateSubclass',cn)join:'.';
+      'Name of subclass: ';
+      TAG('input';
+          'name','subcls';);
+      TAG('p');
+      TAG('input';
+          'type','submit';
+          'value','Create Subclass';);
   ).
 
 cls SubmitCreateSubclass WebApp
@@ -1950,11 +1937,11 @@ meth GameFoo onEvent:at:
   x,y= b say.
   "pad= x / wid * hei."
 
-  IF{AND {(a==0) , (y > hei/2) , (x<wid/2)}} THEN{
+  IF{AND {(a==0) ; (y > hei/2) ; (x<wid/2)}} THEN{
     cx= cx - 1. 'cx is' say: cx.
   }. "move left"
  
-  IF{AND {(a==0) , (y > hei/2) , (x>wid/2)}} THEN{
+  IF{AND {(a==0) ; (y > hei/2) ; (x>wid/2)}} THEN{
     cx= cx + 1. 'cx is' say: cx.
   }. "move right"
 
@@ -2069,7 +2056,7 @@ meth GameTroids setup
   w2,h2= wid / 2, hei / 2.
   FOR{x: 100, w2, wid - 100}DO{
     FOR{y: 100, h2, hei - 100}DO{
-      IF{OR{x ne: w2, y ne: h2}}THEN{
+      IF{OR{x ne: w2; y ne: h2}}THEN{
         a= me newAster
            $px: x $py: y
            $vx: Num rand * 2 - 1
@@ -2085,9 +2072,9 @@ meth GameTroids setup
 
 meth GameTroids step
   me clear: COND(
-      (ship ttl < 0)@  400,
-      (aa len < 1)@  40,
-      1@  202,
+      ship ttl < 0 @ 400,
+      aa len < 1 @ 40,
+      1 @ 202,
   ).
   FOR{ast: aa} DO{
     ast step: me.
@@ -2193,10 +2180,10 @@ meth TroidsThing init:
   hei= a scr height.
   wid= a scr width.
   xyxy= VEC{
-    sz neg@ sz,
-    sz neg@ sz neg,
-    sz@ sz neg,
-    sz@ sz,
+    sz neg, sz;
+    sz neg, sz neg;
+    sz, sz neg;
+    sz, sz;
   }.
   ww= wid neg, 0, wid.
   hh= hei neg, 0, hei.
@@ -2254,8 +2241,8 @@ meth FnordApp gl
   gl
 meth FnordApp handle:query:
   DICT(
-    'type'@ 'fnord',
-    'value'@ me,
+    'type', 'fnord';
+    'value', me;
   ). 
 meth FnordApp run:
   me say: 'FnordApp--run:'.
@@ -2658,8 +2645,8 @@ meth FnordFlight modelGround
 cls DualFlight FnordFlight
 meth DualFlight handle:query:
   DICT(
-    'type'@ 'dual',
-    'value'@ me,
+    'type', 'dual';
+    'value', me;
   ). 
 
 ############################
