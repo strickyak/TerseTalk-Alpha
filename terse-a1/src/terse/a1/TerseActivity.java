@@ -60,6 +60,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 
+import terse.a1.TerseActivity.BaseViewPrim;
 import terse.a1.TerseActivity.DualView.FnordView.FnordRenderer;
 import terse.vm.Cls;
 import terse.vm.Parser;
@@ -840,8 +841,8 @@ public class TerseActivity extends Activity {
 					
 				} else if (type.str.equals("usr")) {
 					Obj app = value.mustObj();
-					VuBase view = new VuBase(terp.wrapandy.clsViewProxy);
-					setContentView(view.slave);
+					BaseViewPrim view = (BaseViewPrim) app;
+					setContentView(view.slave());  // If we send main in TT, we don't need this.
 					return;
 					
 				} else if (type.str.equals("world") && value instanceof Str) {
@@ -2577,44 +2578,111 @@ public class TerseActivity extends Activity {
 	////////////////////////////////////////////////
 	
     /** SlaveView holds a TerseTalk view and forwards methods to it. */
-    public class SlaveView extends View {
-        private VuBase master;
+//    public class BaseSlaveView extends View {
+//        private BaseViewPrim master;
+//        protected AndyTerp terp;
+//    	private Paint red = new Paint();
+//        
+//        BaseSlaveView(Context cx, BaseViewPrim master) {
+//            super(cx);
+//            this.master = master;
+//            terp = (AndyTerp)master.terp();
+//        	red.setColor(Color.RED);
+//        }   
+//    
+//        @Override public void onDraw(Canvas canv) {
+//        	canv.drawColor(Color.CYAN);
+//        	canv.drawLine(0, 0, canv.getWidth(), canv.getHeight(), red);
+//        	canv.drawLine(canv.getWidth(), 0, 0, canv.getHeight(), red);
+//        }   
+//    }
+    
+    public abstract class BaseViewPrim extends Obj {
+    	// =cls "Android" BaseViewPrim Obj
+		public BaseViewPrim(Cls cls) {
+			super(cls);
+		}
+		
+		public abstract View slave();
+		
+		// =meth BaseViewPrim main
+		public void _main() {
+			setContentView(slave());
+		}
+    }
+    
+    public abstract class ValViewPrim extends BaseViewPrim {
+    	// =cls "Android" ValViewPrim BaseViewPrim
+		public ValViewPrim(Cls cls) {
+			super(cls);
+		}
+    }
+    
+    /** SlaveView holds a TerseTalk view and forwards methods to it. */
+    public final class TextSlaveView extends TextView {
+        private TextValViewPrim master;
         private AndyTerp terp;
-    	private Paint red = new Paint();
         
-        SlaveView(Context cx, VuBase master) {
+    	TextSlaveView(Context cx, TextValViewPrim master) {
             super(cx);
             this.master = master;
             terp = (AndyTerp)master.terp();
-        	red.setColor(Color.RED);
-        }   
-    
-        @Override public void onDraw(Canvas canv) {
-        	canv.drawColor(Color.CYAN);
-        	canv.drawLine(0, 0, canv.getWidth(), canv.getHeight(), red);
-        	canv.drawLine(canv.getWidth(), 0, 0, canv.getHeight(), red);
-        }   
+			// setTextAppearance(context(), R.style.teletype);
+			setBackgroundColor(Color.BLACK);
+			setTextColor(Color.WHITE);
+			setTextSize(14);
+        }
     }
     
-    public class VuBase extends Obj {
-    	SlaveView slave;
+    public final class TextValViewPrim extends ValViewPrim {
+    	TextSlaveView slave;
 
-    	// =cls "Android" VuBase Usr
-		public VuBase(Cls cls) {
+    	// =cls "Android" TextValViewPrim ValViewPrim
+		public TextValViewPrim(Cls cls) {
 			super(cls);
-			slave = new SlaveView(context(), this);
+			slave = new TextSlaveView(context(), this);
 		}
-		
-		// =meth VuBase newView
+		// =meth TextValViewPrim newView
 		public Obj _newView() {
-			return new VuBase(terp.wrapandy.clsViewProxy);
+			TextValViewPrim p = new TextValViewPrim(terp.wrapandy.clsTextValViewPrim);
+			return p;
 		}
-		
-		// =meth VuBase main
-		public void _main() {
-			setContentView(slave);
+		@Override
+		public View slave() {
+			return slave;
 		}
-    	
+    }
+    
+    /** SlaveView holds a TerseTalk view and forwards methods to it. */
+    public final class LinearSlaveView extends LinearLayout {
+        private LinearViewPrim master;
+        private AndyTerp terp;
+        
+        LinearSlaveView(Context cx, LinearViewPrim master) {
+            super(cx);
+            this.master = master;
+            terp = (AndyTerp)master.terp();
+			setBackgroundColor(Color.DKGRAY);
+        }
+    }
+    
+    public final class LinearViewPrim extends BaseViewPrim {
+    	LinearSlaveView slave;
+
+    	// =cls "Android" LinearViewPrim ValViewPrim
+		public LinearViewPrim(Cls cls) {
+			super(cls);
+			slave = new LinearSlaveView(context(), this);
+		}
+		// =meth LinearViewPrim newView
+		public Obj _newView() {
+			LinearViewPrim p = new LinearViewPrim(terp.wrapandy.clsLinearViewPrim);
+			return p;
+		}
+		@Override
+		public View slave() {
+			return slave;
+		}
     }
 
 }

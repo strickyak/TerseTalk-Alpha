@@ -293,7 +293,9 @@ if {$CLASS == "WrapAndy"} {
 
   import terse.a1.TerseActivity.DualView.FnordView.GGl;
 
-  import terse.a1.TerseActivity.ViewProxy;
+  import terse.a1.TerseActivity.BaseViewPrim;
+  import terse.a1.TerseActivity.TextValViewPrim;
+  import terse.a1.TerseActivity.LinearViewPrim;
 "
 } else {
   puts "package terse.vm;"
