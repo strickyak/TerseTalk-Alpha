@@ -143,6 +143,8 @@ public class TerseActivity extends Activity {
 	public static AndyTerp terp;
 	public static String terp_error;
 	public static String world = "tmp0";
+	public static Context latestContext;
+	public static Activity latestActivity;
 
 	private static int nextWorkThreadSerial = 0;
 
@@ -175,6 +177,8 @@ public class TerseActivity extends Activity {
 
 	@Override
 	protected void onResume() {
+		latestContext = this;
+		latestActivity = this;
 		super.onResume();
 		// The following call resumes a paused rendering thread.
 		// If you de-allocated graphic objects for onPause()
@@ -187,6 +191,8 @@ public class TerseActivity extends Activity {
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		latestContext = this;
+		latestActivity = this;
 		glSurfaceView = null; // Forget gl on new activity.
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -345,6 +351,10 @@ public class TerseActivity extends Activity {
 			wrapandy = new WrapAndy();
 			wrapandy.installClasses(this);
 			wrapandy.installMethods(this);
+		}
+		
+		public Context context() {
+			return TerseActivity.this;
 		}
 
 		public void clearEventQueue() {
@@ -2597,7 +2607,7 @@ public class TerseActivity extends Activity {
 //        }   
 //    }
     
-    public abstract class BaseViewPrim extends Obj {
+    public static abstract class BaseViewPrim extends Obj {
     	// =cls "Android" BaseViewPrim Obj
 		public BaseViewPrim(Cls cls) {
 			super(cls);
@@ -2607,11 +2617,11 @@ public class TerseActivity extends Activity {
 		
 		// =meth BaseViewPrim main
 		public void _main() {
-			setContentView(slave());
+			latestActivity.setContentView(slave());
 		}
     }
     
-    public abstract class ValViewPrim extends BaseViewPrim {
+    public static abstract class ValViewPrim extends BaseViewPrim {
     	// =cls "Android" ValViewPrim BaseViewPrim
 		public ValViewPrim(Cls cls) {
 			super(cls);
@@ -2619,7 +2629,7 @@ public class TerseActivity extends Activity {
     }
     
     /** SlaveView holds a TerseTalk view and forwards methods to it. */
-    public final class TextSlaveView extends TextView {
+    public static final class TextSlaveView extends TextView {
         private TextValViewPrim master;
         private AndyTerp terp;
         
@@ -2634,27 +2644,31 @@ public class TerseActivity extends Activity {
         }
     }
     
-    public final class TextValViewPrim extends ValViewPrim {
+    public static final class TextValViewPrim extends ValViewPrim {
     	TextSlaveView slave;
 
     	// =cls "Android" TextValViewPrim ValViewPrim
 		public TextValViewPrim(Cls cls) {
 			super(cls);
-			slave = new TextSlaveView(context(), this);
+			slave = new TextSlaveView(latestContext, this);
 		}
-		// =meth TextValViewPrim newView
-		public Obj _newView() {
-			TextValViewPrim p = new TextValViewPrim(terp.wrapandy.clsTextValViewPrim);
-			return p;
+		// =meth TextValViewPrimCls "new" new
+		public static TextValViewPrim _new(Terp t) {
+			AndyTerp terp = (AndyTerp) t;
+			return new TextValViewPrim(terp.wrapandy.clsTextValViewPrim);
 		}
 		@Override
 		public View slave() {
 			return slave;
 		}
+		// =meth TextValViewPrim "access" text:
+		public void text_(Obj s) {
+			slave.setText(s.toString());
+		}
     }
     
     /** SlaveView holds a TerseTalk view and forwards methods to it. */
-    public final class LinearSlaveView extends LinearLayout {
+    public static final class LinearSlaveView extends LinearLayout {
         private LinearViewPrim master;
         private AndyTerp terp;
         
@@ -2663,25 +2677,30 @@ public class TerseActivity extends Activity {
             this.master = master;
             terp = (AndyTerp)master.terp();
 			setBackgroundColor(Color.DKGRAY);
+			setOrientation(LinearLayout.VERTICAL);  // Default to V.
         }
     }
     
-    public final class LinearViewPrim extends BaseViewPrim {
+    public static final class LinearViewPrim extends BaseViewPrim {
     	LinearSlaveView slave;
 
     	// =cls "Android" LinearViewPrim ValViewPrim
 		public LinearViewPrim(Cls cls) {
 			super(cls);
-			slave = new LinearSlaveView(context(), this);
+			slave = new LinearSlaveView(((AndyTerp) cls.terp()).context(), this);
 		}
-		// =meth LinearViewPrim newView
-		public Obj _newView() {
-			LinearViewPrim p = new LinearViewPrim(terp.wrapandy.clsLinearViewPrim);
-			return p;
+		// =meth LinearViewPrimCls "new" new
+		public static LinearViewPrim _new(Terp t) {
+			AndyTerp terp = (AndyTerp) t;
+			return new LinearViewPrim(terp.wrapandy.clsLinearViewPrim);
 		}
 		@Override
 		public View slave() {
 			return slave;
+		}
+		// =meth LinearViewPrim "android" add:
+		public void add_(BaseViewPrim child) {
+			slave.addView(child.slave());
 		}
     }
 
