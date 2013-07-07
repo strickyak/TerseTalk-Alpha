@@ -334,4 +334,28 @@ public class Static {
 			return -1;
 		return (float) ((Num) x).num;
 	}
+	
+	public static byte[] Low8toBytes(String s) {
+		final int n = s.length();
+		byte[] b = new byte[n];
+		for (int i = 0; i < n; i++) {
+			b[i] = (byte) s.charAt(i);
+		}
+		return b;
+	}
+	
+	public static String BytesToLow8(byte[] b) {
+		final int n = b.length;
+		char[] c = new char[n];
+		for (int i = 0; i < n; i++) {
+			c[i] = (char) b[i];
+		}
+		return new String(c);
+	}
+	
+	public static void CopyBytes(byte[] in, int inOffset, int n, byte[] out, int outOffset) {
+		for (int i = 0; i < n; i++) {
+			out[i + outOffset] = in[i + inOffset];
+		}
+	}
 }

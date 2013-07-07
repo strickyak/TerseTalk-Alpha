@@ -331,6 +331,9 @@ import terse.vm.Ur.Vec;
 import terse.vm.Usr.Tmp;
 import terse.vm.Usr.UsrCls;
 
+import terse.vm.More.Sha1;
+import terse.vm.More.Aes;
+
 public class $CLASS extends Static \{
 
   public void installMethods(final Terp terp) \{

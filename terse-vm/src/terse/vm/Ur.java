@@ -2379,5 +2379,50 @@ public class Ur extends Static implements Comparable {
 		public void visitUsr(Usr a) {
 			visitUr(a);
 		}
+
+		public void visitBytes(Bytes a) {
+			visitUr(a);
+		}
+	}
+	
+	public final static class Bytes extends Obj {
+		public byte[] bytes;
+
+		// =cls "Data" Bytes Obj
+		Bytes(Terp t, byte[] b) {
+			super(t.tStr);
+			final int n = b.length;
+			bytes = Arrays.copyOf(b, n);
+		}
+
+		@Override
+		public Str asStr() {
+			return terp().newStr(toString());
+		}
+
+		@Override
+		public boolean truth() {
+			return bytes.length > 0;
+		}
+
+		public String repr() {
+			if (bytes == null) {
+				return "<?NULL Bytes?>";
+			}
+			return fmt("Bytes('%s')", BytesToLow8(bytes).replaceAll("'", "''"));
+		}
+
+		public String toString() {
+			return BytesToLow8(bytes);
+		}
+
+		@Override
+		Comparable innerValue() {
+			return toString();
+		}
+
+		public void visit(Visitor v) {
+			v.visitBytes(this);
+		}
 	}
 }

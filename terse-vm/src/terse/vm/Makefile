@@ -22,7 +22,7 @@
 
 all : Wrap.java ../../../../terse-web/prelude.txt ../../../../terse-a1/res/raw/prelude.txt ANDY
 
-J = Ur.java Terp.java Expr.java Cls.java Parser.java Usr.java
+J = Ur.java Terp.java Expr.java Cls.java Parser.java Usr.java More.java
 	
 Wrap.java : wrap.tcl $J
 	tclsh wrap.tcl Wrap $J > Wrap.java
