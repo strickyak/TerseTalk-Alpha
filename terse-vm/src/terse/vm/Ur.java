@@ -1570,6 +1570,11 @@ public class Ur extends Static implements Comparable {
 		public void visit(Visitor v) {
 			v.visitStr(this);
 		}
+		
+		// =meth Str "convert" bytes
+		public Obj _bytes() {
+			return new Bytes(terp(), Low8toBytes(str));
+		}
 
 		// =meth Str "access" applySubstitutions ""
 		public Str applySubstitutions() {
@@ -2390,9 +2395,9 @@ public class Ur extends Static implements Comparable {
 
 		// =cls "Data" Bytes Obj
 		Bytes(Terp t, byte[] b) {
-			super(t.tStr);
+			super(t.wrap.clsBytes);
 			final int n = b.length;
-			bytes = Arrays.copyOf(b, n);
+			bytes = Arrays.copyOf(b, n); // Safer, but do we ned to?
 		}
 
 		@Override
