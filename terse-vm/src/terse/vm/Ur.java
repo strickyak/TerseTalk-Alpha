@@ -2470,7 +2470,7 @@ public class Ur extends Static implements Comparable {
 		}
 		
 		// =meth BytesCls "convert" implode:
-		public Bytes implode_(Terp terp, Vec v) {
+		public static Bytes implode_(Terp terp, Vec v) {
 			final int n = v.vec.size();
 			byte[] z = new byte[n];
 			for (int i = 0; i < n; i++) {
