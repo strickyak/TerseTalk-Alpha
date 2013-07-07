@@ -21,6 +21,7 @@
 // --------------------------------------------------------------------------
 package terse.vm;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,17 +66,14 @@ public abstract class More extends Static {
 	}
 	
 	public static final class Aes extends Obj {
-		byte[] key;
 		SecretKeySpec keySpec;
 		
-
 		// =cls "more" Aes Obj
 		public Aes(Cls cls, byte[] key) {
 			super(cls);
 			if (key.length != 16) {
 				toss("OldAes requres 16 byte key, not %d bytes", key.length);
 			}
-			this.key = key;
             keySpec = new SecretKeySpec(key, 0, 16, "AES");
 		}
 
@@ -105,6 +103,37 @@ public abstract class More extends Static {
 				CopyBytes(cyp, 0, cyp.length, out, 16);  // Payload with 1 to 16 bytes padding; final byte tells how many pads.
 				CopyBytes(digest, 0, 16, out, out.length-16);  // Final 16 bytes are head 16 bytes of SHA-1.
 				return new Bytes(terp(), out);
+			} catch (Exception e) {
+				toss("AES.en: " + e);
+				return null;
+			}
+		}
+		
+		// =meth Aes "decrypt" de:
+		public Bytes de_(Bytes cypher) {
+			try {
+				byte[] iv = Arrays.copyOfRange(cypher.bytes, 0, 16);
+				byte[] cyp = Arrays.copyOfRange(cypher.bytes, 16,
+						cypher.bytes.length - 16);
+				byte[] expectedDigest = Arrays.copyOfRange(cypher.bytes,
+						cypher.bytes.length - 16, cypher.bytes.length);
+
+				IvParameterSpec ivSpec = new IvParameterSpec(iv);
+				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+				cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+				
+				byte[] plain = cipher.doFinal(cyp);
+
+				MessageDigest md = MessageDigest.getInstance("SHA-1");
+				md.update(plain);
+				byte[] digest = md.digest();
+				
+				if (!(digest.equals(expectedDigest))) {
+					toss("Aes.de: Bad digest");
+				}
+				
+				return new Bytes(terp(), plain);
+				
 			} catch (Exception e) {
 				toss("AES.en: " + e);
 				return null;

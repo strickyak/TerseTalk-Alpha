@@ -2424,5 +2424,59 @@ public class Ur extends Static implements Comparable {
 		public void visit(Visitor v) {
 			v.visitBytes(this);
 		}
+		
+		// =meth Bytes "slice" head:
+		public Bytes head_(int p) {
+			if (p < 0 || p > bytes.length) {
+				toss("Bytes.head: bad range %d len %d", p, bytes.length);
+			}
+			byte[] z = Arrays.copyOfRange(bytes, 0, p);
+			return new Bytes(terp(), z);
+		}
+		
+		// =meth Bytes "slice" tail:
+		public Bytes tail_(int p) {
+			final int n = bytes.length;
+			if (p < 0 || p > n) {
+				toss("Bytes.tail: bad range %d len %d", p, n);
+			}
+			byte[] z = Arrays.copyOfRange(bytes, n - p, n);
+			return new Bytes(terp(), z);
+		}
+		
+		// =meth Bytes "slice" slice:to:
+		public Bytes slice_to_(int p, int q) {
+			final int n = bytes.length;
+			if (p < 0 || p > n || q < 0 || q > n || q < p) {
+				toss("Bytes.tail: bad range %d to %d len %d", p, q, n);
+			}
+			byte[] z = Arrays.copyOfRange(bytes, p, q);
+			return new Bytes(terp(), z);
+		}
+		
+		// =meth Bytes "slice" slice:len:
+		public Bytes slice_len_(int p, int len) {
+			return slice_to_(p, p+len);
+		}
+		
+		// =meth Bytes "convert" explode
+		public Vec _explode() {
+			final int n = bytes.length;
+			Vec v = new Vec(terp());
+			for (int i = 0; i < n; i++) {
+				v.vec.add(new Num(terp(), bytes[i]));
+			}
+			return v;
+		}
+		
+		// =meth BytesCls "convert" implode:
+		public Bytes implode_(Terp terp, Vec v) {
+			final int n = v.vec.size();
+			byte[] z = new byte[n];
+			for (int i = 0; i < n; i++) {
+				z[i] = (byte) (v.vec.get(i).toNearestInt());
+			}
+			return new Bytes(terp, z);
+		}
 	}
 }
