@@ -2397,7 +2397,7 @@ public class Ur extends Static implements Comparable {
 		Bytes(Terp t, byte[] b) {
 			super(t.wrap.clsBytes);
 			final int n = b.length;
-			bytes = Arrays.copyOf(b, n); // Safer, but do we ned to?
+			bytes = Arrays.copyOf(b, n); // Safer, but do we need to?
 		}
 
 		@Override
@@ -2417,8 +2417,18 @@ public class Ur extends Static implements Comparable {
 			return fmt("Bytes('%s')", BytesToLow8(bytes).replaceAll("'", "''"));
 		}
 
+		@Override
 		public String toString() {
 			return BytesToLow8(bytes);
+		}
+		
+		@Override
+		public boolean equals(Object that) {
+			if (that instanceof Bytes) {
+				byte[] b = ((Bytes) that).bytes;
+				return Arrays.equals(b, bytes);
+			}
+			return false;
 		}
 
 		@Override

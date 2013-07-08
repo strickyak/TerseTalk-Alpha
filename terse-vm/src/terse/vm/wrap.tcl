@@ -331,6 +331,8 @@ import terse.vm.Ur.Vec;
 import terse.vm.Usr.Tmp;
 import terse.vm.Usr.UsrCls;
 
+import terse.vm.More.Curly;
+import terse.vm.More.Hex;
 import terse.vm.More.Sha1;
 import terse.vm.More.DhSecret;
 import terse.vm.More.Aes;

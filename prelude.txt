@@ -32,6 +32,17 @@
 #
 # --------------------------------------------------------------------------
 
+meth Bytes sha1
+  Sha1 en: me
+meth Bytes hex
+  Hex en: me
+meth Bytes dehex
+  Hex de: me
+meth Str curly
+  Curly en: me
+meth Bytes decurly
+  Curly de: me
+
 meth Obj ==
   me eq: a
 meth Obj !=

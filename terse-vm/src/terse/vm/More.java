@@ -46,6 +46,42 @@ import javax.crypto.spec.SecretKeySpec;
 public abstract class More extends Static {
 	static SecureRandom Rand = new SecureRandom();
 	
+	public static final class Curly extends Obj {
+		// =cls "more" Curly Obj
+		public Curly(Cls cls) {
+			super(cls);
+			toss("Do not instantiate Curly.");
+		}
+		
+		// =meth CurlyCls "encode" en:
+		public static Bytes en_(Terp terp, String s) {
+			return new Bytes(terp, StringToCurly(s));
+		}
+		
+		// =meth CurlyCls "decode" de:
+		public static Str de_(Terp terp, Bytes b) {
+			return new Str(terp, CurlyToString(b.bytes));
+		}
+	}
+	
+	public static final class Hex extends Obj {
+		// =cls "more" Hex Obj
+		public Hex(Cls cls) {
+			super(cls);
+			toss("Do not instantiate Hex.");
+		}
+		
+		// =meth HexCls "encode" en:
+		public static Bytes en_(Terp terp, Bytes b) {
+			return new Bytes(terp, BytesToHex(b.bytes));
+		}
+		
+		// =meth HexCls "decode" de:
+		public static Bytes de_(Terp terp, Bytes b) {
+			return new Bytes(terp, HexToBytes(b.bytes));
+		}
+	}
+	
 	public static final class Sha1 extends Obj {
 		// =cls "more" Sha1 Obj
 		public Sha1(Cls cls) {
@@ -105,6 +141,16 @@ public abstract class More extends Static {
 			return z;
 		}
 		
+		@Override
+		public String toString() {
+			return secret.toString(16);
+		}
+		
+		@Override
+		public String repr() {
+			return fmt("(DhSecret new: %s)", secret.toString(16));
+		}
+		
 		// =meth DhSecret "dh" pub
 		public String _pub() {
 			return G.modPow(this.secret, M).toString(16);
@@ -144,16 +190,17 @@ public abstract class More extends Static {
 				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 				cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
 
-				byte[] cyp = cipher.doFinal(plain.bytes);
-				
 				MessageDigest md = MessageDigest.getInstance("SHA-1");
 				md.update(plain.bytes);
 				byte[] digest = md.digest();
+
+				byte[] c1 = cipher.update(digest, 0, 16);
+				byte[] c2 = cipher.doFinal(plain.bytes);
 				
-				byte[] out = new byte[cyp.length + 32];
+				byte[] out = new byte[16 + c1.length + c2.length];
 				CopyBytes(iv, 0, 16, out, 0);  // First 16 bytes are iv
-				CopyBytes(cyp, 0, cyp.length, out, 16);  // Payload with 1 to 16 bytes padding; final byte tells how many pads.
-				CopyBytes(digest, 0, 16, out, out.length-16);  // Final 16 bytes are head 16 bytes of SHA-1.
+				CopyBytes(c1, 0, c1.length, out, 16);
+				CopyBytes(c2, 0, c2.length, out, 16 + c1.length);   // Payload with 1 to 16 bytes padding; final byte tells how many pads.
 				return new Bytes(terp(), out);
 			} catch (Exception e) {
 				toss("AES.en: " + e);
@@ -166,21 +213,22 @@ public abstract class More extends Static {
 			try {
 				byte[] iv = Arrays.copyOfRange(cypher.bytes, 0, 16);
 				byte[] cyp = Arrays.copyOfRange(cypher.bytes, 16,
-						cypher.bytes.length - 16);
-				byte[] expectedDigest = Arrays.copyOfRange(cypher.bytes,
-						cypher.bytes.length - 16, cypher.bytes.length);
+						cypher.bytes.length);
 
 				IvParameterSpec ivSpec = new IvParameterSpec(iv);
 				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 				cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
 				
-				byte[] plain = cipher.doFinal(cyp);
+				byte[] composite = cipher.doFinal(cyp);
+				byte[] expected_digest = Arrays.copyOfRange(composite, 0, 16);
+				byte[] plain = Arrays.copyOfRange(composite, 16, composite.length);
 
 				MessageDigest md = MessageDigest.getInstance("SHA-1");
 				md.update(plain);
 				byte[] digest = md.digest();
-				
-				if (!(digest.equals(expectedDigest))) {
+				byte[] new_digest = Arrays.copyOfRange(digest, 0, 16);
+
+				if (!(Arrays.equals(new_digest, expected_digest))) {
 					toss("Aes.de: Bad digest");
 				}
 				

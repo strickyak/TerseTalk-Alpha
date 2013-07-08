@@ -24,6 +24,9 @@ package terse.vm;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -357,5 +360,139 @@ public class Static {
 		for (int i = 0; i < n; i++) {
 			out[i + outOffset] = in[i + inOffset];
 		}
+	}
+	
+	public static byte[] HexChars = "0123456789abcdef".getBytes();
+	
+	public static byte[] BytesToHex(byte[] a) {
+		final int n = a.length;
+		byte[] z = new byte[2*n];
+		for (int i = 0; i < n; i++) {
+			z[2*i+0] = HexChars[ (a[i]>>4)&15 ];
+			z[2*i+1] = HexChars[ (a[i]>>0)&15 ];
+		}
+		return z;
+	}
+	
+	public static int ValueOfHexChar(char c) {
+		if ('0' <= c && c <= '9') {
+			return c - '0';
+		} else if ('a' <= c && c <= 'f') {
+			return c - 'a' + 10;
+		} else if ('A' <= c && c <= 'F') {
+			return c - 'A' + 10;
+		} else {
+			throw new RuntimeException("Bad HexValue char: " + (int)c);
+		}
+	}
+	
+	public static byte[] HexToBytes(byte[] a) {
+		final int n = a.length / 2;
+		byte[] z = new byte[n];
+		for (int i = 0; i < n; i++) {
+			z[i] = (byte)(ValueOfHexChar((char)a[2*i])*16 + ValueOfHexChar((char)a[2*i+1]));
+		}
+		return z;
+	}
+	
+	public static String UrlEncode(String s) {
+		String z = "?";
+		try {
+			z = URLEncoder.encode(s, "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			throw new RuntimeException("UrlEncode(): " + e);
+		}
+		return z;
+	}
+
+	public static String UrlDecode(String s) {
+		StringBuffer sb = new StringBuffer();
+		final int n = s.length();
+		for (int i = 0; i < n; i++) {
+			char c = s.charAt(i);
+			switch (c) {
+			case '+':
+				sb.append(" ");
+				break;
+			case '%':
+				if (i + 2 < n) {
+					char c1 = s.charAt(i + 1);
+					char c2 = s.charAt(i + 2);
+					int x = ValueOfHexChar(c1) * 16 + ValueOfHexChar(c2);
+					sb.append((char) x);
+					i += 2;
+				} else {
+					throw new IllegalArgumentException(
+							"UrlDecode(): bad string: " + s);
+				}
+				break;
+			default:
+				sb.append(c);
+				break;
+			}
+		}
+		return sb.toString();
+	}
+	
+	public static String CurlyEncode(String s) {
+		final int n = s.length();
+		if (n == 0) {
+			return "{}"; // Special Case.
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			char c = s.charAt(i);
+			if ('"' < c && c < '{') {
+				sb.append(c);
+			} else {
+				sb.append("{" + (int) c + "}"); // {%d}
+			}
+		}
+		return sb.toString();
+	}
+	
+	public static String CurlyDecode(String s) {
+		if (s.equals("{}"))  // Special case for {}
+			return "";
+				
+		final int n = s.length();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			final char c = s.charAt(i);
+			switch (c) {
+			case '{':
+				int j = i + 1;
+				int x = 0;
+				while (j < n && '0' <= s.charAt(j) && s.charAt(j) <= '9') {
+					x = x * 10 + s.charAt(j) - '0';
+					j++; 
+				}
+				if (j < n && s.charAt(j) == '}' && j > i+1) {
+					sb.append((char)x);
+					i = j;
+					continue;
+				}
+				// else fall through
+			default:
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
+	public static byte[] StringToCurly(String s) {
+		return Low8toBytes(CurlyEncode(s));
+	}
+	public static String CurlyToString(byte[] b) {
+		return CurlyDecode(BytesToLow8(b));
+	}
+	
+	public static Charset utf8 = Charset.forName("utf-8");
+	public static byte[] StringToUtf8(String s) {
+		return s.getBytes(utf8);
+	}
+	public static String Utf8ToString(byte[] b) {
+		return new String(b, utf8);
 	}
 }

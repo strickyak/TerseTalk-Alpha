@@ -1,0 +1,84 @@
+// --------------------------------------------------------------------------
+// Copyright (c) 2012 Henry Strickland & Thomas Shanks
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+// --------------------------------------------------------------------------
+package terse.vm;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+
+import terse.vm.Terp;
+import terse.vm.Terp.Frame;
+import terse.vm.Ur.Obj;
+import junit.framework.TestCase;
+
+public class MoreTest extends TestCase {
+	Terp t;
+	Frame f;
+
+	public MoreTest(String arg0) throws IOException {
+		super(arg0);
+			t = new Terp.PosixTerp(false, "");
+	}
+	
+	private Ur eval(String code) {
+        return t.newTmp().eval(code);
+	}
+
+	public void testHexEn() {
+		Ur u = eval("Hex en: '1 2 3' bytes");
+		assertEquals("3120322033", u.toString());
+	}
+
+	public void testHexDe() {
+		Ur u = eval("Hex de: '3120322033' bytes");
+		assertEquals("1 2 3", u.toString());
+	}
+
+	public void testCurlyEn() {
+		Ur u = eval("Curly en: '\u11111 {2b} 3\r\n'");
+		assertEquals("{4369}1{32}{123}2b{125}{32}3{13}{10}", u.toString());
+	}
+
+	public void testCurlyDe() {
+		Ur u = eval("Curly de: '{4369}1{32}{123}2b{125}{32}3{13}{10}' bytes");
+		assertEquals("\u11111 {2b} 3\r\n", u.toString());
+	}
+
+	public void testDhSecret() {
+		Ur u = eval("d1= DhSecret rand . d2= DhSecret rand . m1= d1 mutual: d2 pub . m2 = d2 mutual: d1 pub . m1 equals: m2");
+		assertEquals("1", u.repr());
+	}
+
+	public void testAES() {
+		Ur u = eval("key= DhSecret rand str bytes tail: 16 . a= AES key: key . p= 'abcdefghijklmnopqr' bytes . c= a en: p . p equals: (a de: (c))");
+		assertEquals("1", u.repr());
+	}
+
+	public void testSHA1() {
+		Ur u = eval("Hex en: (Sha1 en: 'testing' bytes)");
+		assertEquals("dc724af18fbdd4e59189f5fe768a5f8311527050", u.toString());
+		// Confirm with $ echo -n testing | sha1sum -> dc724af18fbdd4e59189f5fe768a5f8311527050 -
+	}
+}
