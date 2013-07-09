@@ -56,6 +56,16 @@ public class MoreTest extends TestCase {
 		assertEquals("1 2 3", u.toString());
 	}
 
+	public void testUtf8En() {  // TODO: confirm this is correct.
+		Ur u = eval("Hex en: (Utf8 en: '\u0001\u007f\u0088\u0888\u8888')");
+		assertEquals("Bytes('017fc288e0a288e8a288')", u.repr());
+	}
+
+	public void testUtf8De() {  // TODO: confirm this is correct.
+		Ur u = eval("Utf8 de: (Hex de: '017fc288e0a288e8a288' bytes)");
+		assertEquals("'\u0001\u007f\u0088\u0888\u8888'", u.repr());
+	}
+
 	public void testCurlyEn() {
 		Ur u = eval("Curly en: '\u11111 {2b} 3\r\n'");
 		assertEquals("{4369}1{32}{123}2b{125}{32}3{13}{10}", u.toString());

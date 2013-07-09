@@ -36,12 +36,20 @@ meth Bytes sha1
   Sha1 en: me
 meth Bytes hex
   Hex en: me
-meth Bytes dehex
+meth Bytes deHex
   Hex de: me
 meth Str curly
   Curly en: me
-meth Bytes decurly
+meth Bytes deCurly
   Curly de: me
+meth Str utf8
+  Utf8 en: me
+meth Bytes deUtf8
+  Utf8 de: me
+meth Str utf
+  Utf8 en: me
+meth Bytes deUtf
+  Utf8 de: me
 
 meth Obj ==
   me eq: a

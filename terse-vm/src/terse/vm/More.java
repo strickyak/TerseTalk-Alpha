@@ -64,6 +64,24 @@ public abstract class More extends Static {
 		}
 	}
 	
+	public static final class Utf8 extends Obj {
+		// =cls "more" Utf8 Obj
+		public Utf8(Cls cls) {
+			super(cls);
+			toss("Do not instantiate Utf8.");
+		}
+		
+		// =meth Utf8Cls "encode" en:
+		public static Bytes en_(Terp terp, String s) {
+			return new Bytes(terp, StringToUtf8(s));
+		}
+		
+		// =meth Utf8Cls "decode" de:
+		public static Str de_(Terp terp, Bytes b) {
+			return new Str(terp, Utf8ToString(b.bytes));
+		}
+	}
+	
 	public static final class Hex extends Obj {
 		// =cls "more" Hex Obj
 		public Hex(Cls cls) {
