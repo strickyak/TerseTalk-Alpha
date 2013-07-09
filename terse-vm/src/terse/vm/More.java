@@ -90,8 +90,15 @@ public abstract class More extends Static {
 		}
 		
 		// =meth HexCls "encode" en:
-		public static Bytes en_(Terp terp, Bytes b) {
-			return new Bytes(terp, BytesToHex(b.bytes));
+		public static Bytes en_(Terp terp, Obj b) {
+			if (b instanceof Bytes) {
+				return new Bytes(terp, BytesToHex(((Bytes)b).bytes));
+			} else if (b instanceof Str) {
+				return new Bytes(terp, BytesToHex(StringToLow8(((Str)b).str)));
+			} else {
+				terp.toss("Hex.en: expects arg either Bytes or String, got %s", b.cls.toString());
+				return null;
+			}
 		}
 		
 		// =meth HexCls "decode" de:

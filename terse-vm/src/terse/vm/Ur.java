@@ -1573,7 +1573,7 @@ public class Ur extends Static implements Comparable {
 		
 		// =meth Str "convert" bytes
 		public Obj _bytes() {
-			return new Bytes(terp(), Low8toBytes(str));
+			return new Bytes(terp(), StringToUtf8(str));
 		}
 
 		// =meth Str "access" applySubstitutions ""
@@ -2414,12 +2414,12 @@ public class Ur extends Static implements Comparable {
 			if (bytes == null) {
 				return "<?NULL Bytes?>";
 			}
-			return fmt("Bytes('%s')", BytesToLow8(bytes).replaceAll("'", "''"));
+			return fmt("(Hex en: '%s')", Low8ToString(BytesToHex(bytes)));
 		}
 
 		@Override
 		public String toString() {
-			return BytesToLow8(bytes);
+			return Utf8ToString(bytes);
 		}
 		
 		@Override

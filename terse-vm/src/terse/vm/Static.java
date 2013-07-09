@@ -338,7 +338,7 @@ public class Static {
 		return (float) ((Num) x).num;
 	}
 	
-	public static byte[] Low8toBytes(String s) {
+	public static byte[] StringToLow8(String s) {
 		final int n = s.length();
 		byte[] b = new byte[n];
 		for (int i = 0; i < n; i++) {
@@ -347,7 +347,7 @@ public class Static {
 		return b;
 	}
 	
-	public static String BytesToLow8(byte[] b) {
+	public static String Low8ToString(byte[] b) {
 		final int n = b.length;
 		char[] c = new char[n];
 		for (int i = 0; i < n; i++) {
@@ -482,10 +482,10 @@ public class Static {
 	}
 
 	public static byte[] StringToCurly(String s) {
-		return Low8toBytes(CurlyEncode(s));
+		return StringToLow8(CurlyEncode(s));
 	}
 	public static String CurlyToString(byte[] b) {
-		return CurlyDecode(BytesToLow8(b));
+		return CurlyDecode(Low8ToString(b));
 	}
 	
 	public static Charset utf8 = Charset.forName("utf-8");

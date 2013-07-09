@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import terse.vm.Terp;
 import terse.vm.Terp.Frame;
+import terse.vm.Ur.Bytes;
 import terse.vm.Ur.Obj;
 import junit.framework.TestCase;
 
@@ -58,7 +59,7 @@ public class MoreTest extends TestCase {
 
 	public void testUtf8En() {  // TODO: confirm this is correct.
 		Ur u = eval("Hex en: (Utf8 en: '\u0001\u007f\u0088\u0888\u8888')");
-		assertEquals("Bytes('017fc288e0a288e8a288')", u.repr());
+		assertEquals("017fc288e0a288e8a288", Static.Low8ToString(((Bytes)u).bytes) );
 	}
 
 	public void testUtf8De() {  // TODO: confirm this is correct.
