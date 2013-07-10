@@ -23,23 +23,25 @@ package terse.vm;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 
 
-import terse.vm.Cls.JavaMeth;
 import terse.vm.Ur.Obj;
-import terse.vm.Terp.Frame;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -263,6 +265,89 @@ public abstract class More extends Static {
 				toss("AES.en: " + e);
 				return null;
 			}
+		}
+	}
+	
+	public static final class Client extends Obj {
+		String hostname;
+		int port;
+		
+		// =cls "net" Client Obj
+		public Client(Cls cls, String hostname, int port) {
+			super(cls);
+			this.hostname = hostname;
+			this.port = port;
+		}
+		
+		// =meth ClientCls "ctor" host:port:
+		public static Client host_port_(Terp terp, String hostname, int port) {
+			return new Client(terp.wrap.clsClient, hostname, port);
+		}
+		
+		// =meth Client "net" get:query:
+		public String get(String path, Dict query) {
+			HashMap<String, String> map = new HashMap<String, String>();
+			for (Ur k : query.dict.keySet()) {
+				Ur v = query.dict.get(k);
+				map.put(k.toString(), v.toString());
+			}
+			try {
+				return go(path, map, null, false);
+			} catch (Exception ex) {
+				terp().toss("Client.get:query: throws %s", ex);
+				return null;
+			}
+		}
+		
+		// =meth Client "net" post:query:form:
+		public String post(String path, Dict query, Dict form) {
+			HashMap<String, String> qmap = new HashMap<String, String>();
+			for (Ur k : query.dict.keySet()) {
+				Ur v = query.dict.get(k);
+				qmap.put(k.toString(), v.toString());
+			}
+			HashMap<String, String> fmap = new HashMap<String, String>();
+			for (Ur k : form.dict.keySet()) {
+				Ur v = form.dict.get(k);
+				fmap.put(k.toString(), v.toString());
+			}
+			try {
+				return go(path, qmap, fmap, true);
+			} catch (Exception ex) {
+				terp().toss("Client.post:query:form: throws %s", ex);
+				return null;
+			}
+		}
+		
+		
+		public String go(String path, HashMap<String, String> query, HashMap<String, String> form, boolean post) throws Exception {
+			if (path.charAt(0) != '/') throw new RuntimeException("path must begin with '/'");
+			if (path.contains("?")) throw new RuntimeException("path cannot contain '?'");
+			if (path.contains(";")) throw new RuntimeException("path cannot contain ';'");
+			
+			URL url = new URL("http", hostname, port, path + "?" + Static.makeQueryString(query));
+			URLConnection conn = url.openConnection();
+			conn.setDoOutput(post);
+			conn.setDoInput(true);
+			
+			if (post) {
+				OutputStream os = conn.getOutputStream();
+				OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
+				BufferedWriter bw = new BufferedWriter(osw);
+				bw.write(Static.makeQueryString(form));
+				bw.close();
+			}
+			
+			InputStream is = conn.getInputStream();
+			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+			BufferedReader br = new BufferedReader(isr);
+			StringBuilder sb = new StringBuilder();
+			while (true) {
+				String line = br.readLine();
+				if (line == null) break;
+				sb.append(line);
+			}
+			return sb.toString();
 		}
 	}
 }

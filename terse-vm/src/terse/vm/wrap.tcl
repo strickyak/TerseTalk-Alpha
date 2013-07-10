@@ -337,6 +337,7 @@ import terse.vm.More.Hex;
 import terse.vm.More.Sha1;
 import terse.vm.More.DhSecret;
 import terse.vm.More.Aes;
+import terse.vm.More.Client;
 
 public class $CLASS extends Static \{
 

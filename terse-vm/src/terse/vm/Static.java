@@ -495,4 +495,18 @@ public class Static {
 	public static String Utf8ToString(byte[] b) {
 		return new String(b, utf8);
 	}
+
+	public static String makeQueryString(HashMap<String, String> query) {
+		StringBuilder sb = new StringBuilder();;
+		String delim = "";
+		for (String k : query.keySet()) {
+			String v = query.get(k);
+			sb.append(delim);
+			sb.append(k);
+			sb.append('=');
+			sb.append(UrlEncode(v));
+			delim = "&";
+		}
+		return sb.toString();
+	}
 }
