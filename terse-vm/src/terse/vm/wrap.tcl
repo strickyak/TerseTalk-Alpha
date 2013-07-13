@@ -331,6 +331,7 @@ import terse.vm.Ur.Vec;
 import terse.vm.Usr.Tmp;
 import terse.vm.Usr.UsrCls;
 
+import terse.vm.More.Json;
 import terse.vm.More.Utf8;
 import terse.vm.More.Curly;
 import terse.vm.More.Hex;

@@ -48,6 +48,25 @@ import javax.crypto.spec.SecretKeySpec;
 public abstract class More extends Static {
 	static SecureRandom Rand = new SecureRandom();
 	
+	public static final class Json extends Obj {
+		// =cls "more" Json Obj
+		public Json(Cls cls) {
+			super(cls);
+			toss("Do not instantiate Json.");
+		}
+		
+		// =meth JsonCls "encode" en:
+		public static Str en_(Terp terp, Obj a) {
+			JsonUtils.Encoder encoder = new JsonUtils.Encoder(a);
+			return new Str(terp, encoder.toString());
+		}
+		
+		// =meth JsonCls "decode" de:
+		public static Str de_(Terp terp, Bytes b) {
+			return new Str(terp, CurlyToString(b.bytes));
+		}
+	}
+	
 	public static final class Curly extends Obj {
 		// =cls "more" Curly Obj
 		public Curly(Cls cls) {

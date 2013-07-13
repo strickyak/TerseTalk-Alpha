@@ -92,4 +92,9 @@ public class MoreTest extends TestCase {
 		assertEquals("dc724af18fbdd4e59189f5fe768a5f8311527050", u.toString());
 		// Confirm with $ echo -n testing | sha1sum -> dc724af18fbdd4e59189f5fe768a5f8311527050 -
 	}
+	
+	public void testJsonEn() {
+		Ur u = eval("Json en: DICT('abc', VEC(1, 2, 3); 555, VEC('five', nil, 'five');)");
+		assertEquals("{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}", u.toString());
+	}
 }
