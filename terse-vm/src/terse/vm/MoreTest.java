@@ -97,4 +97,9 @@ public class MoreTest extends TestCase {
 		Ur u = eval("Json en: DICT('abc', VEC(1, 2, 3); 555, VEC('five', nil, 'five');)");
 		assertEquals("{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}", u.toString());
 	}
+	
+	public void testJsonDe() {
+		Ur u = eval("Json de: '{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}'");
+		assertEquals("DICT((555), (VEC('five'; Nil; 'five'; ) ); ('abc'), (VEC(1; 2; 3; ) ); ) ", u.toString());
+	}
 }

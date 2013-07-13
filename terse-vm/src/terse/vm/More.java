@@ -62,8 +62,17 @@ public abstract class More extends Static {
 		}
 		
 		// =meth JsonCls "decode" de:
-		public static Str de_(Terp terp, Bytes b) {
-			return new Str(terp, CurlyToString(b.bytes));
+		public static Obj de_(Terp terp, Obj a) {
+			if (a instanceof Str) {
+				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Str)a);
+				return decoder.decodeToObj();
+			} else if (a instanceof Bytes) {
+				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Bytes)a);
+				return decoder.decodeToObj();
+			} else {
+				terp.toss("Json.de: bad arg type: %s", a.cls);
+				return null;
+			}
 		}
 	}
 	

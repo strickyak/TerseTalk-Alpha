@@ -21,25 +21,22 @@
 // --------------------------------------------------------------------------
 package terse.vm;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import terse.vm.Ur.Bytes;
 import terse.vm.Ur.Dict;
 import terse.vm.Ur.Ht;
 import terse.vm.Ur.Html;
 import terse.vm.Ur.Num;
 import terse.vm.Ur.Obj;
 import terse.vm.Ur.Str;
-import terse.vm.Ur.Sys;
 import terse.vm.Ur.Undefined;
 import terse.vm.Ur.Vec;
 
@@ -516,6 +513,85 @@ public class Static {
 	
 	public static class JsonUtils {
 		
+
+		
+		public static class Decoder {
+			protected Terp terp;
+			protected Parser p;
+			public Decoder(Str s) {
+				this.terp = s.terp();
+				this.p = new Parser(s.str);
+			}
+			public Decoder(Bytes b) {
+				this.terp = b.terp();
+				this.p = new Parser(b.bytes);
+			}
+			public Obj decodeToObj() {
+				Obj z = parseToObj();
+				if (p.token != 'e') {
+					throw Bad("Extra junk after decoding json: token [%c] %d", p.token, (int)p.token);
+				}
+				return z;
+			}
+			
+			protected Obj parseToObj() {
+				Say("TOKEN: [%c] %d", p.token, (int)p.token);
+				Obj z = null;
+				switch (p.token) {
+				case 'n':
+					p.advance();
+					z = terp.instNil;
+					break;
+				case 't':
+					p.advance();
+					z = terp.instTrue;
+					break;
+				case 'f':
+					p.advance();
+					z = terp.instFalse;
+					break;
+				case 's':
+					Str str = terp.newStr(p.str);
+					p.advance();
+					z = str;
+					break;
+				case 'd':
+					Num num = terp.newNum(p.dbl);
+					p.advance();
+					z = num;
+					break;
+				case '[':
+					Vec vec = new Vec(terp);
+					p.advance();
+					while (p.token != ']') {
+						Obj elem = parseToObj();
+						vec.vec.add(elem);
+					}
+					p.advance();
+					z = vec;
+					break;
+				case '{':
+					Dict dict = new Dict(terp);
+					p.advance();
+					while (p.token != '}') {
+						Say("AAAA token %c", p.token);
+						Obj key = parseToObj();
+						Say("BBBB token %c key %s", p.token, key);
+						Obj value = parseToObj();
+						Say("CCCC token %c value %s", p.token, value);
+						dict.dict.put(key, value);
+					}
+					p.advance();
+					z = dict;
+					break;
+				default:
+					throw Bad("Unexpected Token: [%c] %d", p.token, (int)p.token);
+				}
+				Say("RESULT: %s", z);
+				return z;
+			}
+		}
+		
 		public static class Encoder {
 			Obj top;
 			public Encoder(Obj top) {
@@ -528,7 +604,7 @@ public class Static {
 				return sb.toString();
 			}
 			
-			public void encodeTo(Ur a, StringBuilder sb) {
+			protected void encodeTo(Ur a, StringBuilder sb) {
 				if (a == null) {
 					sb.append("null");
 				} else if (a instanceof Num) {
@@ -570,13 +646,18 @@ public class Static {
 			int len; // a.length
 			int p = 0; // current position.
 
-			public char token; // [ ] { } n(ull) t(rue) f(alse) s(tring) f(loat)
+			public char token; // [ ] { } n(ull) t(rue) f(alse) s(tring) d(ouble)
 								// e(nd)
 			public String str; // value if token s
-			public Double flo; // value of token f
+			public Double dbl; // value of token d
+			
+			private static String ShowString(String s) {
+				Say("ShowString: %s", s);
+				return s;
+			}
 
 			public Parser(String s) {
-				this.bb = StringToLow8(s);
+				this(StringToLow8(ShowString(s)));
 			}
 			public Parser (byte[] bb) {
 				this.bb = bb;
@@ -588,12 +669,14 @@ public class Static {
 			public void advance() {
 				skipJunk();
 				str = "";
-				flo = 0.0;
+				dbl = 0.0;
 				if (p >= len) {
+					Say("ADVANCED TO END");
 					token = 'e';
 					return;
 				}
 				final char c = (char) bb[p];
+				Say("Advance Switch %c", c);
 				switch (c) {
 				case '{':
 				case '}':
@@ -629,12 +712,13 @@ public class Static {
 				case '8':
 				case '9':
 				case '-':
-					token = 'f';
+					token = 'd';
 					parseFloat();
 					break;
 				default:
 					throw Bad("Bad char %d at %d", (int) c, p);
 				}
+				Say("Advance Next Token %c (%f %s)", token, dbl, str);
 			}
 
 			void parseFloat() {
@@ -649,8 +733,7 @@ public class Static {
 						break;
 					}
 				}
-				step();
-				flo = Double.parseDouble(sb.toString());
+				dbl = Double.parseDouble(sb.toString());
 			}
 
 			void parseString() {
@@ -722,11 +805,11 @@ public class Static {
 				while (p < len) {
 					final char c = (char) bb[p];
 					if (c <= ' ' || c == ',' || c == ':') {
-						Say("skip %d", (int) c);
+						//Say("skip %d", (int) c);
 						step();
 						continue;
 					} else {
-						Say("stop skip");
+						//Say("stop skip");
 						break;
 					}
 				}
@@ -735,9 +818,9 @@ public class Static {
 			void step() {
 				++p;
 				if (p < len) {
-					Say("Step [%3d] '%c'=%d", p, (char) bb[p], (int) bb[p]);
+					//Say("Step [%3d] '%c'=%d", p, (char) bb[p], (int) bb[p]);
 				} else {
-					Say("Step EOS");
+					//Say("Step EOS");
 				}
 			}
 			
@@ -790,7 +873,7 @@ public class Static {
 		}
 		
 		public static void Say(String format, Object...objects) {
-			System.err.format(format, objects);
+			System.err.format(format + "\n", objects);
 		}
 
 		public static void Must(boolean pred, Object arg) {
