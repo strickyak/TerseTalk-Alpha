@@ -21,13 +21,21 @@
 // --------------------------------------------------------------------------
 package terse.vm;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import javax.crypto.Cipher;
 
 
+import terse.vm.Ur.Bytes;
+import terse.vm.Ur.Dict;
+import terse.vm.Ur.Num;
 import terse.vm.Ur.Obj;
+import terse.vm.Ur.Str;
+import terse.vm.Ur.Undefined;
+import terse.vm.Ur.Vec;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,6 +55,216 @@ import javax.crypto.spec.SecretKeySpec;
 
 public abstract class More extends Static {
 	static SecureRandom Rand = new SecureRandom();
+	
+	public static final class Pickle extends Obj {
+		// =cls "more" Pickle Obj
+		public Pickle(Cls cls) {
+			super(cls);
+			toss("Do not instantiate Pickle.");
+		}
+		
+		// =meth PickleCls "encode" en:
+		public static Str en_(Terp terp, Usr a) {
+			Dict d = new Encoder(terp).encode(a);
+			JsonUtils.Encoder encoder = new JsonUtils.Encoder(d);
+			return new Str(terp, encoder.toString());
+		}
+		
+		// =meth PickleCls "decode" de:
+		public static Obj de_(Terp terp, Obj a) {
+			if (a instanceof Str) {
+				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Str)a);
+				return decoder.decodeToObj();
+			} else if (a instanceof Bytes) {
+				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Bytes)a);
+				return decoder.decodeToObj();
+			} else {
+				terp.toss("Pickle.de: bad arg type: %s", a.cls);
+				return null;
+			}
+		}
+		
+		public static class Decoder extends Visitor {
+			Terp terp;
+			Dict objs;
+
+			public Decoder(Terp t) {
+				super(t);
+				this.terp = t;
+			}
+			
+			public Usr decode(Dict d) {
+				objs = new Dict(terp);
+				ArrayList<Ur> ids = d._dir().vec;  // It is sorted.
+				
+				// Create empty objects of correct Usr type, for each id. 
+				for (Ur id : ids) {
+					// Create object based on class name in id.
+					String s = ((Str)id).str;
+					int i = s.lastIndexOf('@');
+					String clsName = s.substring(i+1);
+					Cls cls = terp.clss.get(clsName);
+					Usr obj = new Usr(cls);
+					objs.dict.put(id, obj);
+				}
+				
+				for (Ur id : ids) {
+					Dict fields = (Dict) d.dict.get(id);
+					Usr obj = (Usr) objs.dict.get(id);
+					for (Entry<String, Integer> kv : obj.cls.allVarMap.entrySet()) {
+						String fieldName = kv.getKey();
+						fields.dict.get(fieldName).visit(this);
+						obj.instVars[kv.getValue()] = r;
+					}
+				}
+				return (Usr) objs.dict.get(ids.get(0));
+			}
+			
+			Obj r;  // Short term result of visiting.
+
+			public void visitCls(Cls a) {
+				terp.toss("Cannot unpickle a class object.");
+			}
+
+			public void visitNum(Num a) {
+				r = a;
+			}
+
+			public void visitStr(Str a) {
+				Ur obj = objs.dict.get(a);
+				if (obj == null) {
+					r = a;
+				} else {
+					r = (Obj)obj;
+				}
+			}
+
+			public void visitUndefined(Undefined a) {
+				r = a;
+			}
+
+			public void visitVec(Vec a) {
+				Vec z = new Vec(terp);
+				for (Ur elem : a.vec) {
+					elem.visit(this);
+					z.vec.add(r);
+				}
+				r = z;
+			}
+
+			public void visitDict(Dict a) {
+				Dict z = new Dict(terp);
+				for (Entry<Ur, Ur> kv : z.dict.entrySet()) {
+					kv.getKey().visit(this);
+					Ur key = r;
+					kv.getValue().visit(this);
+					Ur value = r;
+					z.dict.put(key, value);
+				}
+				r = z;
+			}
+
+			public void visitUsr(Usr a) {
+				terp.toss("Usr should not occur in Pickled Objects: %s", a);
+			}
+
+			public void visitBytes(Bytes a) {
+				terp.toss("Bytes should not occur in Pickled Objects: %s", a);
+			}
+		}
+		
+		public static class Encoder extends Visitor {
+			Terp terp;
+			int serial;
+			String salt;
+			HashMap<Usr, String> map;
+			Dict objs;
+
+			public Encoder(Terp t) {
+				super(t);
+				this.terp = t;
+			}
+			
+			public Dict encode(Usr a) {
+				serial = 0;
+				salt = "" + Rand.nextInt(999);
+				map = new HashMap<Usr, String>();
+				objs = new Dict(terp);
+				
+				visitUsr(a);
+				
+				for (Entry<Usr, String> kv : map.entrySet()) {
+					// Swap key and value.
+					objs.dict.put(new Str(terp, kv.getValue()), kv.getKey());
+				}
+				return objs;
+			}
+			
+			String mintRef(String clsName) {
+				String z = fmt("%d@%s@%s", serial, salt, clsName);
+				++ serial;
+				return z;
+			}
+			
+			Obj r;  // Short term result of visiting.
+
+			public void visitCls(Cls a) {
+				terp.toss("Cannot pickle a class object.");
+			}
+
+			public void visitNum(Num a) {
+				r = a;
+			}
+
+			public void visitStr(Str a) {
+				r = a;
+			}
+
+			public void visitUndefined(Undefined a) {
+				r = a;
+			}
+
+			public void visitVec(Vec a) {
+				Vec z = new Vec(terp);
+				for (Ur elem : a.vec) {
+					elem.visit(this);
+					z.vec.add(r);
+				}
+				r = z;
+			}
+
+			public void visitDict(Dict a) {
+				Dict z = new Dict(terp);
+				for (Entry<Ur, Ur> kv : z.dict.entrySet()) {
+					kv.getKey().visit(this);
+					Ur key = r;
+					kv.getValue().visit(this);
+					Ur value = r;
+					z.dict.put(key, value);
+				}
+				r = z;
+			}
+
+			public void visitUsr(Usr a) {
+				String myRef = mintRef(a.cls._name());
+				Str myRefStr = new Str(terp, myRef);
+				map.put(a, myRef);
+				Dict vars = new Dict(terp);
+				for (Entry<String, Integer> kv : a.cls.allVarMap.entrySet()) {
+					Ur value = a.instVars[kv.getValue()];
+					value.visit(this);
+					vars.dict.put(new Str(terp, kv.getKey()), r);
+				}
+				objs.dict.put(myRefStr, vars);
+				r = myRefStr;
+			}
+
+			public void visitBytes(Bytes a) {
+				visitUr(a);
+			}
+		}
+	}
+	
 	
 	public static final class Json extends Obj {
 		// =cls "more" Json Obj
@@ -378,4 +596,5 @@ public abstract class More extends Static {
 			return sb.toString();
 		}
 	}
+	
 }
