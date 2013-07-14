@@ -92,16 +92,16 @@ public class ExprTest extends TestCase {
         assertEquals(65.0, eval(top).asNum().num);
     }
     public void testBlock() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " [ 23 + 42 . ] value  ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " FN( 23 + 42 . ) value  ");
         assertEquals(65.0, eval(top).asNum().num);
     }
     public void testYesNoToTrue() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " 1 y: [ e= 42 ] . 1 n: [ e= 13 ] . e");
-        assertEquals(42.0, eval(top).asNum().num);
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " IF(1)THEN( e= 42 . 1 )ELSE( e= 13 . 4 ) + e");
+        assertEquals(43.0, eval(top).asNum().num);
     }
     public void testYesNoToFalse() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " 0 y: [ a= 42 ] . 0 n: [ a= 13 ] . a");
-        assertEquals(13.0, eval(top).asNum().num);
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " IF(0)THEN( a= 42 . 3 )ELSE( a= 13 . 5] + a");
+        assertEquals(18.0, eval(top).asNum().num);
     }
     public void testDefiningUsrSubclass() {
         Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " Usr defSub: 'Foo' . Foo new cls name");
@@ -175,12 +175,12 @@ public class ExprTest extends TestCase {
         assertEquals(t.instFalse, eval(top));
     }
     public void testDoForRange() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " s= 0 . 5 do: [i : s= s + i ] . s ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " s= 0. FOR(i: 5)DO(s= s + i). s ");
         assertEquals(10.0, eval(top).asNum().num);
     }
     public void testDoForVec() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " s = 0.  v = Vec ap: 3. v do: [i : s= s + i ] . s ");
-        assertEquals(3.0, eval(top).asNum().num);
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " s = 0.  v=FOR(i: 7)MAP(i). FOR(j: v)DO(s= s + j). s ");
+        assertEquals(21.0, eval(top).asNum().num);
     }
     public void testStrSplit() {
         Expr.MethTop top = Parser.parseMethod(usrCls, "temp", " 'one:more:time' split: ':' $ at: 2 ");
@@ -196,8 +196,8 @@ public class ExprTest extends TestCase {
     }
     public void testTriangleNumber() {
         Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "USR defSub: 'Foo' . Foo trace: 1 . "
-                + " Foo defmeth: 'trIaNgle:' a: '' d: '' c:  ' " + "   g = 0 . "
-                + "   a gt: 0 $ y: [ g = me triangle: ( a - 1 ) $+ a  ] . " + "   g' . "
+                + " Foo defmeth: 'trIaNgle:' a: '' d: '' c:  ' g = 0 . "
+                + "   IF(a>0) THEN(g = me triangle: ( a - 1 ) $+ a).  g'. "
                 + "   Foo new TRIANGLE: 6  ");
         assertEquals(21.0, eval(top).asNum().num);
     }
