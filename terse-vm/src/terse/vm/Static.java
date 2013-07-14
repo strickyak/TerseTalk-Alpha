@@ -27,7 +27,11 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import terse.vm.Ur.Bytes;
@@ -627,16 +631,27 @@ public class Static {
 					Dict aa = (Dict)a;
 					sb.append('{');
 					String delim = "";
-					for (Ur key : aa.dict.keySet()) {
+					Set<Ur> keySet = aa.dict.keySet();
+					Ur[] keys = new Ur[keySet.size()];
+					keySet.toArray(keys);
+					Arrays.sort(keys, new Comparator<Ur>() {
+						@Override
+						public int compare(Ur o1, Ur o2) {
+							return o1.compareTo(o2);
+						}
+					});
+					for (Ur key : keys) {
 						sb.append(delim);
 						encodeTo(key, sb);
-						sb.append(": ");
+						sb.append(":");
 						encodeTo(aa.dict.get(key), sb);
-						delim = ", ";
+						delim = ",\n";
 					}
-					sb.append('}');
+					sb.append("}\n");
 				} else if (a instanceof Undefined) {
 					sb.append("null");
+				} else {
+					a.terp().toss("Cannot encode non-data object: %s", a);
 				}
 			}
 		}

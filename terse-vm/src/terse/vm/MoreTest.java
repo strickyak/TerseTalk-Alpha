@@ -95,11 +95,47 @@ public class MoreTest extends TestCase {
 	
 	public void testJsonEn() {
 		Ur u = eval("Json en: DICT('abc', VEC(1, 2, 3); 555, VEC('five', nil, 'five');)");
-		assertEquals("{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}", u.toString());
+		
+		String expected = "{555.0:[\"five\", null, \"five\"],\n" +
+"\"abc\":[1.0, 2.0, 3.0]}\n";
+		
+		assertEquals(expected, u.toString());
 	}
 	
 	public void testJsonDe() {
 		Ur u = eval("Json de: '{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}'");
 		assertEquals("DICT((555), (VEC('five'; Nil; 'five'; ) ); ('abc'), (VEC(1; 2; 3; ) ); ) ", u.toString());
+	}
+	
+	public void testPickle() {
+		Ur a = eval(
+				"USR defSub:'Foo'. Foo defSub:'Bar'." +
+				"Foo defVars: 'p q'. Bar defVars: 'r s t'." +
+				"Foo defmeth:'pq:' a:'' d:'' c:'p,q=a. me'. " +
+				"Bar defmeth:'rst:' a:'' d:'' c:'r,s,t=a. me'. " +
+				"(f= Foo new) pq: 5@10.   (b= Bar new) pq: 7@21 $ rst: f@b@nil. " +
+				"Pickle en: b.  "
+				);
+		String result = a.toString().replaceAll("[@][0-9]+[@]", "@@");
+		
+		String expected = "{\"0@@Bar\":{\"p\":7.0,\n" +
+"\"q\":21.0,\n" +
+"\"r\":\"1@@Foo\",\n" +
+"\"s\":\"0@@Bar\",\n" +
+"\"t\":null}\n" +
+",\n" +
+"\"1@@Foo\":{\"p\":5.0,\n" +
+"\"q\":10.0}\n" +
+"}\n";
+		
+		assertEquals(expected, result);
+		
+		Usr b = (Usr) eval(Static.fmt("Pickle de: '%s'", result));
+		
+		assertEquals("Bar", b.cls.cname);
+		assertEquals("28", b.eval("p + q").toString());
+		
+		assertEquals("Foo", b.eval("r cls").toString());
+		assertEquals("15", b.eval("r eval: 'p+q'").toString());
 	}
 }

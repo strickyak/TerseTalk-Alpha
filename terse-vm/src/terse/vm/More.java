@@ -74,10 +74,10 @@ public abstract class More extends Static {
 		public static Obj de_(Terp terp, Obj a) {
 			if (a instanceof Str) {
 				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Str)a);
-				return decoder.decodeToObj();
+				return new Decoder(terp).decode((Dict) decoder.decodeToObj());
 			} else if (a instanceof Bytes) {
 				JsonUtils.Decoder decoder = new JsonUtils.Decoder((Bytes)a);
-				return decoder.decodeToObj();
+				return new Decoder(terp).decode((Dict) decoder.decodeToObj());
 			} else {
 				terp.toss("Pickle.de: bad arg type: %s", a.cls);
 				return null;
@@ -103,7 +103,7 @@ public abstract class More extends Static {
 					String s = ((Str)id).str;
 					int i = s.lastIndexOf('@');
 					String clsName = s.substring(i+1);
-					Cls cls = terp.clss.get(clsName);
+					Cls cls = terp.clss.get(clsName.toLowerCase());
 					Usr obj = new Usr(cls);
 					objs.dict.put(id, obj);
 				}
@@ -113,7 +113,7 @@ public abstract class More extends Static {
 					Usr obj = (Usr) objs.dict.get(id);
 					for (Entry<String, Integer> kv : obj.cls.allVarMap.entrySet()) {
 						String fieldName = kv.getKey();
-						fields.dict.get(fieldName).visit(this);
+						fields.dict.get(new Str(terp,fieldName)).visit(this);
 						obj.instVars[kv.getValue()] = r;
 					}
 				}
@@ -178,7 +178,7 @@ public abstract class More extends Static {
 			int serial;
 			String salt;
 			HashMap<Usr, String> map;
-			Dict objs;
+			Dict idToVars;
 
 			public Encoder(Terp t) {
 				super(t);
@@ -189,15 +189,10 @@ public abstract class More extends Static {
 				serial = 0;
 				salt = "" + Rand.nextInt(999);
 				map = new HashMap<Usr, String>();
-				objs = new Dict(terp);
+				idToVars = new Dict(terp);
 				
 				visitUsr(a);
-				
-				for (Entry<Usr, String> kv : map.entrySet()) {
-					// Swap key and value.
-					objs.dict.put(new Str(terp, kv.getValue()), kv.getKey());
-				}
-				return objs;
+				return idToVars;
 			}
 			
 			String mintRef(String clsName) {
@@ -246,6 +241,11 @@ public abstract class More extends Static {
 			}
 
 			public void visitUsr(Usr a) {
+				String already = map.get(a);
+				if (already != null) {
+					r = new Str(terp, already);
+					return;
+				}
 				String myRef = mintRef(a.cls._name());
 				Str myRefStr = new Str(terp, myRef);
 				map.put(a, myRef);
@@ -255,7 +255,7 @@ public abstract class More extends Static {
 					value.visit(this);
 					vars.dict.put(new Str(terp, kv.getKey()), r);
 				}
-				objs.dict.put(myRefStr, vars);
+				idToVars.dict.put(myRefStr, vars);
 				r = myRefStr;
 			}
 
