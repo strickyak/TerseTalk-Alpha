@@ -782,10 +782,6 @@ public class Ur extends Static implements Comparable {
 		// =meth Obj "eval" eval: "Evaluate a string as code in this receiver."
 		public Ur eval(String code) {
 			Expr.MethTop top = Parser.parseMethod(cls, "__eval__", code);
-
-			// DEBUG
-			// top.dump("EVAL/TOP ");
-
 			Ur z = top.eval(cls.terp.newFrame(null, this, top));
 			assert z != null : fmt("Null result in %s.eval <%s>", this, code);
 			return z;

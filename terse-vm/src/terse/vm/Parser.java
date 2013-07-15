@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import terse.vm.Expr.Block;
+import terse.vm.Expr.Lit;
+import terse.vm.Expr.Send;
 import terse.vm.Ur.Obj;
 
 // BUG: (x-2,y-2) parses very wrong.  "-2" gets detected, and "." gets inserted.
@@ -71,7 +73,9 @@ public class Parser extends Obj {
 		try {
 			p.parseExpr(); // Once to learn names of variables.
 		} catch (Exception ex) {
-			terp.toss("ERROR DURING PARSING: <%s>\nWHILE PARSING THIS SOURCE:\n%s\nUNPARSED REMAINDER:\n%s\n", ex, p.lex.front, p.lex.rest);
+			ex.printStackTrace();
+			terp.toss("ERROR DURING PARSING: <%s>\nWHILE PARSING THIS SOURCE [len=%d]:\n`%s`\nUNPARSED REMAINDER [len=%d]:\n`%s`\n",
+					show(ex), p.lex.front.length(), p.lex.front, p.lex.rest.length(), p.lex.rest);
 		}
 		if (p.lex.w.trim().length() > 0) {
 			terp.toss("Parser:  Leftover word after parsing: <%s>",
@@ -408,9 +412,9 @@ public class Parser extends Obj {
 		Expr e = receiver;
 		String prevRest = receiver.rest;
 		while (lex.isBinop2() || lex.t == Pat.NUMBER && lex.w.charAt(0) == '-') {
-			if (lex.t == Pat.NUMBER) {
+			if (lex.t == Pat.NUMBER && prevRest.length() > 0) {
 				// Handle special case like "x-2" where "-2" gets parsed as NUMBER.
-				try {
+//				try {
 					String front = lex.front;
 					String op = "-";
 					int[] locs = ints(lex.frontLocation());
@@ -423,10 +427,10 @@ public class Parser extends Obj {
 					e.front = front;
 					e.white = "";
 					e.rest = prevRest.substring(1);
-				} catch (RuntimeException ex) {
-					ex.printStackTrace();
-					throw ex;
-				}
+//				} catch (RuntimeException ex) {
+//					ex.printStackTrace();
+//					throw ex;
+//				}
 			} else {
 				String front = lex.front; String white = lex.white;
 				String op = lex.w;
@@ -470,7 +474,90 @@ public class Parser extends Obj {
 		}
 		return e;
 	}
-
+	
+	private Expr interpolateLiteralString(String a) {
+		try {
+		final int n = a.length();
+		Expr[] list = exprs();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			say("... i=%d  list=%s  <#>%s<#>%s<#>", i, arrayToString(list), sb.toString(), a.substring(i));
+			if (i+2 < n && a.charAt(i) == '[' && a.charAt(i+1) == '[') {
+				// Double (( becomes literal single (
+				sb.append('[');
+				++i;  // Skip the extra (
+				continue;
+			} else if (i+2 < n && a.charAt(i) == '[' && a.charAt(i+1) != '[') {
+				// We spotted single (, look for closing )
+				Expr found = null;
+				int nested = 0;
+				int j = i + 1;
+				for ( ; j < n; j++) {
+					if (a.charAt(j) == ']' && nested == 0) {
+						// We found a valid closing ).
+						// CHEAT for now.
+						Expr self = new Expr.GetSelf(terp);
+						Expr body = new Expr.Lit(new Str(terp, a.substring(i, j)));
+						Expr[] args = new Expr[]{ body };
+						// TODO: correct location?
+						found = new Expr.Send(self, "eval:", args, ints(lex.frontLocation()));
+						break;
+					} else if (a.charAt(j) == ']') {
+						--nested;
+					} else if (a.charAt(j) == '[') {
+						++nested;
+					} else {
+						// Just continue
+					}
+				}
+				// breaks to here.
+				if (found != null) {
+					if (sb.length() > 0) {
+						Expr pending = new Expr.Lit(new Str(terp, sb.toString()));
+						sb = new StringBuilder();
+						list = append(list, pending);
+					}
+					list = append(list, found);
+					i = j;
+					continue;
+				} else {
+					// All the rest.
+					sb.append(a.substring(i));
+					break;
+				}
+			} else if (i+1 < n && a.charAt(i) == ']' && a.charAt(i+1) == ']') {
+				sb.append(']');
+				i++;
+			} else {
+				sb.append(a.charAt(i));
+			}
+		}
+		
+		// We finished scanning; build the final Expr.
+		if (sb.length() > 0) {
+			Expr pending = new Expr.Lit(new Str(terp, sb.toString()));
+			list = append(list, pending);
+		}
+		
+		final int ll = list.length;
+		Expr z;
+		if (ll == 0) {
+			z = new Expr.Lit(new Str(terp, ""));
+		} else if (ll == 1) {
+			z = list[0];
+		} else {
+			Expr mkVec = new Expr.MakeVec(terp, list, ';');
+			z = new Expr.Send(mkVec, "jam", terp.emptyExprs, ints(lex.frontLocation()));
+		}
+		say("Interpolate <<< %s", a);
+		say("Interpolate >>> %s", z);
+		return z;
+		} catch (RuntimeException ex) {
+			say("Exception in Interpolate: %s", show(ex));
+			throw ex;
+		}
+	}
+ 
 	private Expr parsePrim() {
 		String front = lex.front; String white = lex.white;
 		Expr z = null;
@@ -481,6 +568,8 @@ public class Parser extends Obj {
 			break;
 		case STRING:
 			z = new Expr.Lit(new Ur.Str(terp, lex.w));
+			// TRY INTERPOLATION ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+			z = interpolateLiteralString(lex.w);
 			break;
 		case OTHER:
 			z = lex.opensParen() ? parseParen() : null;
@@ -513,18 +602,18 @@ public class Parser extends Obj {
 			return new Expr.GetSelf(terp);
 		else if (varKey.equals("up"))
 			return new Expr.Lit(terp.instSuper);
-		else if (varKey.equals("sp"))
-			return new Expr.Lit(terp.instSpace);
-		else if (varKey.equals("nl"))
-			return new Expr.Lit(terp.instNewline);
-		else if (varKey.equals("self"))
-			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
-		else if (varKey.equals("se"))
-			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
-		else if (varKey.equals("super"))
-			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
-		else if (varKey.equals("su"))
-			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+//		else if (varKey.equals("sp"))
+//			return new Expr.Lit(terp.instSpace);
+//		else if (varKey.equals("nl"))
+//			return new Expr.Lit(terp.instNewline);
+//		else if (varKey.equals("self"))
+//			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+//		else if (varKey.equals("se"))
+//			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+//		else if (varKey.equals("super"))
+//			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
+//		else if (varKey.equals("su"))
+//			return (Expr) terp.toss("STILL USINGG OLD NAME: " + varKey);
 		else {
 			// say("GETKEY <%s> <%s> %d", varName, varKey, varKey.length());
 			;;;

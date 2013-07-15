@@ -181,20 +181,20 @@ meth App nonMain
 
 meth TopCls footerButtons
   Vec(
-      '|link|/RESET|[RESET]|';
-      '|link|/TOP|[Top]|';
-      '|link|/BROWSE|[Browse]|';
-      '|link|/Eval|[Eval]|';
-      '|link|/DemoLife|[DemoLife]|';
-      '|link|/DrawLine|[DrawLine]|';
-      '|link|/DemoLiveLissajous|[DemoLiveLissajous]|';
-      '|link|/DemoStar|[DemoStar]|';
-      '|link|/DemoLissajous|[DemoLissajous]|';
-      '|link|/DrawRect|[DrawRect]|';
-      '|link|/OldStar|[OldStar]|';
-      '|link|/DemoHt|[DemoHt]|';
-      '|link|/SwitchWorld|[SwitchWorld]|';
-      '|link|/ListUnicodePages|[ListUnicodePages]|';
+      '|link|/RESET|[[RESET]]|';
+      '|link|/TOP|[[Top]]|';
+      '|link|/BROWSE|[[Browse]]|';
+      '|link|/Eval|[[Eval]]|';
+      '|link|/DemoLife|[[DemoLife]]|';
+      '|link|/DrawLine|[[DrawLine]]|';
+      '|link|/DemoLiveLissajous|[[DemoLiveLissajous]]|';
+      '|link|/DemoStar|[[DemoStar]]|';
+      '|link|/DemoLissajous|[[DemoLissajous]]|';
+      '|link|/DrawRect|[[DrawRect]]|';
+      '|link|/OldStar|[[OldStar]]|';
+      '|link|/DemoHt|[[DemoHt]]|';
+      '|link|/SwitchWorld|[[SwitchWorld]]|';
+      '|link|/ListUnicodePages|[[ListUnicodePages]]|';
   )
 
 meth Top handle:query:
@@ -218,6 +218,8 @@ meth Top handle:query:
       '/DemoLiveSierpinski';
       '/DemoLivePaint';
       '/BrowseWorlds (broken)';
+      '/SwitchWorld (broken)';
+      '/SnapshotWorld';
       '/BrowseFiles';
       '/BrowseHub';
       '/DemoLiveLife';
@@ -228,8 +230,6 @@ meth Top handle:query:
       '/DemoForm';
       '/DrawRect';
       '/OldStar';
-      '/SwitchWorld (broken)';
-      '/SnapshotWorld';
       '/FnordCannon';
       '/FnordApp';
       '/BlocksDemo';
@@ -262,7 +262,7 @@ meth BrowseFile handle:query:
     TAG('pre', c);
     TAG('p');
     TAG('hr');
-    TAG('a'; 'href', url; '[EDIT]');
+    TAG('a'; 'href', url; '[[EDIT]]');
   ).
   DICT(
     'type', 'html';
@@ -300,7 +300,7 @@ meth Browse handle:query:
   clss= Cls all .
 
   "Start the list V with an UP link."
-  v= Vec('|link|/Top|[TOP]|', 'Go Top.';).
+  v= Vec('|link|/Top|[[TOP]]|', 'Go Top.';).
   v len == 1 $must: (v, '#1').
   v at: 0 $len == 2 $must: (v, '#2').
 
@@ -332,19 +332,19 @@ meth Browse handle:query:
   IF( wl == 2 )THEN(
     cn= ww at: 1 .  "class name"
     co= clss at: cn lower .   "class object"
-    v ap: ( ('|link|/', cn, '|[RUN]|')jam, '[RUN]').
+    v ap: ( ('|link|/', cn, '|[[RUN]]|')jam, '[RUN]').
 
     v ap: ( ('|link|/Browse.', cn, '|== CLASS ', cn, ' ==|')jam,
             ('==== class ', cn, ' ====')jam ).
 
     d= co cls meths .
     FOR( x: d dir )DO(  "For each class method"
-      v ap: ( ( '|link|/EditMethod.', cn, 'Cls.', x, '|[method] cls ', x, '|' ) jam, d at: x $ str ) .
+      v ap: ( ( '|link|/EditMethod.', cn, 'Cls.', x, '|[[method]] cls ', x, '|' ) jam, d at: x $ str ) .
     ).
 
     d= co meths .
     FOR( x: d dir )DO(   "For each instance method"
-      v ap: ( ( '|link|/EditMethod.', cn, '.', x, '|[method] ', x, '|' ) jam, d at: x $ str ) .
+      v ap: ( ( '|link|/EditMethod.', cn, '.', x, '|[[method]] ', x, '|' ) jam, d at: x $ str ) .
     ).
 
     z= Dict new  at: 'type' put: 'list'
@@ -700,7 +700,7 @@ meth ListUnicodePages drawPage:
 
 cls SwitchWorld App
 meth SwitchWorld handle:query:
-  r = Rex new: 'w_([a-z0-9]+).txt'.
+  r = Rex new: 'w_([[a-z0-9]]+).txt'.
   worlds = Vec new.
   'File dir ==' say: File dir.
   FOR(f : File dir) DO(
@@ -1681,7 +1681,7 @@ meth BrowseWorlds notes:
   u= IF{ cfg d at: a $equals: 'd' }THEN{ '(fetched)' }ELSE{ '' }.
   (s,t,u)jam say.
 meth BrowseWorlds wMid
-  r = Rex new: 'w_([a-z0-9]+).txt' say.
+  r = Rex new: 'w_([[a-z0-9]]+).txt' say.
   all= Dict new.
   fv= Dict new.
   FOR{fname,mtime,size: File dir}

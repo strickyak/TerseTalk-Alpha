@@ -252,11 +252,11 @@ public class ExprTest extends TestCase {
         assertEquals("0", eval(top).toString());
     }
     public void testRexF() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "r = Rex new: '([a-z]*)([0-9]*)\\.txt'.  r match: '###'. ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "r = Rex new: '([[a-z]]*)([[0-9]]*)\\.txt'.  r match: '###'. ");
         assertEquals("Nil", eval(top).toString());
     }
     public void testRexT() {
-        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "r = Rex new: '([a-z]*)([0-9]*)\\.txt'.  r match: 'abc123.txt'. ");
+        Expr.MethTop top = Parser.parseMethod(usrCls, "temp", "r = Rex new: '([[a-z]]*)([[0-9]]*)\\.txt'.  r match: 'abc123.txt'. ");
         assertEquals("VEC('abc123.txt'; 'abc'; '123'; ) ", eval(top).toString());
     }
     public void testInstVars() {
@@ -297,5 +297,13 @@ public class ExprTest extends TestCase {
     public void testSubclasses() {
         Ur u = eval("Cls subs say. UrCls subs say.  Metacls subs say. ObjCls subs say. 1 say.");
         assertEquals("1", u.repr());
+    }
+    public void testInterpolation() {
+        Ur u = eval("( 'Hello ', '[ 33 + 44 ]', ' World!' )jam");
+        assertEquals("Hello 77 World!", u.toString());
+    }
+    public void testNoInterpolationRex() {
+        Ur u = eval("r = Rex new: 'w_([[a-z0-9]]+).txt' say.");
+        assertEquals("XXX", u.toString());
     }
 }

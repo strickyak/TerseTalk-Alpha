@@ -24,6 +24,8 @@ package terse.vm;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -87,7 +89,7 @@ public class Static {
 	}
 
 	public static String arrayToString(Expr[] a) {
-		StringBuilder z = new StringBuilder();
+		StringBuilder z = new StringBuilder("[");
 		for (Expr e : a) {
 			z.append(fmt("%s, ", e.toString()));
 		}
@@ -96,7 +98,7 @@ public class Static {
 	}
 
 	public static String arrayToString(Ur[] a) {
-		StringBuilder z = new StringBuilder();
+		StringBuilder z = new StringBuilder("[");
 		for (Ur e : a) {
 			z.append(fmt("%s, ", e.toString()));
 		}
@@ -928,5 +930,12 @@ public class Static {
 		}
 		sb.append("}");
 		return sb.toString();
+	}
+	
+	public static String show(Exception t) {
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter out = new PrintWriter (stringWriter);
+		t.printStackTrace(out);
+		return stringWriter.toString();
 	}
 }
