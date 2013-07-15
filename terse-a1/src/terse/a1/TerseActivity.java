@@ -790,7 +790,7 @@ public class TerseActivity extends Activity {
 						public void onClick(View v) {
 							// Perform action on clicks
 							String text = ed.getText().toString();
-							text = Parser.charSubsts(text);
+							text = Parser.noGraphSubst(text);
 							Toast.makeText(TerseActivity.this, text,
 									Toast.LENGTH_SHORT).show();
 							String action = stringAt(d, "action");

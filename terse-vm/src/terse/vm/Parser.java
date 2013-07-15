@@ -102,8 +102,9 @@ public class Parser extends Obj {
 	static Pattern TRIGRAPH = Pattern.compile("/[a-z][a-z]",
 			Pattern.CASE_INSENSITIVE);
 
-	static public String charSubsts(String s) {
-		return bigraphSubst(trigraphSubst(s));
+	static public String noGraphSubst(String s) {
+		return s; // Disable them, until we fix them.
+//		return bigraphSubst(trigraphSubst(s));
 	}
 
 	static public String trigraphSubst(String s) {

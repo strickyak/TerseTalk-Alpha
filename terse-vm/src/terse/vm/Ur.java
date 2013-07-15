@@ -1577,7 +1577,7 @@ public class Ur extends Static implements Comparable {
 
 		// =meth Str "access" applySubstitutions ""
 		public Str applySubstitutions() {
-			return terp().newStr(Parser.charSubsts(this.str));
+			return terp().newStr(Parser.noGraphSubst(this.str));
 		}
 
 		// =meth Str "access" ord
@@ -1648,7 +1648,7 @@ public class Ur extends Static implements Comparable {
 							return new Str(terp, s.str + a.str);
 						}
 					});
-			terp.tStr.addMethod(new JavaMeth(terp.tStr, "substr:to:", "ss:to:",
+			terp.tStr.addMethod(new JavaMeth(terp.tStr, "substr:to:", "sub:to:",
 					"Substring starting at first index, "
 							+ "ending before second index, like Java substr.") { // Substring
 						public Ur apply(Frame f, Ur r, Ur[] args) {
@@ -1940,12 +1940,46 @@ public class Ur extends Static implements Comparable {
 			vec.add(a);
 		}
 		
-		// =meth Vec "access" cat: "concat with vector, changing me."
-		public void cat_(Vec a) {
+		// =meth Vec "access" cat: "concat with vector, returning new."
+		public Vec cat_(Vec a) {
+			Vec z = new Vec(terp());
+			final int m = vec.size();
+			for (int i = 0; i < m; ++i) {
+				z.vec.add(vec.get(i));
+			}
 			final int n = a.vec.size();
 			for (int i = 0; i < n; ++i) {
-				this.vec.add(a.vec.get(i));
+				z.vec.add(a.vec.get(i));
 			}
+			return z;
+		}
+		
+		// =meth Vec "access" sub:to: "subvector, returning new."
+		public Vec sub_to_(double fbegin, double fend) {
+			int begin = (int) Math.floor(fbegin + 0.5);
+			int end = (int) Math.floor(fend + 0.5);
+			Vec z = new Vec(terp());
+			final int n = vec.size();
+			if (begin < 0) begin += n;
+			if (end < 0) end += n;
+			for (int i = begin; i < end && i < n; ++i) {
+				z.vec.add(vec.get(i));
+			}
+			return z;
+		}
+		
+		// =meth Vec "access" sub:len: "subvector, returning new."
+		public Vec sub_len_(double fbegin, double flen) {
+			int begin = (int) Math.floor(fbegin + 0.5);
+			int end = begin + (int) Math.floor(flen + 0.5);
+			Vec z = new Vec(terp());
+			final int n = vec.size();
+			if (begin < 0) begin += n;
+			if (end < 0) end += n;
+			for (int i = begin; i < end && i < n; ++i) {
+				z.vec.add(vec.get(i));
+			}
+			return z;
 		}
 
 		// =meth Vec "string" join:

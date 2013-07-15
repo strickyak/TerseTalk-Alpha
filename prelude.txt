@@ -103,13 +103,13 @@ equals 26
 equals 26
     x; y = 3, 4.   x * x + y * y $ + 1.
 
-meth Vec a0
+meth Vec x
   me at: 0
-meth Vec a1
+meth Vec y
   me at: 1
-meth Vec a2
+meth Vec z
   me at: 2
-meth Vec a3
+meth Vec w
   me at: 3
 
 meth Vec eq:
@@ -205,33 +205,22 @@ meth Top handle:query:
     'title' , 'TOP';
     'value' , VEC{
       '/BrowseCLASSES (NEW)';
-	  '/VuDemo';
-      '/FnordCheeseDemo';
-      '/FnordCannon';
-      '/FnordDebugRot';
-      '/FnordApp';
-      '/BlocksDemo';
-      '/FnordTwo';
-      '/FnordMotherShip';
-      '/FnordFlight';
-      '/DualFlight';
-      '/GameFoo';
-      '/GamePong';
-      '/PongGame';
-      '/DrawAct';
-      '/GameTroids';
-      '/SnapshotWorld';
       '/EVAL CODE (DoIt, PrintIt)';
-      '/BROWSE & EDIT CODE (old)';
-      '/BrowseWorlds (broken)';
-      '/BrowseFiles';
-      '/BrowseHub';
-      '/Inspect (not yet useful)';
+      '/Browse & edit code (OLD)';
+      '/ADozenYaksApp';
+      '/FnordFlight';
+      '/FnordCheeseDemo';
+      '/GameTroids';
+      '/PongGame';
+      '/ListUnicodePages';
       '/DemoLiveLifeRedBlue';
-      '/DemoLiveLife';
       '/DemoLiveLissajous';
       '/DemoLiveSierpinski';
       '/DemoLivePaint';
+      '/BrowseWorlds (broken)';
+      '/BrowseFiles';
+      '/BrowseHub';
+      '/DemoLiveLife';
       '/DemoStar';
       '/DemoLife';
       '/DemoLissajous';
@@ -239,8 +228,17 @@ meth Top handle:query:
       '/DemoForm';
       '/DrawRect';
       '/OldStar';
-      '/ListUnicodePages';
       '/SwitchWorld (broken)';
+      '/SnapshotWorld';
+      '/FnordCannon';
+      '/FnordApp';
+      '/BlocksDemo';
+      '/FnordTwo';
+      '/FnordMotherShip';
+      '/GamePong';
+      '/GameFoo';
+      '/DrawAct';
+      '/Inspect (not yet useful)';
   }}.
 
 cls BrowseFiles App
@@ -2910,6 +2908,39 @@ meth VuDemo handle:query:
     'type', 'usr';
 	'value', me;
   )
+
+############################
+############################
+############################
+cls HtApp App
+vars HtApp
+  path query
+meth HtApp handle:query:
+  path= a tail split: '/' .
+  query = b.
+
+  DICT(
+    'type', 'html';
+    'title', me title;
+    'value', me value;
+  )
+meth HtApp title
+  me cls name
+meth HtApp value
+  'This is HtApp.value.'
+meth HtApp nonMain
+############################
+cls ADozenYaksApp HtApp
+meth ADozenYaksApp value
+  HT('just a ';
+     Ht linkLabelPairs: (
+	   '/HtApp', 'HtApp';
+	   '/ADozenYaksApp', 'ADozenYaksApp';
+     );
+	 TAG('br';);
+	 'path=', path, ' query=', query;
+  )
+
 
 ##END
 
