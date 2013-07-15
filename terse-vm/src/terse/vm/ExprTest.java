@@ -41,6 +41,10 @@ public class ExprTest extends TestCase {
         Frame f = t.newFrame(null, usrInst, top);
         return top.eval(f);
     }
+	private Ur eval(String code) {
+        return t.newTmp().eval(code);
+	}
+	
     protected Ur evalExpectingExceptionsWhileProcessing(Expr.MethTop top) {
 		Ur z = null;
     	try {
@@ -285,5 +289,13 @@ public class ExprTest extends TestCase {
     		err = e.toString();
     	}
         assert(err.matches("Leftover word after parsing"));
+    }
+    public void testClassVar() {
+        Ur u = eval("Usr defsub: 'X'. XCls defvars: 'y'. XCls def: 'y:' c: 'y=a. me'. XCls def: 'y' c: 'y'. X y: 23. X y.");
+        assertEquals("23", u.repr());
+    }
+    public void testSubclasses() {
+        Ur u = eval("Cls subs say. UrCls subs say.  Metacls subs say. ObjCls subs say. 1 say.");
+        assertEquals("1", u.repr());
     }
 }

@@ -1194,7 +1194,7 @@ meth InspectInst targ:
 meth InspectInst title
   ('Inspecting ', targ oname)jam
 meth InspectInst wMid
-  Ht dict: targ peekInstVarsDict
+  Ht dict: targ peekVars
   
 
 cls InspectClass WebApp

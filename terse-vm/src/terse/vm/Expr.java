@@ -184,7 +184,8 @@ public abstract class Expr extends Obj {
 
 		@Override
 		public void fixIndices(Parser p) {
-			index = p.instVars.get(name.toLowerCase());
+			say("fixIndices: name=%s p.instVars=%s", name, Static.show(p.instVars));
+;			index = p.instVars.get(name.toLowerCase());
 		}
 		@Override
 		public void visit(Visitor v) {

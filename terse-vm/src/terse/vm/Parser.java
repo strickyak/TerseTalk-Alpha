@@ -158,13 +158,19 @@ public class Parser extends Obj {
 		// Include instVars from superclasses, like Python does.
 		Cls c = onCls;
 		while (c != null) {
+			//say("PARSER ON %s at C=%s myVarNames %s", onCls, c, Static.arrayToString(c.myVarNames));
 			for (String k : c.myVarNames) {
 				Integer i = onCls.allVarMap.get(k);
-				assert i != null : k + "@" + onCls.cname;
+				if (i == null) {
+					terp.toss("allVarMap.get(%s) is NULL: onCls=%s cls=%s allVarMap=%s", onCls, c, Static.arrayToString(c.myVarNames));
+				}
+				//say("PARSER PUTTING VAR %s", k);
 				this.instVars.put(k.toLowerCase(), i);
 			}
+
 			c = c.supercls;
 		}
+		//say("PARSER DONE %s", Static.show(this.instVars));
 	}
 
 	private static String replace(Pattern p, String replacement, String a) {

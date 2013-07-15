@@ -145,6 +145,9 @@ public abstract class Terp extends Static {
 		this.tClsCls = new Cls(null/* MetaCls */, this, "ClsCls", tObjCls);
 		this.tCls = new Cls(tClsCls, this, "Cls", tObj);
 
+		this.tCls.subclasses.add("UrCls");
+		this.tUrCls.subclasses.add("ObjCls");
+
 		this.tMetaclsCls = new Cls(null/* MetaCls */, this, "MetaclsCls",
 				tObjCls);
 		this.tMetacls = new Cls(tMetaclsCls, this, "Metacls", tCls);

@@ -218,7 +218,7 @@ public class Usr extends Obj {
 			// For now, it's just a dict of field values.
 			Dict d = eval(state).mustDict();
 			Usr z = new Usr(this);
-			z.pokeInstVarsDict_(d);
+			z.pokeVars_(d);
 			return z;
 		}
 	}

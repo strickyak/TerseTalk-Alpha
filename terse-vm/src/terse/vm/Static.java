@@ -107,7 +107,7 @@ public class Static {
 	public static String arrayToString(String[] a) {
 		if (a == null)
 			return "<?WHY_IS_THE_String[]_NULL?>";
-		StringBuilder z = new StringBuilder();
+		StringBuilder z = new StringBuilder("[");
 		for (String e : a) {
 			z.append(fmt("\"%s\", ", e));
 		}
@@ -915,5 +915,18 @@ public class Static {
 			return sb.toString();
 		}
 		
+	}
+
+	public static String show(HashMap instVars) {
+		StringBuilder sb = new StringBuilder("{");
+		Set keys = instVars.keySet();
+		for (Object key : keys) {
+			sb.append(key.toString());
+			sb.append(" : ");
+			sb.append(instVars.get(key));
+			sb.append(" , ");
+		}
+		sb.append("}");
+		return sb.toString();
 	}
 }

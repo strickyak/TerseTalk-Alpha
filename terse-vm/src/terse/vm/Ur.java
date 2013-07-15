@@ -46,7 +46,6 @@ import terse.vm.Usr.UsrCls;
 public class Ur extends Static implements Comparable {
 	// =get Ur . cls cls
 	public Cls cls;
-	// =get Ur Ur[] instVars peekInstVars
 	Ur[] instVars; // TODO: move to Usr & UsrCls.
 
 	// =cls "Sys" Ur
@@ -279,8 +278,8 @@ public class Ur extends Static implements Comparable {
 				.compareTo(new Integer(System.identityHashCode(obj)));
 	}
 
-	// =meth Ur "debug" pokeInstVarsDict:
-	public void pokeInstVarsDict_(Dict d) {
+	// =meth Ur "debug" pokeVars:
+	public void pokeVars_(Dict d) {
 		for (String k : cls.allVarMap.keySet()) {
 			int i = cls.allVarMap.get(k);
 			Ur x = d.dict.get(terp().newStr(k));
@@ -290,8 +289,8 @@ public class Ur extends Static implements Comparable {
 		}
 	}
 
-	// =meth Ur "debug" peekInstVarsDict
-	public Dict _peekInstVarsDict() {
+	// =meth Ur "debug" peekVars
+	public Dict _peekVars() {
 		Dict d = terp().newDict(emptyUrs);
 		for (String k : cls.allVarMap.keySet()) {
 			int i = cls.allVarMap.get(k);

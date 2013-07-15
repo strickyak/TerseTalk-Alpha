@@ -22,6 +22,7 @@
 package terse.vm;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -215,12 +216,13 @@ public class Cls extends Obj {
 		return terp.mkStrVec(myVarNames);
 	}
 
-	// =meth Cls "access" defVars:
+	// =meth Cls "access" defVars:,vars:
 	public void defVars_(String varNames) {
 		String[] myVarNames = filterOutEmptyStrings(varNames.split("\\s+"));
+		final int myVarSize = myVarNames.length;
 
 		// Check for Ignore-Case uniqueness.
-		for (int i = 0; i < myVarNames.length; i++) {
+		for (int i = 0; i < myVarSize; i++) {
 			String iStr = myVarNames[i];
 			String iLow = iStr.toLowerCase();
 			for (Cls c = this.supercls; c != null; c = c.supercls) {
@@ -231,7 +233,7 @@ public class Cls extends Obj {
 								iStr, c.cname, y);
 					}
 				}
-				for (int j = i + 1; j < myVarNames.length; j++) {
+				for (int j = i + 1; j < myVarSize; j++) {
 					if (iLow.equals(myVarNames[j].toLowerCase())) {
 						terp.toss(
 								"Cannot add 2 inst vars <%s> <%s> with same name.",
@@ -242,6 +244,26 @@ public class Cls extends Obj {
 		}
 
 		this.myVarNames = myVarNames;
+		
+		// If we changed vars of a class class, the one and only instance
+		// already exists, so we must update it in place.
+		if (this.cls == terp.tMetacls) {  // TODO: inherited case.
+			// Remove the trailing "cls".
+			if (!cname.toLowerCase().endsWith("cls")) {
+				toss("Inst of Metacls should end in 'cls'");
+			}
+			String plainClsName = cname.substring(0, cname.length() - 3);
+			Cls plainCls = terp.clss.get(plainClsName.toLowerCase()); 
+
+			if (myVarSize == 0) {
+				plainCls.instVars = emptyUrs;
+			} else {
+				plainCls.instVars = new Ur[myVarSize];
+				Arrays.fill(plainCls.instVars, cls.terp.instNil);
+			}
+		}
+
+		// this.recalculateAllVarsHereAndBelow(); // TODO: XCls broken, why?
 		terp.tUr.recalculateAllVarsHereAndBelow();
 
 		if (terp.loadingWorldFile) {
@@ -268,6 +290,15 @@ public class Cls extends Obj {
 		return supercls;
 	}
 
+	// =meth Cls "access" subs
+	public Vec _subs() {
+		Vec z = new Vec(terp);
+		for (String s : subclasses) {
+			z.vec.add(new Str(terp, s));
+		}
+		return z;
+	}
+
 	// =meth Cls "access" meths
 	public Dict _meths() {
 		Dict z = new Dict(terp);
@@ -277,6 +308,11 @@ public class Cls extends Obj {
 		return z;
 	}
 
+	// An even shorter cut for defining methods.
+	// =meth Cls "meth" def:c: ""
+	public void defMeth(String methName, String code) {
+		defMeth(methName, "", "", code);
+	}
 	// =meth Cls "meth" defineMethod:abbrev:doc:code:,defMeth:a:d:c: ""
 	public void defMeth(String methName, String abbrev, String doc, String code) {
 		Expr.MethTop top = Parser.parseMethod(this, methName, code);
@@ -292,12 +328,10 @@ public class Cls extends Obj {
 	// =meth ClsCls "meth" all "dict of all classes, by name"
 	public static Dict _all(Terp terp) {
 		Dict z = new Dict(terp);
-		int i = 0;
 		for (String k : terp.clss.keySet()) {
 			Ur key = terp.newStr(k);
 			Ur value = terp.clss.get(k);
 			z.dict.put(key, value);
-			++i;
 		}
 		return z;
 	}
