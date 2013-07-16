@@ -103,7 +103,7 @@ public class MoreTest extends TestCase {
 	}
 	
 	public void testJsonDe() {
-		Ur u = eval("Json de: '{\"abc\": [1.0, 2.0, 3.0], 555.0: [\"five\", null, \"five\"]}'");
+		Ur u = eval("Json de: '{\"abc\": [[1.0, 2.0, 3.0]], 555.0: [[\"five\", null, \"five\"]]}'");
 		assertEquals("DICT((555), (VEC('five'; Nil; 'five'; ) ); ('abc'), (VEC(1; 2; 3; ) ); ) ", u.toString());
 	}
 	
