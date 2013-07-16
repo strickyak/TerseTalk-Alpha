@@ -56,6 +56,24 @@ import javax.crypto.spec.SecretKeySpec;
 public abstract class More extends Static {
 	static SecureRandom Rand = new SecureRandom();
 	
+	public static final class EscStr extends Obj {
+
+		// =cls "more" EscStr Obj
+		public EscStr(Cls cls) {
+			super(cls);
+			toss("Do not instantiate EscStr.");
+		}
+
+		public static String encode(String a) {
+			return a.replace("'", "''").replace("[", "[[").replace("]", "]]");
+		}
+		
+		// =meth EscStrCls "encode" en:
+		public static String en_(Terp terp, String a) {
+			return encode(a);
+		}
+	}
+	
 	public static final class Pickle extends Obj {
 		// =cls "more" Pickle Obj
 		public Pickle(Cls cls) {
@@ -64,10 +82,9 @@ public abstract class More extends Static {
 		}
 		
 		// =meth PickleCls "encode" en:
-		public static Str en_(Terp terp, Usr a) {
+		public static String en_(Terp terp, Usr a) {
 			Dict d = new Encoder(terp).encode(a);
-			JsonUtils.Encoder encoder = new JsonUtils.Encoder(d);
-			return new Str(terp, encoder.toString());
+			return new JsonUtils.Encoder(d).toString();
 		}
 		
 		// =meth PickleCls "decode" de:

@@ -39,6 +39,7 @@ import terse.vm.Cls.JavaMeth;
 import terse.vm.Cls.Meth;
 import terse.vm.Cls.UsrMeth;
 import terse.vm.Expr.Seq;
+import terse.vm.More.EscStr;
 import terse.vm.Terp.Frame;
 import terse.vm.Usr.UsrCls;
 
@@ -1550,7 +1551,7 @@ public class Ur extends Static implements Comparable {
 			if (str == null) {
 				return "<?NULL?>";
 			}
-			return fmt("'%s'", str.replaceAll("'", "''"));
+			return fmt("'%s'", EscStr.encode(str));
 		}
 
 		public String toString() {

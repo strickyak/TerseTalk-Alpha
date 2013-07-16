@@ -304,6 +304,6 @@ public class ExprTest extends TestCase {
     }
     public void testNoInterpolationRex() {
         Ur u = eval("r = Rex new: 'w_([[a-z0-9]]+).txt' say.");
-        assertEquals("XXX", u.toString());
+        assertEquals("Rex new: 'w_([[a-z0-9]]+).txt'", u.toString());
     }
 }
