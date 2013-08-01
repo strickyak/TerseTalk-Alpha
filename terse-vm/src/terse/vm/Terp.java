@@ -718,6 +718,14 @@ public abstract class Terp extends Static {
 				cls = defineOrphan(className);
 			}
 			cls.defVars_(more);
+			String[] names = more.split("\\s+");
+			for (String name : names) {
+				if (name.length() == 0) {
+					continue;
+				}
+				cls.defMeth(name, name);
+				cls.defMeth(fmt("%s:", name), fmt("%s=a. me", name));
+			}
 		}
 
 		@Override

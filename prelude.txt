@@ -2931,6 +2931,8 @@ meth HtApp value
 meth HtApp nonMain
 ############################
 cls ADozenYaksApp HtApp
+vars ADozenYaksApp
+  name
 meth ADozenYaksApp value
   IF( path len < 2 )THEN(
     me verbTop
@@ -2942,45 +2944,67 @@ meth ADozenYaksApp value
 	)
   )
 meth ADozenYaksApp verbTop
-  HT('just a ';
-     Ht linkLabelPairs: (
-	   '/HtApp', 'HtApp';
-	   '/ADozenYaksApp', 'ADozenYaksApp';
-     );
-	 TAG('hr';);
-	 'path=', path, ' query=', query;
+  HT(
+    FOR (name,date,size: File dir) MAP (
+      TAG('a';'href','/ADozenYaksApp./[ name]';name)
+    )
   )
+
 meth ADozenYaksApp verbSelf
   HT('this is verbSelf')
 meth ADozenYaksApp verbFoo
   HT('this is verbFoo')
+meth ADozenYaksApp verbBootSelf
+  x = SelfDy new.
+  y = FriendDy new.
+
+  "TODO"
+  x name: 'Alice'.
+  x dhsec: DhSecret rand.
+  x dhpub: x dhsec pub.
+
+  HT('this is the boot script').
 
 
+
+# Objects that hold a name
+##########################
 cls NamedDy Usr
 vars NamedDy
   name alias desc rem
+
 cls FriendDy NamedDy
 vars FriendDy
   dhpub dhmut rooms hubs
+
 cls SelfDy FriendDy
 vars SelfDy
   dhsec friends
+
 cls RoomDy NamedDy
 vars RoomDy
   owner members
+
+# Messaging classes
+##########################
 cls MsgDy Usr
 vars MsgDy
   from to roomName
+
 cls TxtMsgDy MsgDy
 vars TxtMsgDy
   txt
+
 cls InviteDy MsgDy
 vars InviteDy
   memberNames
+
 cls AcceptDy MsgDy
+
 cls MembersDy MsgDy
 vars MembersDy
   members
+
 cls IntroDy MsgDy
 vars IntroDy
   name dhpub hubs
