@@ -2916,7 +2916,7 @@ cls HtApp App
 vars HtApp
   path query
 meth HtApp handle:query:
-  path= a tail split: '/' .
+  path = a tail split: '/' .
   query = b.
 
   DICT(
@@ -2932,15 +2932,58 @@ meth HtApp nonMain
 ############################
 cls ADozenYaksApp HtApp
 meth ADozenYaksApp value
+  IF( path len < 2 )THEN(
+    me verbTop
+  )ELSE(
+	IF( path len == 2 )THEN(
+	  me verbSelf
+	)ELSE(
+	  me apply: 'verb[ path z]' args: ()
+	)
+  )
+meth ADozenYaksApp verbTop
   HT('just a ';
      Ht linkLabelPairs: (
 	   '/HtApp', 'HtApp';
 	   '/ADozenYaksApp', 'ADozenYaksApp';
      );
-	 TAG('br';);
+	 TAG('hr';);
 	 'path=', path, ' query=', query;
   )
+meth ADozenYaksApp verbSelf
+  HT('this is verbSelf')
+meth ADozenYaksApp verbFoo
+  HT('this is verbFoo')
 
+
+cls NamedDy Usr
+vars NamedDy
+  name alias desc rem
+cls FriendDy NamedDy
+vars FriendDy
+  dhpub dhmut rooms hubs
+cls SelfDy FriendDy
+vars SelfDy
+  dhsec friends
+cls RoomDy NamedDy
+vars RoomDy
+  owner members
+cls MsgDy Usr
+vars MsgDy
+  from to roomName
+cls TxtMsgDy MsgDy
+vars TxtMsgDy
+  txt
+cls InviteDy MsgDy
+vars InviteDy
+  memberNames
+cls AcceptDy MsgDy
+cls MembersDy MsgDy
+vars MembersDy
+  members
+cls IntroDy MsgDy
+vars IntroDy
+  name dhpub hubs
 
 ##END
 

@@ -773,7 +773,7 @@ public class Ur extends Static implements Comparable {
 		public Ur apply_args_(String msg, Ur[] args) {
 			Meth meth = Expr.Send.findMeth(this, msg, false);
 			if (meth == null) {
-				return toss("Cannot send %s to %d", msg, this);
+				return toss("Cannot send %s to %s", msg, this);
 			}
 			UsrMeth m = (UsrMeth) meth;
 			Frame f = terp().newFrame(null, this, m._top());

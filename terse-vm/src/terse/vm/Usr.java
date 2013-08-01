@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.xml.internal.ws.api.pipe.NextAction;
+// import com.sun.xml.internal.ws.api.pipe.NextAction;
 
 import terse.vm.Cls.JavaMeth;
 import terse.vm.Ur.Obj;

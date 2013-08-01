@@ -481,7 +481,7 @@ public class Parser extends Obj {
 		Expr[] list = exprs();
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < n; i++) {
-			say("... i=%d  list=%s  <#>%s<#>%s<#>", i, arrayToString(list), sb.toString(), a.substring(i));
+			// say("... i=%d  list=%s  <#>%s<#>%s<#>", i, arrayToString(list), sb.toString(), a.substring(i));
 			if (i+2 < n && a.charAt(i) == '[' && a.charAt(i+1) == '[') {
 				// Double (( becomes literal single (
 				sb.append('[');
@@ -549,8 +549,8 @@ public class Parser extends Obj {
 			Expr mkVec = new Expr.MakeVec(terp, list, ';');
 			z = new Expr.Send(mkVec, "jam", terp.emptyExprs, ints(lex.frontLocation()));
 		}
-		say("Interpolate <<< %s", a);
-		say("Interpolate >>> %s", z);
+		// say("Interpolate <<< %s", a);
+		// say("Interpolate >>> %s", z);
 		return z;
 		} catch (RuntimeException ex) {
 			say("Exception in Interpolate: %s", show(ex));
