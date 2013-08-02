@@ -771,7 +771,7 @@ public class Ur extends Static implements Comparable {
 
 		// =meth Obj "eval" apply:args:
 		public Ur apply_args_(String msg, Ur[] args) {
-			Meth meth = Expr.Send.findMeth(this, msg, false);
+			Meth meth = Expr.Send.findMeth(this, msg.toLowerCase(), false);
 			if (meth == null) {
 				return toss("Cannot send %s to %s", msg, this);
 			}
@@ -1951,8 +1951,8 @@ public class Ur extends Static implements Comparable {
 			return z;
 		}
 		
-		// =meth Vec "access" sub:to: "subvector, returning new."
-		public Vec sub_to_(double fbegin, double fend) {
+		// =meth Vec "access" cut:to: "subvector, returning new."
+		public Vec cut_to_(double fbegin, double fend) {
 			int begin = (int) Math.floor(fbegin + 0.5);
 			int end = (int) Math.floor(fend + 0.5);
 			Vec z = new Vec(terp());
@@ -1965,8 +1965,8 @@ public class Ur extends Static implements Comparable {
 			return z;
 		}
 		
-		// =meth Vec "access" sub:len: "subvector, returning new."
-		public Vec sub_len_(double fbegin, double flen) {
+		// =meth Vec "access" cut:len: "subvector, returning new."
+		public Vec cut_len_(double fbegin, double flen) {
 			int begin = (int) Math.floor(fbegin + 0.5);
 			int end = begin + (int) Math.floor(flen + 0.5);
 			Vec z = new Vec(terp());
@@ -2489,8 +2489,8 @@ public class Ur extends Static implements Comparable {
 			return new Bytes(terp(), z);
 		}
 		
-		// =meth Bytes "slice" slice:to:
-		public Bytes slice_to_(int p, int q) {
+		// =meth Bytes "slice" cut:to:
+		public Bytes cut_to_(int p, int q) {
 			final int n = bytes.length;
 			if (p < 0 || p > n || q < 0 || q > n || q < p) {
 				toss("Bytes.tail: bad range %d to %d len %d", p, q, n);
@@ -2499,9 +2499,9 @@ public class Ur extends Static implements Comparable {
 			return new Bytes(terp(), z);
 		}
 		
-		// =meth Bytes "slice" slice:len:
-		public Bytes slice_len_(int p, int len) {
-			return slice_to_(p, p+len);
+		// =meth Bytes "slice" cut:len:
+		public Bytes cut_len_(int p, int len) {
+			return cut_to_(p, p+len);
 		}
 		
 		// =meth Bytes "convert" explode

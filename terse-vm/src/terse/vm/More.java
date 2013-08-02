@@ -279,6 +279,10 @@ public abstract class More extends Static {
 			public void visitBytes(Bytes a) {
 				visitUr(a);
 			}
+			
+			@Override public void visitUr(Ur a) {
+				terp.toss("Unnown object in Pickle ENcoder visitUr: %s # %s", a.toString(), a.repr());
+			}
 		}
 	}
 	

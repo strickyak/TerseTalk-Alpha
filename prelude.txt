@@ -2932,7 +2932,8 @@ meth HtApp nonMain
 ############################
 cls ADozenYaksApp HtApp
 vars ADozenYaksApp
-  name
+  name date size selfname p q
+  
 meth ADozenYaksApp value
   IF( path len < 2 )THEN(
     me verbTop
@@ -2944,26 +2945,100 @@ meth ADozenYaksApp value
 	)
   )
 meth ADozenYaksApp verbTop
+  r = Rex new: '^self_([[a-z0-9]]+).txt$'.
   HT(
-    FOR (name,date,size: File dir) MAP (
-      TAG('a';'href','/ADozenYaksApp./[ name]';name)
-    )
+    TAG('h2', 'Pick a Self:');
+    UL new: (
+		FOR (name,date,size: File dir) MAP (
+		  selfname= m at: 1.
+		  TAG('a';'href','/ADozenYaksApp./[selfname]'; selfname)
+		) IF(m= r match: name)
+	);
+	TAG('form';
+	  'method', 'GET';
+	  'action', me verb: 'CreateSelf';
+	  HT(
+	    'Create a new self named ';
+	    TAG('input';
+		  'type', 'text';
+		  'name', 'sname');
+		TAG('input';
+		  'type', 'submit';
+		  'value', 'Create');
+	) );
+  )
+
+
+meth ADozenYaksApp verb:
+  ('', (path x, '.')jam, path y, a) join: '/'
+
+meth ADozenYaksApp verbCreateSelf
+  sname = query at: 'sname'.
+  r = Rex new: '^[[A-Za-z]]+$'.
+  IF(r match: sname) THEN(
+    s= SelfDy new.
+	s name: sname.
+	s dhsec: (DhSecret rand).
+	s dhpub: s dhsec pub.
+	s prePickle.
+	File write: ('self_', sname, '.txt')jam
+	     value: (Pickle en: s).
+	me verbTop.
+  )ELSE(
+    me err: ('Error: Name "', sname, '" does not match pattern ', r)jam
   )
 
 meth ADozenYaksApp verbSelf
-  HT('this is verbSelf')
+  guts = File read: 'self_[path y].txt'.
+  p= Pickle de: guts.
+  friends= IF(p friends is: nil) THEN(
+    'You have no friends.'
+  )ELSE(
+    ('You have ', p friends len, ' friends: ',
+	 FOR(f: p friends) MAP(f name) join: ', ')jam
+  ).
+  UL new: VEC(
+    guts,
+	('Your name is ', p name)jam,
+	('Your secret key is ', p dhsec)jam,
+	('Your public key is ', p dhpub)jam,
+	friends,
+  )
+
 meth ADozenYaksApp verbFoo
   HT('this is verbFoo')
+
 meth ADozenYaksApp verbBootSelf
-  x = SelfDy new.
-  y = FriendDy new.
+  alice = SelfDy new.
+  bob = SelfDy new.
 
-  "TODO"
-  x name: 'Alice'.
-  x dhsec: DhSecret rand.
-  x dhpub: x dhsec pub.
+  afbob = FriendDy new.
+  bfalice = FriendDy new.
 
-  HT('this is the boot script').
+  alice name: 'Alice'.
+  alice dhsec: DhSecret rand.
+  alice dhpub: alice dhsec pub.
+
+  bob name: 'Bob'.
+  bob dhsec: DhSecret rand.
+  bob dhpub: bob dhsec pub.
+
+  afbob name: bob name.
+  afbob dhpub: bob dhpub.
+
+  bfalice name: alice name.
+  bfalice dhpub: alice dhpub.
+
+  alice friends: VEC(afbob, ).
+  bob friends: VEC(bfalice, ).
+
+  alice prePickle.
+  bob prePickle.
+
+  File write: 'self_alice.txt' value: (Pickle en: alice).
+  File write: 'self_bob.txt' value: (Pickle en: bob).
+
+  HT('Booted Alice and Bob.').
 
 
 
@@ -2980,6 +3055,10 @@ vars FriendDy
 cls SelfDy FriendDy
 vars SelfDy
   dhsec friends
+meth SelfDy prePickle
+  dhsec= dhsec str.
+meth SelfDy postPickle
+  dhsec= DhSecret new: dhsec.
 
 cls RoomDy NamedDy
 vars RoomDy
@@ -3008,6 +3087,11 @@ vars MembersDy
 cls IntroDy MsgDy
 vars IntroDy
   name dhpub hubs
+
+cls UL Usr
+meth ULCls new:
+  "Unnumbered List."
+  HT(TAG('ul', HT(FOR(e:a)MAP( TAG('li', HT(e,))))))
 
 ##END
 
