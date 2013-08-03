@@ -2938,12 +2938,13 @@ meth ADozenYaksApp value
   IF( path len < 2 )THEN(
     me verbTop
   )ELSE(
+	me loadSelf.
 	IF( path len == 2 )THEN(
-	  me verbSelf
+	  me verbSelf.
 	)ELSE(
-	  me apply: 'verb[ path z]' args: ()
+	  me apply: 'verb[ path z]' args: ().
 	)
-  )
+  ).
 meth ADozenYaksApp verbTop
   r = Rex new: '^self_([[a-z0-9]]+).txt$'.
   HT(
@@ -2988,25 +2989,72 @@ meth ADozenYaksApp verbCreateSelf
     me err: ('Error: Name "', sname, '" does not match pattern ', r)jam
   )
 
+meth ADozenYaksApp loadSelf
+  TRY(
+    p= Pickle de: (File read: 'self_[path y].txt').
+    p postPickle.
+  )CATCH( e:
+    p= nil.
+	'self_[path y].txt' say: e
+  )
+
 meth ADozenYaksApp verbSelf
-  guts = File read: 'self_[path y].txt'.
-  p= Pickle de: guts.
   friends= IF(p friends is: nil) THEN(
     'You have no friends.'
   )ELSE(
-    ('You have ', p friends len, ' friends: ',
-	 FOR(f: p friends) MAP(f name) join: ', ')jam
+    HT('You have ', p friends len, ' friends: ',
+	 FOR(f: p friends) MAP(f name) join: ', ',
+	 ' -- mutuals: ',
+	 FOR(f: p friends) MAP(f dhmut) join: ', ',
+
+	 )
   ).
   UL new: VEC(
-    guts,
 	('Your name is ', p name)jam,
 	('Your secret key is ', p dhsec)jam,
 	('Your public key is ', p dhpub)jam,
 	friends,
   )
 
-meth ADozenYaksApp verbFoo
-  HT('this is verbFoo')
+meth ADozenYaksApp verbPeer2
+  mine = query at: 'mypeerid'.
+  theirs = query at: 'theirpeerid'.
+  c = Client host: 'localhost' port: 30332.
+  cpath = '/local'.
+  cquery = DICT(
+    'f', 'Rendez';
+	'me', mine;
+	'you', theirs;
+	'v', p dhpub;
+  ).
+  r = c get: cpath query: cquery.
+  HT('Peer2 got '; r repr).
+
+meth ADozenYaksApp verbPeer1
+  peerid = num rand: 1000.
+  TAG('form';
+	  'method', 'GET';
+	  'action', me verb: 'Peer2';
+	  HT(
+	    'Your peer code is ';
+		TAG('strong'; peerid str);
+	    ' -- tell it to your friend.';
+		TAG('p');
+		'Enter your friend''s peer code here:';
+		TAG('input';
+          'type', 'hidden';
+		  'name', 'mypeerid';
+		  'value', peerid str);
+	    TAG('input';
+		  'type', 'text';
+		  'name', 'theirpeerid');
+		TAG('p');
+		'Then you and your friend both press Create simultaneously: ';
+		TAG('input';
+		  'type', 'submit';
+		  'value', 'Create');
+      )
+  ).
 
 meth ADozenYaksApp verbBootSelf
   alice = SelfDy new.
@@ -3025,9 +3073,11 @@ meth ADozenYaksApp verbBootSelf
 
   afbob name: bob name.
   afbob dhpub: bob dhpub.
+  afbob dhmut: (alice dhsec mutual: bob dhpub).
 
   bfalice name: alice name.
   bfalice dhpub: alice dhpub.
+  bfalice dhmut: (bob dhsec mutual: alice dhpub).
 
   alice friends: VEC(afbob, ).
   bob friends: VEC(bfalice, ).
