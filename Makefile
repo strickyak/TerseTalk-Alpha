@@ -21,3 +21,9 @@ web: _make_vm_
 
 reweb: _make_vm_
 	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8000
+
+reweb1: _make_vm_
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8001
+
+reweb2: _make_vm_
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8002

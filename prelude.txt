@@ -3025,10 +3025,62 @@ meth ADozenYaksApp verbPeer2
     'f', 'Rendez';
 	'me', mine;
 	'you', theirs;
-	'v', p dhpub;
+	'v', (hex en:((p name, p dhpub) join: '|') bytes) str;
   ).
   r = c get: cpath query: cquery.
-  HT('Peer2 got '; r repr).
+  if (r == '!') THEN (
+    HT('Peering failed.  Make sure your friend ';
+	   'hits the Peer button at the exact same time as you.';
+	  )
+  ) ELSE (
+      r = hex de: (r bytes) $ str.
+      'r=' say: r.
+      'r ssplit' say: (r split: '|').
+      rname, rpub = r split: '|'.
+	  mutual = p dhsec mutual: rpub.
+	  hash = hex en: (sha1 en: ('confirm',mutual)JAM bytes).
+	  confirm = hash str cut: 0 to: 6.
+	  HT('Confirmation Code: '; confirm;
+		TAG('p');
+		'Please confirm that this code is the same for your friend';
+		'before you accept.';
+		TAG('form';
+			'method', 'Get';
+			'action', me verb: 'Peer3';
+			HT(
+			  TAG('input';
+				  'type', 'hidden';
+				  'name', 'friend_name';
+				  'value', rname);
+			  TAG('input';
+				  'type', 'hidden';
+				  'name', 'friend_dhpub';
+				  'value', rpub);
+			  TAG('input';
+				  'type', 'submit';
+				  'value', 'Accept');
+			)
+	  ).
+  ).
+
+meth ADozenYaksApp verbPeer3
+  fname = query at: 'friend_name'.
+  fdhpub = query at: 'friend_dhpub'.
+
+  f = FriendDy new.
+  f name: fname.
+  f dhpub: fdhpub.
+  f dhmut: (p dhsec mutual: fdhpub).
+
+  p friends ap: f.
+
+  p prePickle.
+  File write: (
+    'self_', p name lower, '.txt'
+	)jam value: (Pickle en: p).
+
+  HT('Saved new friend '; f name)
+
 
 meth ADozenYaksApp verbPeer1
   peerid = num rand: 1000.
@@ -3049,10 +3101,10 @@ meth ADozenYaksApp verbPeer1
 		  'type', 'text';
 		  'name', 'theirpeerid');
 		TAG('p');
-		'Then you and your friend both press Create simultaneously: ';
+		'Then you and your friend both press Peer simultaneously: ';
 		TAG('input';
 		  'type', 'submit';
-		  'value', 'Create');
+		  'value', 'Peer');
       )
   ).
 

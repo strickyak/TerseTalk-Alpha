@@ -548,7 +548,13 @@ public class WebServer extends Static {
 	}
 
 	public void run(String[] args) throws IOException {
-		HttpServer server = HttpServer.create(new InetSocketAddress(8000), 5);
+		int port = 8000;
+		if (args.length > 0) {
+			port = Integer.parseInt(args[0]);
+		}
+		System.err.format("Args are %s\n", Static.arrayToString(args));
+		System.err.format("Binding to port %d\n", port);
+		HttpServer server = HttpServer.create(new InetSocketAddress(port), 20);
 		server.createContext("/favicon.ico", new FavIconHandler());
 		server.createContext("/", new TerpHandler());
 		server.setExecutor(null); // creates a default executor

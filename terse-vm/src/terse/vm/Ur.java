@@ -1645,7 +1645,7 @@ public class Ur extends Static implements Comparable {
 							return new Str(terp, s.str + a.str);
 						}
 					});
-			terp.tStr.addMethod(new JavaMeth(terp.tStr, "substr:to:", "sub:to:",
+			terp.tStr.addMethod(new JavaMeth(terp.tStr, "cut:to:", "sub:to:",
 					"Substring starting at first index, "
 							+ "ending before second index, like Java substr.") { // Substring
 						public Ur apply(Frame f, Ur r, Ur[] args) {
