@@ -32,6 +32,16 @@
 #
 # --------------------------------------------------------------------------
 
+meth Obj null
+  me is: nil
+meth Obj macro:maybe:null:
+  x= b value.
+  IF(x is: nil)THEN(c value)ELSE(x)
+equals 'foo' 
+  MAYBE('foo')NULL('bar')
+equals 'bar' 
+  MAYBE(nil)NULL('bar')
+
 meth Bytes sha1
   Sha1 en: me
 meth Bytes hex
@@ -3011,8 +3021,10 @@ meth ADozenYaksApp verbSelf
   ).
   UL new: VEC(
 	('Your name is ', p name)jam,
-	('Your secret key is ', p dhsec)jam,
-	('Your public key is ', p dhpub)jam,
+	('Your nick is ', p nick)jam,
+	('Your who is ', p who)jam,
+	('Your secret key is ', p dhsec str $ cut: 0 to: 8)jam,
+	('Your public key is ', p dhpub $ cut: 0 to: 8)jam,
 	friends,
   )
 
@@ -3108,7 +3120,7 @@ meth ADozenYaksApp verbPeer1
       )
   ).
 
-meth ADozenYaksApp verbBootSelf
+meth ADozenYaksApp verbBoot
   alice = SelfDy new.
   bob = SelfDy new.
 
@@ -3124,10 +3136,12 @@ meth ADozenYaksApp verbBootSelf
   bob dhpub: bob dhsec pub.
 
   afbob name: bob name.
+  afbob nick: 'BIG'.
   afbob dhpub: bob dhpub.
   afbob dhmut: (alice dhsec mutual: bob dhpub).
 
   bfalice name: alice name.
+  bfalice nick: 'BAD'.
   bfalice dhpub: alice dhpub.
   bfalice dhmut: (bob dhsec mutual: alice dhpub).
 
@@ -3143,16 +3157,22 @@ meth ADozenYaksApp verbBootSelf
   HT('Booted Alice and Bob.').
 
 
-
 # Objects that hold a name
 ##########################
 cls NamedDy Usr
 vars NamedDy
-  name alias desc rem
+  name nick desc rem
 
 cls FriendDy NamedDy
 vars FriendDy
   dhpub dhmut rooms hubs
+meth FriendDy who
+  ( 
+    name str,
+    '(',
+    MAYBE(nick)NULL(''),
+    ')',
+  )jam
 
 cls SelfDy FriendDy
 vars SelfDy
@@ -3165,6 +3185,9 @@ meth SelfDy postPickle
 cls RoomDy NamedDy
 vars RoomDy
   owner members
+meth RoomDy what
+  (name, '@', owner who) jam
+    
 
 # Messaging classes
 ##########################
