@@ -32,9 +32,14 @@
 #
 # --------------------------------------------------------------------------
 
+meth str head:
+  IF(me len < a)
+    THEN(me)
+	ELSE(me cut: 0 to: a)
+
 meth Obj null
   me is: nil
-meth Obj macro:maybe:null:
+meth Obj macro:MAYBE:NULL:
   x= b value.
   IF(x is: nil)THEN(c value)ELSE(x)
 equals 'foo' 
@@ -2987,16 +2992,17 @@ meth ADozenYaksApp verbCreateSelf
   sname = query at: 'sname'.
   r = Rex new: '^[[A-Za-z]]+$'.
   IF(r match: sname) THEN(
+    sname= sname lower.
     s= SelfDy new.
 	s name: sname.
 	s dhsec: (DhSecret rand).
 	s dhpub: s dhsec pub.
 	s prePickle.
-	File write: ('self_', sname, '.txt')jam
+	File write: 'self_[sname].txt'
 	     value: (Pickle en: s).
 	me verbTop.
   )ELSE(
-    me err: ('Error: Name "', sname, '" does not match pattern ', r)jam
+    me err: 'Error: Name "[ sname ]" does not match pattern [r]'
   )
 
 meth ADozenYaksApp loadSelf
@@ -3013,18 +3019,17 @@ meth ADozenYaksApp verbSelf
     'You have no friends.'
   )ELSE(
     HT('You have ', p friends len, ' friends: ',
-	 FOR(f: p friends) MAP(f name) join: ', ',
+	 FOR(f: p friends) MAP(f who) join: ', ',
 	 ' -- mutuals: ',
-	 FOR(f: p friends) MAP(f dhmut) join: ', ',
-
+	 FOR(f: p friends) MAP(f dhmut str head: 8) join: ', ',
 	 )
   ).
   UL new: VEC(
-	('Your name is ', p name)jam,
-	('Your nick is ', p nick)jam,
-	('Your who is ', p who)jam,
-	('Your secret key is ', p dhsec str $ cut: 0 to: 8)jam,
-	('Your public key is ', p dhpub $ cut: 0 to: 8)jam,
+	'Your name is [ p name ]',
+	'Your nick is [ p nick ]',
+	'Your who is [ p who ]',
+	'Your secret key is [ p dhsec str $ head: 8 ]',
+	'Your public key is [ p dhpub $ head: 8 ]',
 	friends,
   )
 
@@ -3050,7 +3055,7 @@ meth ADozenYaksApp verbPeer2
       'r ssplit' say: (r split: '|').
       rname, rpub = r split: '|'.
 	  mutual = p dhsec mutual: rpub.
-	  hash = hex en: (sha1 en: ('confirm',mutual)JAM bytes).
+	  hash = hex en: (sha1 en: 'confirm/[mutual]' bytes).
 	  confirm = hash str cut: 0 to: 6.
 	  HT('Confirmation Code: '; confirm;
 		TAG('p');
@@ -3087,9 +3092,8 @@ meth ADozenYaksApp verbPeer3
   p friends ap: f.
 
   p prePickle.
-  File write: (
-    'self_', p name lower, '.txt'
-	)jam value: (Pickle en: p).
+  File write: 'self_[ p name lower ].txt'
+	   value: (Pickle en: p).
 
   HT('Saved new friend '; f name)
 
@@ -3167,12 +3171,7 @@ cls FriendDy NamedDy
 vars FriendDy
   dhpub dhmut rooms hubs
 meth FriendDy who
-  ( 
-    name str,
-    '(',
-    MAYBE(nick)NULL(''),
-    ')',
-  )jam
+    '[ name str ]([ MAYBE(nick)NULL('''') ])'
 
 cls SelfDy FriendDy
 vars SelfDy
@@ -3186,7 +3185,7 @@ cls RoomDy NamedDy
 vars RoomDy
   owner members
 meth RoomDy what
-  (name, '@', owner who) jam
+  '[name]@[owner who]'
     
 
 # Messaging classes
