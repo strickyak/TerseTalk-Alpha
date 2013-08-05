@@ -79,6 +79,10 @@ public class ParserTest extends TestCase {
 	public void testAssignTuple() {
 		assertEquals(t.newNum(25), t.newTmp().eval("x, y = Vec(3; 4;).   x * x + y * y."));
 	}
+	public void testInterpolate() {
+		String s = t.newTmp().eval("x,y= 23,42.  'x[x]y[y]sum[x + y].[[z]].'").toString();
+		assertEquals("x23y42sum65.[z].", s);
+	}
 }
 
 

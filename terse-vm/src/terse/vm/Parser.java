@@ -476,83 +476,98 @@ public class Parser extends Obj {
 	}
 	
 	private Expr interpolateLiteralString(String a) {
+
+//		say("Interpolate <<< %s", a);
 		try {
-		final int n = a.length();
-		Expr[] list = exprs();
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < n; i++) {
-			// say("... i=%d  list=%s  <#>%s<#>%s<#>", i, arrayToString(list), sb.toString(), a.substring(i));
-			if (i+2 < n && a.charAt(i) == '[' && a.charAt(i+1) == '[') {
-				// Double (( becomes literal single (
-				sb.append('[');
-				++i;  // Skip the extra (
-				continue;
-			} else if (i+2 < n && a.charAt(i) == '[' && a.charAt(i+1) != '[') {
-				// We spotted single (, look for closing )
-				Expr found = null;
-				int nested = 0;
-				int j = i + 1;
-				for ( ; j < n; j++) {
-					if (a.charAt(j) == ']' && nested == 0) {
-						// We found a valid closing ).
-						// CHEAT for now.
-						Expr self = new Expr.GetSelf(terp);
-						Expr body = new Expr.Lit(new Str(terp, a.substring(i, j)));
-						Expr[] args = new Expr[]{ body };
-						// TODO: correct location?
-						found = new Expr.Send(self, "eval:", args, ints(lex.frontLocation()));
-						break;
-					} else if (a.charAt(j) == ']') {
-						--nested;
-					} else if (a.charAt(j) == '[') {
-						++nested;
-					} else {
-						// Just continue
-					}
-				}
-				// breaks to here.
-				if (found != null) {
-					if (sb.length() > 0) {
-						Expr pending = new Expr.Lit(new Str(terp, sb.toString()));
-						sb = new StringBuilder();
-						list = append(list, pending);
-					}
-					list = append(list, found);
-					i = j;
+			final int n = a.length();
+			Expr[] list = exprs();
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < n; i++) {
+				// say("... i=%d  list=%s  <#>%s<#>%s<#>", i,
+				// arrayToString(list), sb.toString(), a.substring(i));
+				if (i + 2 < n && a.charAt(i) == '[' && a.charAt(i + 1) == '[') {
+					// Double (( becomes literal single (
+					sb.append('[');
+					++i; // Skip the extra (
 					continue;
+				} else if (i + 2 < n && a.charAt(i) == '['
+						&& a.charAt(i + 1) != '[') {
+					// We spotted single (, look for closing )
+					Expr found = null;
+					int nested = 0;
+					int j = i + 1;
+					for (; j < n; j++) {
+						if (a.charAt(j) == ']' && nested == 0) {
+							String bodyStr = a.substring(i, j);
+							// Put the current parser state on hold,
+							// and compile the bodyStr as a Block.
+							// Enclose it in parens, so it looks like a block.
+							// Set found to an expression that evaluates the block.
+							TLex onHold = lex;
+							lex = new TLex(terp, "(" + bodyStr + ")");
+							Expr block = parseBlock();
+							// Remember parseblock() was the exception that advanced past closing ')'.
+							if (lex.rest.length() != 0) {
+								terp.toss("Syntax Error in interpolated string `%s` -- unparsed remainder: `%s`", bodyStr, lex.rest);
+							}
+							lex = onHold;
+							found = new Expr.Send(block, "value", emptyExprs,
+									ints(lex.frontLocation()));
+							break;
+						} else if (a.charAt(j) == ']') {
+							--nested;
+						} else if (a.charAt(j) == '[') {
+							++nested;
+						} else {
+							// Just continue
+						}
+					}
+					// breaks to here.
+					if (found != null) {
+						if (sb.length() > 0) {
+							Expr pending = new Expr.Lit(new Str(terp,
+									sb.toString()));
+							sb = new StringBuilder();
+							list = append(list, pending);
+						}
+						list = append(list, found);
+						i = j;
+						continue;
+					} else {
+						// All the rest.
+						sb.append(a.substring(i));
+						break;
+					}
+				} else if (i + 1 < n && a.charAt(i) == ']'
+						&& a.charAt(i + 1) == ']') {
+					sb.append(']');
+					i++;
 				} else {
-					// All the rest.
-					sb.append(a.substring(i));
-					break;
+					sb.append(a.charAt(i));
 				}
-			} else if (i+1 < n && a.charAt(i) == ']' && a.charAt(i+1) == ']') {
-				sb.append(']');
-				i++;
-			} else {
-				sb.append(a.charAt(i));
 			}
-		}
-		
-		// We finished scanning; build the final Expr.
-		if (sb.length() > 0) {
-			Expr pending = new Expr.Lit(new Str(terp, sb.toString()));
-			list = append(list, pending);
-		}
-		
-		final int ll = list.length;
-		Expr z;
-		if (ll == 0) {
-			z = new Expr.Lit(new Str(terp, ""));
-		} else if (ll == 1) {
-			z = list[0];
-		} else {
-			Expr mkVec = new Expr.MakeVec(terp, list, ';');
-			z = new Expr.Send(mkVec, "jam", terp.emptyExprs, ints(lex.frontLocation()));
-		}
-		// say("Interpolate <<< %s", a);
-		// say("Interpolate >>> %s", z);
-		return z;
+
+			// We finished scanning; build the final Expr.
+			if (sb.length() > 0) {
+				Expr pending = new Expr.Lit(new Str(terp, sb.toString()));
+				list = append(list, pending);
+			}
+
+			final int ll = list.length;
+			Expr z;
+			if (ll == 0) {
+				z = new Expr.Lit(new Str(terp, ""));
+			} else if (ll == 1) {
+				z = list[0];
+			} else {
+				Expr mkVec = new Expr.MakeVec(terp, list, ';');
+				z = new Expr.Send(mkVec, "jam", terp.emptyExprs,
+						ints(lex.frontLocation()));
+			}
+//			say("Interpolate >>> %s", z);
+			return z;
 		} catch (RuntimeException ex) {
+			ex.printStackTrace();
 			say("Exception in Interpolate: %s", show(ex));
 			throw ex;
 		}
@@ -567,8 +582,6 @@ public class Parser extends Obj {
 			z = new Expr.Lit(new Ur.Num(terp, Double.parseDouble(lex.w)));
 			break;
 		case STRING:
-			z = new Expr.Lit(new Ur.Str(terp, lex.w));
-			// TRY INTERPOLATION ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
 			z = interpolateLiteralString(lex.w);
 			break;
 		case OTHER:
