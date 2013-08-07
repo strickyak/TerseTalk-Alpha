@@ -495,12 +495,22 @@ public class Static {
 		return CurlyDecode(Low8ToString(b));
 	}
 	
-	public static Charset utf8 = Charset.forName("utf-8");
+	// public static Charset utf8 = Charset.forName("utf-8");
 	public static byte[] StringToUtf8(String s) {
-		return s.getBytes(utf8);
+		try {
+			return s.getBytes("utf-8");
+		} catch (UnsupportedEncodingException ex) {
+			 throw new RuntimeException(ex.toString());
+		}
+		// return s.getBytes(utf8);
 	}
 	public static String Utf8ToString(byte[] b) {
-		return new String(b, utf8);
+		try {
+			return new String(b, "utf-8");
+		} catch (UnsupportedEncodingException ex) {
+			 throw new RuntimeException(ex.toString());
+		}
+		// return new String(b, utf8);
 	}
 
 	public static String makeQueryString(HashMap<String, String> query) {

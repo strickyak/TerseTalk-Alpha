@@ -1,6 +1,7 @@
 all:  _make_vm_  _make_a1_
 
-JUNIT=/home/*/adt-bundle-linux-x86_64-*/eclipse/plugins/org.junit_3.*/junit.jar
+JARS=$$(echo /usr/lib/jvm/java-6-openjdk/jre/lib/*.jar | tr ' ' :)
+JUNIT=$$(echo /home/*/adt-bundle-linux-x86*/eclipse/plugins/org.junit_3.*/junit.jar)
 
 _make_vm_:
 	cmp prelude.txt terse-vm/prelude.txt || cp prelude.txt terse-vm/prelude.txt
@@ -10,20 +11,20 @@ _make_a1_:
 
 web: _make_vm_
 	mkdir -p _tmp_
-	javac\
+	set -x; javac -source 1.6 -target 1.6 -warn:none \
 		-g \
-		-cp $(JUNIT) \
+		-cp $(JUNIT):$(JARS) \
 		-d _tmp_ \
 		terse-vm/src/terse/vm/*.java\
 		terse-web/src/terse/web/WebServer.java
 	touch w_web.txt
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8000
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
 
 reweb: _make_vm_
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8000
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
 
 reweb1: _make_vm_
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8001
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8081
 
 reweb2: _make_vm_
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8002
+	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8082
