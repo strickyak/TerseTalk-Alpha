@@ -154,7 +154,7 @@ meth VecCls pairs:
   z.
 
 equals 100, 400
-  FOR( x: 10, 20, 30 )MAP( x*x )IF( x < 25 )
+  FOR( x: 10, 20, 30 )IF( x < 25 )MAP( x*x )
 
 equals 'once-upon-a-time'
   ('once', 'upon', 'a', 'time') join: '-'
@@ -321,11 +321,11 @@ meth Browse handle:query:
 
   IF( wl == 1 )THEN(
     "gk are Good Keys, those that are classes."
-    gk= FOR( i: clss dir )MAP( i )IF(
+    gk= FOR( i: clss dir )IF(
           AND( clss at: i $ cls name ends: 'Cls';
                OR( clss at: i $ name ends: 'Cls' $ not;
                    clss at: i $ cls name == 'ClsCls' ) )
-    ).
+    )MAP( i ).
 
     FOR( k: gk )DO(
         kc= clss at: k .
@@ -1717,11 +1717,11 @@ meth BrowseWorlds wMid
   }.
 
   onlyLocal= FOR{fname:size: fv say}
-    MAP{fname}IF{hv at: fname say$say $not}.
+    IF{hv at: fname say$say $not}MAP{fname}.
   onlyHub= FOR{fname:size: hv say}
-    MAP{fname}IF{fv at: fname say$say $not}.
+    IF{fv at: fname say$say $not}MAP{fname}.
   both= FOR{fname:size: fv say}
-    MAP{fname}IF{hv at: fname say$say }.
+    IF{hv at: fname say$say }MAP{fname}.
 
   cfg= Config load.
 
@@ -2145,10 +2145,10 @@ meth GameTroids step
   }.
   
   "Cleanup expired asteroids."
-  aa= FOR{a: aa}MAP{a}IF{a ttl > 0}.
+  aa= FOR{a: aa}IF{a ttl > 0}MAP{a}.
 
   "Cleanup expired bullets."
-  bb= FOR{b: bb}MAP{b}IF{b ttl > 0}.
+  bb= FOR{b: bb}IF{b ttl > 0}MAP{a}.
 
 
 meth GameTroids eventBlk
@@ -2947,8 +2947,15 @@ meth HtApp nonMain
 ############################
 cls ADozenYaksApp HtApp
 vars ADozenYaksApp
-  name date size selfname p q
-  
+  name date size selfname self
+
+meth ADozenYaksApp rpc:
+  cli = Client host: 'localhost' port: 30332.
+  'RPC <<<' say: a.
+  r = cli get: '/local' query: a.
+  'RPC >>>' say: r.
+  r.
+
 meth ADozenYaksApp value
   IF( path len < 2 )THEN(
     me verbTop
@@ -3007,44 +3014,55 @@ meth ADozenYaksApp verbCreateSelf
 
 meth ADozenYaksApp loadSelf
   TRY(
-    p= Pickle de: (File read: 'self_[path y].txt').
-    p postPickle.
+    self= Pickle de: (File read: 'self_[path y].txt').
+    self postPickle.
   )CATCH( e:
-    p= nil.
+    self= nil.
 	'self_[path y].txt' say: e
   )
 
 meth ADozenYaksApp verbSelf
-  friends= IF(p friends is: nil) THEN(
+  friends= IF(self friends is: nil) THEN(
     'You have no friends.'
   )ELSE(
-    HT('You have ', p friends len, ' friends: ',
-	 FOR(f: p friends) MAP(f who) join: ', ',
+    HT('You have ', self friends len, ' friends: ',
+	 FOR(f: self friends) MAP(f who) join: ', ',
 	 ' -- mutuals: ',
-	 FOR(f: p friends) MAP(f dhmut str head: 8) join: ', ',
+	 FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ',
 	 )
   ).
   UL new: VEC(
-	'Your name is [ p name ]',
-	'Your nick is [ p nick ]',
-	'Your who is [ p who ]',
-	'Your secret key is [ p dhsec str $ head: 8 ]',
-	'Your public key is [ p dhpub $ head: 8 ]',
+	'Your name is [ self name ]',
+	'Your nick is [ self nick ]',
+	'Your who is [ self who ]',
+	'Your secret key is [ self dhsec str $ head: 8 ]',
+	'Your public key is [ self dhpub $ head: 8 ]',
 	friends,
   )
+meth ADozenYaksApp verbReadFriend
+  fname= path w.
+  f= self findFriend: fname.
+  chan= f mutChan.
+  chanKey= f mutChanKey.
+  r me rpc: DICT(
+    'f', 'List';
+	'c', chan;
+  ).
+  IF(r == '!')THEN('cannot list chan:' err: fname).
+  tnodes= cquery split:
+zzzzzzzzzzzzzzzzzzz
+
 
 meth ADozenYaksApp verbPeer2
   mine = query at: 'mypeerid'.
   theirs = query at: 'theirpeerid'.
-  c = Client host: 'localhost' port: 30332.
-  cpath = '/local'.
   cquery = DICT(
     'f', 'Rendez';
 	'me', mine;
 	'you', theirs;
-	'v', (hex en:((p name, p dhpub) join: '|') bytes) str;
+	'v', hex en:'[self name]|[self dhpub]' bytes $ str;
   ).
-  r = c get: cpath query: cquery.
+  r = me rpc: cquery.
   if (r == '!') THEN (
     HT('Peering failed.  Make sure your friend ';
 	   'hits the Peer button at the exact same time as you.';
@@ -3054,7 +3072,7 @@ meth ADozenYaksApp verbPeer2
       'r=' say: r.
       'r ssplit' say: (r split: '|').
       rname, rpub = r split: '|'.
-	  mutual = p dhsec mutual: rpub.
+	  mutual = self dhsec mutual: rpub.
 	  hash = hex en: (sha1 en: 'confirm/[mutual]' bytes).
 	  confirm = hash str cut: 0 to: 6.
 	  HT('Confirmation Code: '; confirm;
@@ -3087,13 +3105,13 @@ meth ADozenYaksApp verbPeer3
   f = FriendDy new.
   f name: fname.
   f dhpub: fdhpub.
-  f dhmut: (p dhsec mutual: fdhpub).
+  f dhmut: (self dhsec mutual: fdhpub).
 
-  p friends ap: f.
+  self friends ap: f.
 
-  p prePickle.
-  File write: 'self_[ p name lower ].txt'
-	   value: (Pickle en: p).
+  self prePickle.
+  File write: 'self_[ self name lower ].txt'
+	   value: (Pickle en: self).
 
   HT('Saved new friend '; f name)
 
@@ -3172,6 +3190,10 @@ vars FriendDy
   dhpub dhmut rooms hubs
 meth FriendDy who
     '[ name str ]([ MAYBE(nick)NULL('''') ])'
+meth FriendDy mutChan
+  Sha1 en: 'Chan/[dhmut]' $ str head: 20
+meth FriendDy mutChanKey
+  Sha1 en: 'ChanKey/[dhmut]' $ str head: 32
 
 cls SelfDy FriendDy
 vars SelfDy
@@ -3180,6 +3202,17 @@ meth SelfDy prePickle
   dhsec= dhsec str.
 meth SelfDy postPickle
   dhsec= DhSecret new: dhsec.
+meth SelfDy findFriend:
+  ff= FOR( f: me friends )
+      IF( f who == a )
+	  MAP( f ).
+  CASE( ff len )OF(
+    0, 'No such friend:' err: a;
+	1, f;
+  )ELSE( 'More than one friend:' err: a ).
+   
+    
+
 
 cls RoomDy NamedDy
 vars RoomDy
