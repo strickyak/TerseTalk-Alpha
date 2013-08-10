@@ -2967,16 +2967,17 @@ meth ADozenYaksApp value
 	  me apply: 'verb[ path z]' args: ().
 	)
   ).
+meth ADozenYaksApp link:cmd:q:
+  HT link: a to: '/ADozenYaksApp./[selfname]/[b]?[QueryStr en: c]'
+
 meth ADozenYaksApp verbTop
   r = Rex new: '^self_([[a-z0-9]]+).txt$'.
   HT(
     TAG('h2', 'Pick a Self:');
-    UL new: (
-		FOR (name,date,size: File dir) MAP (
+    Ht ul: FOR (name,date,size: File dir) MAP (
 		  selfname= m at: 1.
 		  TAG('a';'href','/ADozenYaksApp./[selfname]'; selfname)
-		) IF(m= r match: name)
-	);
+		) IF(m= r match: name);
 	TAG('form';
 	  'method', 'GET';
 	  'action', me verb: 'CreateSelf';
@@ -3031,7 +3032,7 @@ meth ADozenYaksApp verbSelf
 	 FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ',
 	 )
   ).
-  UL new: VEC(
+  Ht ul: VEC(
 	'Your name is [ self name ]',
 	'Your nick is [ self nick ]',
 	'Your who is [ self who ]',
@@ -3039,9 +3040,9 @@ meth ADozenYaksApp verbSelf
 	'Your public key is [ self dhpub $ head: 8 ]',
 	friends,
   )
-meth ADozenYaksApp verbReadFriend
-  fname= path w.
-  f= self findFriend: fname.
+meth ADozenYaksApp verbFriendChan
+  fname= q at: 'fname'.
+  f= self friendAt: fname.
   chan= f mutChan.
   chanKey= f mutChanKey.
   r me rpc: DICT(
@@ -3049,10 +3050,21 @@ meth ADozenYaksApp verbReadFriend
 	'c', chan;
   ).
   IF(r == '!')THEN('cannot list chan:' err: fname).
-  tnodes= cquery split:
-zzzzzzzzzzzzzzzzzzz
+  tnodes= cquery split: ' '.
+  defs= Dict new.
+  FOR( t : tnodes ) MAP (
+    TRY(
+      content= me rpc: DICT('f', 'Fetch'; 'c', chan; 't', t;).
+	)CATCH( e:
+	  content= 'CAUGHT ERROR: [e]'.
+	).
+	"TODO: decode, decrypt."
+    defs at: t put: content.
+  ).
+  Ht dl: defs.
+   
 
-
+#zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 meth ADozenYaksApp verbPeer2
   mine = query at: 'mypeerid'.
   theirs = query at: 'theirpeerid'.
@@ -3202,7 +3214,7 @@ meth SelfDy prePickle
   dhsec= dhsec str.
 meth SelfDy postPickle
   dhsec= DhSecret new: dhsec.
-meth SelfDy findFriend:
+meth SelfDy friendAt:
   ff= FOR( f: me friends )
       IF( f who == a )
 	  MAP( f ).
@@ -3245,10 +3257,16 @@ cls IntroDy MsgDy
 vars IntroDy
   name dhpub hubs
 
-cls UL Usr
-meth ULCls new:
+meth Ht ul:
   "Unnumbered List."
   HT(TAG('ul', HT(FOR(e:a)MAP( TAG('li', HT(e,))))))
+
+meth Ht dl:
+  "Defintion List."
+  HT(TAG('dl', HT(FOR( k,v:a )MAP( HT(
+    TAG('dt', HT(k,));
+    TAG('dd', HT(v,));
+  )))))
 
 ##END
 

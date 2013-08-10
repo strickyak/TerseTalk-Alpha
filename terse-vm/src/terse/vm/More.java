@@ -55,7 +55,38 @@ import javax.crypto.spec.SecretKeySpec;
 
 public abstract class More extends Static {
 	static SecureRandom Rand = new SecureRandom();
+
+	public static final class QueryStr extends Obj {
+
+		// =cls "more" QueryStr Obj
+		public QueryStr(Cls cls) {
+			super(cls);
+			toss("Do not instantiate QueryStr.");
+		}
+		
+		// =meth QueryStrCls "encode" en:
+		public static String en_(Terp terp, Dict d) {
+			return makeQueryString(d.toStringStringMap());
+		}
+		
+		// =meth QueryStrCls "decode" de:
+		public static Dict de_(Terp terp, Str a) {
+			Dict z = new Dict(terp);
+			for (String term : splitNonEmpty(a.str, '&')) {
+				int pos = term.indexOf('=');
+				if (pos >= 0) {
+					String k = term.substring(0, pos);
+					String v = term.substring(pos + 1);
+					z.dict.put(new Str(terp, k), new Str(terp, v));
+				} else {
+					terp.toss("Query term without = not supported: %s", a.repr());
+				}
+			}
+			return z;
+		}
+	}
 	
+
 	public static final class EscStr extends Obj {
 
 		// =cls "more" EscStr Obj

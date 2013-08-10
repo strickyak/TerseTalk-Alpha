@@ -2180,6 +2180,15 @@ public class Ur extends Static implements Comparable {
 			}
 			return z;
 		}
+		
+		public HashMap<String, String> toStringStringMap() {
+			HashMap<String, String> z = new HashMap<String, String>();
+			for (Ur k : dict.keySet()) {
+				Ur v = dict.get(k);
+				z.put(k.toString(), v.toString());
+			}
+			return z;
+		}
 
 		public void visit(Visitor v) {
 			v.visitDict(this);
