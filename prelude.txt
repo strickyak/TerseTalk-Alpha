@@ -2974,10 +2974,10 @@ meth ADozenYaksApp verbTop
   r = Rex new: '^self_([[a-z0-9]]+).txt$'.
   HT(
     TAG('h2', 'Pick a Self:');
-    Ht ul: FOR (name,date,size: File dir) MAP (
+    Ht ul: FOR( name,date,size: File dir )IF( m= r match: name )MAP(
 		  selfname= m at: 1.
 		  TAG('a';'href','/ADozenYaksApp./[selfname]'; selfname)
-		) IF(m= r match: name);
+		);
 	TAG('form';
 	  'method', 'GET';
 	  'action', me verb: 'CreateSelf';
@@ -3026,11 +3026,17 @@ meth ADozenYaksApp verbSelf
   friends= IF(self friends is: nil) THEN(
     'You have no friends.'
   )ELSE(
-    HT('You have ', self friends len, ' friends: ',
-	 FOR(f: self friends) MAP(f who) join: ', ',
-	 ' -- mutuals: ',
-	 FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ',
-	 )
+    HT(
+	  'You have '; self friends len; ' friends: ';
+	  FOR(f: self friends) MAP(f who) join: ', ';
+	  TAG('p');
+	  'Mutuals: ';
+	  FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ';
+	  TAG('p');
+	  Ht dl: FOR(f: self friends) MAP(
+	    HT(' *'; me link: f who cmd: 'FriendChan' q: DICT('fwho': f who); '* ')
+	  );
+	)
   ).
   Ht ul: VEC(
 	'Your name is [ self name ]',
@@ -3039,17 +3045,18 @@ meth ADozenYaksApp verbSelf
 	'Your secret key is [ self dhsec str $ head: 8 ]',
 	'Your public key is [ self dhpub $ head: 8 ]',
 	friends,
-  )
+  ).
+
 meth ADozenYaksApp verbFriendChan
-  fname= q at: 'fname'.
-  f= self friendAt: fname.
+  fwho= q at: 'fwho'.
+  f= self friendAt: fwho.
   chan= f mutChan.
   chanKey= f mutChanKey.
   r me rpc: DICT(
     'f', 'List';
 	'c', chan;
   ).
-  IF(r == '!')THEN('cannot list chan:' err: fname).
+  IF(r == '!')THEN('cannot list chan:' err: fwho).
   tnodes= cquery split: ' '.
   defs= Dict new.
   FOR( t : tnodes ) MAP (
@@ -3061,8 +3068,13 @@ meth ADozenYaksApp verbFriendChan
 	"TODO: decode, decrypt."
     defs at: t put: content.
   ).
-  Ht dl: defs.
-   
+  HT(
+    Ht dl: defs;
+	TAG('p');
+	'Post a message to friend [fwho]:';
+	TAG('p');
+	'FORM GOES HERE';
+  ). 
 
 #zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 meth ADozenYaksApp verbPeer2
@@ -3257,11 +3269,11 @@ cls IntroDy MsgDy
 vars IntroDy
   name dhpub hubs
 
-meth Ht ul:
+meth HtCls ul:
   "Unnumbered List."
   HT(TAG('ul', HT(FOR(e:a)MAP( TAG('li', HT(e,))))))
 
-meth Ht dl:
+meth HtCls dl:
   "Defintion List."
   HT(TAG('dl', HT(FOR( k,v:a )MAP( HT(
     TAG('dt', HT(k,));
