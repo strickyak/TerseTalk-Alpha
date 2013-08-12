@@ -3031,11 +3031,17 @@ meth ADozenYaksApp verbSelf
   friends= IF(self friends is: nil) THEN(
     'You have no friends.'
   )ELSE(
-    HT('You have ', self friends len, ' friends: ',
-	 FOR(f: self friends) MAP(f who) join: ', ',
-	 ' -- mutuals: ',
-	 FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ',
-	 )
+    HT(
+	  'You have '; self friends len; ' friends: ';
+	  FOR(f: self friends) MAP(f who) join: ', ';
+	  TAG('p');
+	  'Mutuals: ';
+	  FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ';
+	  TAG('p');
+	  Ht dl: FOR(f: self friends) MAP(
+	    HT(' *'; me link: f who cmd: 'FriendChan' q: DICT('fwho': f who); '* ')
+	  );
+	)
   ).
   Ht ul: VEC(
 	'Your name is [ self name ]',
@@ -3044,19 +3050,20 @@ meth ADozenYaksApp verbSelf
 	'Your secret key is [ self dhsec str $ head: 8 ]',
 	'Your public key is [ self dhpub $ head: 8 ]',
 	friends,
-  )
+  ).
+
 meth ADozenYaksApp verbFriendChan
-  fname= q at: 'fname'.
-  f= self friendAt: fname.
+  fwho= q at: 'fwho'.
+  f= self friendAt: fwho.
   chan= f mutChan.
   chanKey= f mutChanKey.
   r me rpc: DICT(
     'f', 'List';
 	'c', chan;
   ).
-  IF(r == '!')THEN('cannot list chan:' err: fname).
+  IF(r == '!')THEN('cannot list chan:' err: fwho).
   tnodes= cquery split: ' '.
-  defs= Dict new.
+  d= Dict new.
   FOR( t : tnodes ) MAP (
     TRY(
       content= me rpc: DICT('f', 'Fetch'; 'c', chan; 't', t;).
@@ -3064,10 +3071,43 @@ meth ADozenYaksApp verbFriendChan
 	  content= 'CAUGHT ERROR: [e]'.
 	).
 	"TODO: decode, decrypt."
-    defs at: t put: content.
+    d at: t put: content.
   ).
-  Ht dl: defs.
-   
+
+  HT(
+    Ht dl: d;
+	TAG('p');
+	'Post a message to friend [fwho]:';
+	TAG('p');
+
+
+	  HT(
+		TAG('form';
+			'method', 'Get';
+			'action', me verb: 'verbConfigHub';
+			HT(
+			  'Hub Site: ';
+			  TAG('input';
+				  'type', 'text';
+				  'name', 'site';
+				  'size', '32';
+				  'value', site);
+			  TAG('p');
+			  'Hub Word: ';
+			  TAG('input';
+				  'type', 'text';
+				  'name', 'word';
+				  'size', '32';
+				  'value', word);
+			  TAG('p');
+			  TAG('input';
+				  'type', 'submit';
+				  'value', 'Submit');
+			)
+		)
+	  );
+  )
+#zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 meth ADozenYaksApp verbConfigHub
   IF(query at: 'word')THEN(
     site= query at: 'site'.
@@ -3078,32 +3118,6 @@ meth ADozenYaksApp verbConfigHub
   ).
   ADozenYaksApp hubSite: site.
   ADozenYaksApp hubWord: word.
-
-  HT(
-	TAG('form';
-		'method', 'Get';
-		'action', me verb: 'verbConfigHub';
-		HT(
-		  'Hub Site: ';
-		  TAG('input';
-			  'type', 'text';
-			  'name', 'site';
-			  'size', '32';
-			  'value', site);
-		  TAG('p');
-		  'Hub Word: ';
-		  TAG('input';
-			  'type', 'text';
-			  'name', 'word';
-			  'size', '32';
-			  'value', word);
-		  TAG('p');
-		  TAG('input';
-			  'type', 'submit';
-			  'value', 'Submit');
-		)
-	)
-  ).
 #zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
 meth ADozenYaksApp verbPeer2
