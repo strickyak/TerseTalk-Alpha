@@ -3298,11 +3298,11 @@ cls IntroDy MsgDy
 vars IntroDy
   name dhpub hubs
 
-meth Ht ul:
+meth HtCls ul:
   "Unnumbered List."
   HT(TAG('ul', HT(FOR(e:a)MAP( TAG('li', HT(e,))))))
 
-meth Ht dl:
+meth HtCls dl:
   "Defintion List."
   HT(TAG('dl', HT(FOR( k,v:a )MAP( HT(
     TAG('dt', HT(k,));
