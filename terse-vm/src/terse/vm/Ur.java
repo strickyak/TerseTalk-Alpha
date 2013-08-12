@@ -388,12 +388,12 @@ public class Ur extends Static implements Comparable {
 		}
 
 		// =meth Obj "macro" macro:case:of:else:
-		public Ur macroCaseOfElse(Frame f, Blk b, Blk c, Blk d) {
-			Ur target = b.evalWithoutArgs();
-			if (!(c.body instanceof Expr.MakeVec)) {
+		public Ur macroCaseOfElse(Frame f, Blk targ, Blk choices, Blk dflt) {
+			Ur target = targ.evalWithoutArgs();
+			if (!(choices.body instanceof Expr.MakeVec)) {
 				toss("Expected COND body of form P1,X2;P2,X2;P3,X3;...");
 			}
-			Expr.MakeVec mv = (Expr.MakeVec) c.body;
+			Expr.MakeVec mv = (Expr.MakeVec) choices.body;
 			final int n = mv.elements.length;
 			for (int i = 0; i < n; i++) {
 				if (!(mv.elements[i] instanceof Expr.MakeVec)) {
@@ -409,10 +409,10 @@ public class Ur extends Static implements Comparable {
 					return pair.elements[1].eval(f);
 				}
 			}
-			if (d == null) {
+			if (dflt == null) {
 				return terp().instNil; // For macroCaseOf().
 			} else {
-				return d.evalWithoutArgs();
+				return dflt.evalWithoutArgs();
 			}
 		}
 
@@ -552,8 +552,8 @@ public class Ur extends Static implements Comparable {
 			return toss("For needs a Num, Vec, or Dict, but got <%s>", coll);
 		}
 
-		// =meth Obj "macro" macro:for:map:if:
-		public Ur macroForMapIf(Frame _, Blk b, Blk c, Blk d) {
+		// =meth Obj "macro" macro:for:if:map:
+		public Ur macroForIfMap(Frame _, Blk b, Blk cond, Blk map) {
 			Ur coll = b.evalWithoutArgs();
 			Vec z = new Vec(terp());
 			Num num = coll.asNum();
@@ -562,10 +562,10 @@ public class Ur extends Static implements Comparable {
 				for (int i = 0; i < n; i++) {
 					Num ii = terp().newNum(i);
 					b.storeAtParamKV(ii, ii);
-					if (d != null) {
-						if (!(d.evalWithoutArgs().truth())) continue;
+					if (cond != null) {
+						if (!(cond.evalWithoutArgs().truth())) continue;
 					}
-					z.vec.add( c.evalWithoutArgs());
+					z.vec.add( map.evalWithoutArgs());
 				}
 				return z;
 			}
@@ -575,10 +575,10 @@ public class Ur extends Static implements Comparable {
 				for (int i = 0; i < n; i++) {
 					Num ii = terp().newNum(i);
 					b.storeAtParamKV(ii, vec.vec.get(i));
-					if (d != null) {
-						if (!(d.evalWithoutArgs().truth())) continue;
+					if (cond != null) {
+						if (!(cond.evalWithoutArgs().truth())) continue;
 					}
-					z.vec.add( c.evalWithoutArgs());
+					z.vec.add( map.evalWithoutArgs());
 				}
 				return z;
 			}
@@ -588,10 +588,10 @@ public class Ur extends Static implements Comparable {
 				final int n = assocs.length;
 				for (int i = 0; i < n; i++) {
 					b.storeAtParamKV(assocs[i].vec.get(0), assocs[i].vec.get(1));
-					if (d != null) {
-						if (!(d.evalWithoutArgs().truth())) continue;
+					if (cond != null) {
+						if (!(cond.evalWithoutArgs().truth())) continue;
 					}
-					z.vec.add( c.evalWithoutArgs());
+					z.vec.add( map.evalWithoutArgs());
 				}
 				return z;
 			}
@@ -2177,6 +2177,15 @@ public class Ur extends Static implements Comparable {
 			for (int i = 0; i < a.length; i++) {
 				z = 13 * z + a[i].vec.get(0).hashCode();
 				z = 13 * z + a[i].vec.get(1).hashCode();
+			}
+			return z;
+		}
+		
+		public HashMap<String, String> toStringStringMap() {
+			HashMap<String, String> z = new HashMap<String, String>();
+			for (Ur k : dict.keySet()) {
+				Ur v = dict.get(k);
+				z.put(k.toString(), v.toString());
 			}
 			return z;
 		}

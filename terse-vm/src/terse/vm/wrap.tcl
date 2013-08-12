@@ -331,6 +331,7 @@ import terse.vm.Ur.Vec;
 import terse.vm.Usr.Tmp;
 import terse.vm.Usr.UsrCls;
 
+import terse.vm.More.QueryStr;
 import terse.vm.More.EscStr;
 import terse.vm.More.Pickle;
 import terse.vm.More.Json;
