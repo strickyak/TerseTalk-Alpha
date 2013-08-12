@@ -2948,6 +2948,8 @@ meth HtApp nonMain
 cls ADozenYaksApp HtApp
 vars ADozenYaksApp
   name date size selfname p q
+vars ADozenYaksAppCls
+  hubSite hubWord
   
 meth ADozenYaksApp value
   IF( path len < 2 )THEN(
@@ -2970,6 +2972,9 @@ meth ADozenYaksApp verbTop
 		  TAG('a';'href','/ADozenYaksApp./[selfname]'; selfname)
 		) IF(m= r match: name)
 	);
+	TAG('p');
+    Ht link: 'Configure Hub' to: 'ConfigHub';
+	TAG('p');
 	TAG('form';
 	  'method', 'GET';
 	  'action', me verb: 'CreateSelf';
@@ -3032,6 +3037,45 @@ meth ADozenYaksApp verbSelf
 	'Your public key is [ p dhpub $ head: 8 ]',
 	friends,
   )
+
+  
+meth ADozenYaksApp verbConfigHub
+  IF(query at: 'word')THEN(
+    site= query at: 'site'.
+    word= query at: 'word'.
+  )ELSE(
+    site= MAYBE(ADozenYaksApp hubSite)NULL('http://yak.net:30332/').
+    word= MAYBE(ADozenYaksApp hubWord)NULL('Yak').
+  ).
+  ADozenYaksApp hubSite: site.
+  ADozenYaksApp hubWord: word.
+
+  HT(
+	TAG('form';
+		'method', 'Get';
+		'action', me verb: 'verbConfigHub';
+		HT(
+		  'Hub Site: ';
+		  TAG('input';
+			  'type', 'text';
+			  'name', 'site';
+			  'size', '32';
+			  'value', site);
+		  TAG('p');
+		  'Hub Word: ';
+		  TAG('input';
+			  'type', 'text';
+			  'name', 'word';
+			  'size', '32';
+			  'value', word);
+		  TAG('p');
+		  TAG('input';
+			  'type', 'submit';
+			  'value', 'Submit');
+		)
+	)
+  ).
+
 
 meth ADozenYaksApp verbPeer2
   mine = query at: 'mypeerid'.
