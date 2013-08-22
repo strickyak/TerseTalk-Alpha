@@ -53,6 +53,10 @@ public abstract class Expr extends Obj {
 		this.rest = rest;
 		return this;
 	}
+	
+	final String substr() {
+		return front.substring(0, front.length() - rest.length());
+	}
 
 	/** Does it need parens around it, in toString()? */
 	boolean isComplicated() {
@@ -634,16 +638,18 @@ public abstract class Expr extends Obj {
 			}
 			if (r.cls.trace || m.trace) {
 				say("Sending message <%s> to <%s#%s> with <%s>", m.name,
-						r.cls.cname, r.toString(), arrayToString(args));
+						r.cls.cname, r.toString(), show(args));
 			}
 			Ur z = null;
 			try {
 				z = m.apply(f, r, a);
 			} catch (RuntimeException ex) {
 				String what = fmt(
-						"\n  * During SEND <%s %s> TO <%s#%s> WITH %s",
-						r.cls.cname, m.name, r.cls.cname, r.toString(),
-						arrayToString(a));
+						"\n  * During SEND: <%s %s>\n  * * TO: %s«%s»",
+						r.cls.cname, m.name, r.cls.cname, r.toString());
+				for (Ur u : a) {
+					what += "\n  * * * ARG: " + u.cls.cname + "«" + u + "»"; 
+				}
 				retoss("%s", ex.toString() + what);
 			}
 			if (r.cls.trace || m.trace) {
@@ -716,8 +722,8 @@ public abstract class Expr extends Obj {
 			
 			terp().say("<><><>");
 			String[] words = msg.split(":");
-			terp().say("msg words:", arrayToString(words));
-			terp().say("locations:", arrayToString(this.sourceLoc));
+			terp().say("msg words:", show(words));
+			terp().say("locations:", show(this.sourceLoc));
 			for (int i = 0; i < words.length; i++) {
 				if (words[i].length() > 0 && this.sourceLoc[i] >= 0) {
 					terp().say("[%d] '%s' @%s >>====>>", i, words[i], sourceLoc[i]);

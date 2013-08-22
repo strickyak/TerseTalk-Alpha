@@ -11,17 +11,17 @@ _make_a1_:
 
 web: _make_vm_
 	mkdir -p _tmp_
-	set -x; javac -source 1.6 -target 1.6 -warn:none \
+	set -x; javac -source 1.6 -target 1.6 -nowarn \
 		-g \
 		-cp $(JUNIT):$(JARS) \
 		-d _tmp_ \
 		terse-vm/src/terse/vm/*.java\
 		terse-web/src/terse/web/WebServer.java
 	touch w_web.txt
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
+	java -ea -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
 
 reweb: _make_vm_
-	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
+	java -ea -cp _tmp_:$(JUNIT) terse.web.WebServer 8080
 
 reweb1: _make_vm_
 	java -cp _tmp_:$(JUNIT) terse.web.WebServer 8081

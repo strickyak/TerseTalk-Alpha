@@ -33,6 +33,7 @@ import terse.vm.Expr.Send;
 import terse.vm.Ur.Obj;
 
 // BUG: (x-2,y-2) parses very wrong.  "-2" gets detected, and "." gets inserted.
+// «%s»
 
 public class Parser extends Obj {
 	// =cls "meth" Parser Obj
@@ -53,6 +54,7 @@ public class Parser extends Obj {
 	// This is the public function to parse a string.
 	public static Expr.MethTop parseMethod(Cls onCls, String methName, String code) {
 		Terp terp = onCls.terp;
+		terp.say("START PARSE CLS %s METH %s\nCODE «%s»\n", onCls, methName, code);
 		Parser p = new Parser(onCls, methName, code);
 		int numArgs = 0;
 		if (isAlphaMessage(methName)) {
@@ -70,16 +72,18 @@ public class Parser extends Obj {
 			p.localVarSpelling.put("a", "a");
 			numArgs = 1;
 		}
+		Expr expr1 = null;
 		try {
-			p.parseExpr(); // Once to learn names of variables.
+			expr1 = p.parseExpr(); // Once to learn names of variables.
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			terp.toss("ERROR DURING PARSING: <%s>\nWHILE PARSING THIS SOURCE [len=%d]:\n`%s`\nUNPARSED REMAINDER [len=%d]:\n`%s`\n",
 					show(ex), p.lex.front.length(), p.lex.front, p.lex.rest.length(), p.lex.rest);
 		}
+		terp.say("Parsed: %s", expr1);
 		if (p.lex.w.trim().length() > 0) {
-			terp.toss("Parser:  Leftover word after parsing: <%s>",
-					p.lex.w.trim());
+			terp.toss("Parser:  Leftover word after parsing: <<<%s>>> Leftover junk: <<<%s>>>",
+					p.lex.w.trim(), p.lex.rest.trim());
 		}
 		if (p.lex.rest.trim().length() > 0) {
 			terp.toss("Parser:  Leftover junk after parsing: <%s>",
@@ -167,7 +171,7 @@ public class Parser extends Obj {
 			for (String k : c.myVarNames) {
 				Integer i = onCls.allVarMap.get(k);
 				if (i == null) {
-					terp.toss("allVarMap.get(%s) is NULL: onCls=%s cls=%s allVarMap=%s", onCls, c, Static.arrayToString(c.myVarNames));
+					terp.toss("allVarMap.get(%s) is NULL: onCls=%s cls=%s allVarMap=%s", onCls, c, Static.show(c.myVarNames));
 				}
 				//say("PARSER PUTTING VAR %s", k);
 				this.instVars.put(k.toLowerCase(), i);
@@ -236,10 +240,15 @@ public class Parser extends Obj {
 			Expr z = new Expr.PutLValue(lvalue, rhs);
 			z.front = front; z.white = white;
 			z.rest = lex.rest;
+			say("GOT ASN STMT: «%s»", z.substr());
+			say("GOT ASN STMT: «%s»", z);
 			return z;
 		}
 		lex.recallState();
-		return parseList();
+		Expr z =  parseList();
+		say("GOT STMT: «%s»", z.substr());
+		say("GOT STMT: «%s»", z);
+		return z;
 	}
 
 	// When a variable is assigned, it must be either Inst or Local.
@@ -348,7 +357,9 @@ public class Parser extends Obj {
 					keywords += lex.keywordName().toLowerCase() + ":";
 					locs = append(locs, lex.frontLocation());
 					lex.advance();
-					assert lex.w.charAt(0) == ':';
+					if (lex.w.charAt(0) != ':') {
+						toss("Expected : but got %s REST=%s", lex.w, lex.rest);
+					}
 					lex.advance();
 					Expr unary = parseUnary();
 					Expr tuple = parseBinary3(unary);
@@ -477,7 +488,7 @@ public class Parser extends Obj {
 	
 	private Expr interpolateLiteralString(String a) {
 
-//		say("Interpolate <<< %s", a);
+		say("Interpolate oncls=%s <<< «%s»", onCls, a);
 		try {
 			final int n = a.length();
 			Expr[] list = exprs();
@@ -492,19 +503,20 @@ public class Parser extends Obj {
 					continue;
 				} else if (i + 2 < n && a.charAt(i) == '['
 						&& a.charAt(i + 1) != '[') {
-					// We spotted single (, look for closing )
+					// We spotted single [, look for closing ]
 					Expr found = null;
 					int nested = 0;
 					int j = i + 1;
 					for (; j < n; j++) {
 						if (a.charAt(j) == ']' && nested == 0) {
-							String bodyStr = a.substring(i, j);
+							String bodyStr = a.substring(i+1, j);
 							// Put the current parser state on hold,
 							// and compile the bodyStr as a Block.
 							// Enclose it in parens, so it looks like a block.
 							// Set found to an expression that evaluates the block.
 							TLex onHold = lex;
 							lex = new TLex(terp, "(" + bodyStr + ")");
+							terp.say("PARSE INTERPOLATED BLOCK ON CLS %s\nCODE «%s»\n", onCls, bodyStr);
 							Expr block = parseBlock();
 							// Remember parseblock() was the exception that advanced past closing ')'.
 							if (lex.rest.length() != 0) {
@@ -564,7 +576,7 @@ public class Parser extends Obj {
 				z = new Expr.Send(mkVec, "jam", terp.emptyExprs,
 						ints(lex.frontLocation()));
 			}
-//			say("Interpolate >>> %s", z);
+			say("Interpolate >>> «%s»", z);
 			return z;
 		} catch (RuntimeException ex) {
 			ex.printStackTrace();
@@ -647,7 +659,9 @@ public class Parser extends Obj {
 	}
 
 	private Expr parseBlock() {
-		assert lex.opensParen();
+		if (!lex.opensParen()) {
+			toss("Expected opensParen but got %s REST=%s", lex.w, lex.rest);
+		}
 		lex.advance();
 		Expr[] params = exprs();
 
@@ -664,16 +678,18 @@ public class Parser extends Obj {
 			}
 		}
 		Expr body = parseExpr();
-		assert lex.closesParen() : fmt(
-				"lex=%s<%s> body=<%s>", lex.t, lex.w, body);// Do not advance;
-															// parsePrim() does
-															// that after
-															// switch().
-		return new Expr.Block(body, params);
+		if (!lex.closesParen()) {
+			toss("parseBlock: Expected closesParen but got %s\nPARAMS=%s\nBODY=%s\nREST=%s", lex.w, show(params), body, lex.rest);
+		}
+		Expr z = new Expr.Block(body, params);
+		say("GOT BLOCK: «%s»", z);
+		return z;
 	}
 
 	private Expr parseParen() {
-		assert lex.opensParen();
+		if (!lex.opensParen()) {
+			toss("Expected opensParen but got %s REST=%s", lex.w, lex.rest);
+		}
 		lex.advance();
 		if (lex.closesParen()) {
 			// The unit tuple (). It's an empty but mutable vector, not a
@@ -681,7 +697,9 @@ public class Parser extends Obj {
 			return new Expr.MakeVec(terp, emptyExprs, ',');
 		}
 		Expr body = parseExpr();
-		assert lex.closesParen();
+		if (!lex.closesParen()) {
+			toss("Expected closesParen but got %s REST=%s", lex.w, lex.rest);
+		}
 		// Do not advance; parsePrim() does that after switch().
 		return body;
 	}
@@ -692,12 +710,19 @@ public class Parser extends Obj {
 		int[] locs = ints(-1);  // "macro:" is implicit, thus -1.
 		while (lex.t == Pat.NAME && lex.isMacro()) {
 			names.add(lex.w);
+			terp().say("parseMacro: building %s", show(names));
 			locs = append(locs, lex.frontLocation());
 			lex.advance();
-			assert lex.opensParen();
+			if (!lex.opensParen()) {
+				terp().toss("Expected Open Paren after Macro Word %s but token is %s and REST=«%s»", show(names), lex.w, lex.rest);
+			}
+			terp().say("parseMacro: Sitting on Open Paren, REST=«%s»", lex.rest);
 			Expr.Block b = (Expr.Block) parseBlock();
 			blocks.add(b);
-			assert lex.closesParen();
+			if (!lex.closesParen()) {
+				terp().toss("Expected Close Paren after Macro Word %s and EXPR=«%s»\n  but token is %s and REST=«%s»", show(names), b, lex.w, lex.rest);
+			}
+			terp().say("parseMacro: Sitting on Close Paren, REST=«%s»", lex.rest);
 			lex.advance();
 		}
 		final int sz = names.size();
@@ -708,6 +733,7 @@ public class Parser extends Obj {
 			message.append(':');
 			bb = append(bb, blocks.get(i));
 		}
+		terp().say("parseMacro: Finished , REST=«%s»", show(names), lex.rest);
 		return new Expr.Send(new Expr.GetSelf(terp), message.toString(), bb, locs);
 	}
 
@@ -723,6 +749,8 @@ public class Parser extends Obj {
 		}
 		if (lex.w.equals(";")) {
 			a = parseLvListOrNull(a);
+			if (a == null)
+				return null;
 		}
 		a.front = front; a.white = white;
 		a.rest = lex.rest;
@@ -1029,13 +1057,17 @@ public class Parser extends Obj {
 
 		/** Name without the trailing colons or slashes. */
 		String keywordName() {
-			assert isKeyword();
+			if (!isKeyword()) {
+				terp.toss("Expected keywordName but got Type %s Namely %s and REST=%s", this.t, this.w, this.rest);
+			}
 			return w;
 		}
 
 		/** Look ahead at the next token, to distinguish MACRO. */
 		boolean isMacro() {
-			assert (t == Pat.NAME);
+			if (t != Pat.NAME) {
+				terp.toss("Expected Type NAME but got Type %s Namely %s and REST=%s", this.t, this.w, this.rest);
+			}
 			storeState();
 			advance();
 			boolean z = opensParen();

@@ -366,11 +366,11 @@ public abstract class Terp extends Static {
 					z.dict.put(v.vec.get(0), v.vec.get(1));
 				} else {
 					toss("To initialize assoc in Dict, expected Vec of length 2, but got <%s#%d#%s>; inside <%s>",
-							v.cls, v.vec.size(), v, arrayToString(arr));
+							v.cls, v.vec.size(), v, show(arr));
 				}
 			} else {
 				toss("To initialize assoc in Dict, expected Vec of length 2, but got <%s#%s>; inside <%s>",
-						arr[i].cls, arr[i], arrayToString(arr));
+						arr[i].cls, arr[i], show(arr));
 			}
 		}
 		return z;
@@ -978,21 +978,20 @@ public abstract class Terp extends Static {
 			this.msg = "?????";
 			this.args = args;
 
-			String[] argstrs = new String[args.length];
+			System.err.println("TerseBaseException: " + format);
 			for (int i = 0; i < args.length; i++) {
 				try {
-					argstrs[i] = fmt("<%s:%s>", args[i].getClass().getName(),
-							args[i].toString());
+					System.err.println(fmt("  EXC ARG %s«%s»", args[i].getClass().getName(),
+							args[i].toString()));
 				} catch (RuntimeException _) {
-					argstrs[i] = "???";
 				}
 			}
-			this.msg = fmt(format, (Object[]) /*argstrs*/ args);
+			this.msg = fmt(format, args);
 		}
 
 		@Override
 		public String toString() {
-			return fmt(msg, args);
+			return msg;
 		}
 	}
 	private class TerseException extends TerseBaseException {

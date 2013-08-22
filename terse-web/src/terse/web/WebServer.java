@@ -552,7 +552,7 @@ public class WebServer extends Static {
 		if (args.length > 0) {
 			port = Integer.parseInt(args[0]);
 		}
-		System.err.format("Args are %s\n", Static.arrayToString(args));
+		System.err.format("Args are %s\n", Static.show(args));
 		System.err.format("Binding to port %d\n", port);
 		HttpServer server = HttpServer.create(new InetSocketAddress(port), 20);
 		server.createContext("/favicon.ico", new FavIconHandler());

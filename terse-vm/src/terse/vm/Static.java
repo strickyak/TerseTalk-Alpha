@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,7 +56,12 @@ public class Static {
 	}
 
 	public static String fmt(String s, Object... objects) {
-		return String.format(s, objects);
+		try {
+			return String.format(s, objects);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return "EXCEPTION " + ex + " DURING FORMAT " + s;
+		}
 	}
 
 	public static String GetStackTrace(final Throwable e) {
@@ -88,7 +94,7 @@ public class Static {
 		return sb.toString();
 	}
 
-	public static String arrayToString(Expr[] a) {
+	public static String show(Expr[] a) {
 		StringBuilder z = new StringBuilder("[");
 		for (Expr e : a) {
 			z.append(fmt("%s, ", e.toString()));
@@ -97,7 +103,7 @@ public class Static {
 		return z.toString();
 	}
 
-	public static String arrayToString(Ur[] a) {
+	public static String show(Ur[] a) {
 		StringBuilder z = new StringBuilder("[");
 		for (Ur e : a) {
 			z.append(fmt("%s, ", e.toString()));
@@ -106,7 +112,7 @@ public class Static {
 		return z.toString();
 	}
 
-	public static String arrayToString(String[] a) {
+	public static String show(String[] a) {
 		if (a == null)
 			return "<?WHY_IS_THE_String[]_NULL?>";
 		StringBuilder z = new StringBuilder("[");
@@ -117,7 +123,7 @@ public class Static {
 		return z.toString();
 	}
 
-	public static String arrayToString(int[] a) {
+	public static String show(int[] a) {
 		if (a == null)
 			return "<?WHY_IS_THE_int[]_NULL?>";
 		StringBuilder z = new StringBuilder();
@@ -947,5 +953,14 @@ public class Static {
 		PrintWriter out = new PrintWriter (stringWriter);
 		t.printStackTrace(out);
 		return stringWriter.toString();
+	}
+
+	public static String show(ArrayList<String> names) {
+		StringBuilder sb = new StringBuilder("[");
+		for (String s : names) {
+			sb.append("«" + s + "», ");
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 }

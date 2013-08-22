@@ -708,9 +708,9 @@ public class TerseActivity extends Activity {
 										String[] words = ((Str) pair.vec.get(0)).str
 												.split("\\|");
 										Log.i("TT-WORDS",
-												terp.arrayToString(words));
+												terp.show(words));
 										toast_text += "\n\n"
-												+ Static.arrayToString(words);
+												+ Static.show(words);
 										if (words[1].equals("link")) {
 											Uri uri = new Uri.Builder()
 													.scheme("terse")
