@@ -3041,7 +3041,7 @@ meth ADozenYaksApp verbSelf
 	  'Mutuals: ';
 	  FOR(f: self friends) MAP(f dhmut str head: 8) join: ', ';
 	  TAG('p');
-	  Ht dl: FOR(f: self friends) MAP(
+	  Ht ul: FOR(f: self friends) MAP(
 	    HT(' *'; me link: f who cmd: 'FriendChan' q: DICT('fwho', f who;); '* ')
 	  );
 	)
