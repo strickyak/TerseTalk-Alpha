@@ -1469,53 +1469,53 @@ meth BrowseClasses wMid
    TAG('b', 'Main App Classes: '),
    Ht linkLabelPairs:
    FOR{name:c: Cls all
+   }IF{
+     AND{c at: 'nonmain' $not;   c isa: AppCls;}
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{
-     AND{c at: 'nonmain' $not;   c isa: AppCls;}
    },
 
    TAG('p'),
    TAG('b', 'NonMain App Classes: '),
    Ht linkLabelPairs:
    FOR{name:c: Cls all
+   }IF{
+     AND{c at: 'nonmain';   c isa: AppCls;}
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{
-     AND{c at: 'nonmain';   c isa: AppCls;}
    },
 
    TAG('p'),
    TAG('b', 'Other Usr Classes: '),
    Ht linkLabelPairs:
    FOR{name:c: Cls all
+   }IF{
+     AND{c isa: UsrCls;   c isa: AppCls $not;}
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{
-     AND{c isa: UsrCls;   c isa: AppCls $not;}
    },
 
    TAG('p'),
    TAG('b', 'Other Classes: '),
    Ht linkLabelPairs:
    FOR{name:c: Cls all
+   }IF{ AND{c isa: UsrCls $not;  c cls is: MetaCls $not}
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{ AND{c isa: UsrCls $not;  c cls is: MetaCls $not}
    },
 
    TAG('p'),
    TAG('b', 'Class Classes: '),
    Ht linkLabelPairs:
    FOR{name:c: Cls all
+   }IF{ AND{c cls is: MetaCls;}
    }MAP{
       ('/BrowseClass', c name)join:'.',
       c name
-   }IF{ AND{c cls is: MetaCls;}
    },
 
   }

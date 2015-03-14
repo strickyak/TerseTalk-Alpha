@@ -257,7 +257,7 @@ public abstract class Terp extends Static {
 		for (int i = 0; i < LOG_LEN; i++) {
 			int j = (i + logPtr) % LOG_LEN;
 			if (logArray[j] != null) {
-				z[k] = logArray[j];
+				z[k] = fmt("%d%s", k, logArray[j]);
 				++k;
 			}
 		}

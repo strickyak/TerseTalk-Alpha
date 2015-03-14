@@ -206,8 +206,11 @@ public class TerseActivity extends Activity {
 			@Override
 			public void run() {
 				Intent intent = getIntent();
+                terp.say("GET INTENT: " + intent);
 				Uri uri = intent.getData();
+                terp.say("GET DATA: " + uri);
 				Bundle extras = intent.getExtras();
+                terp.say("GET EXTRA: " + extras);
 				String path = uri == null ? "/" : uri.getPath();
 				String query = uri == null ? "" : uri.getQuery();
 
@@ -562,6 +565,10 @@ public class TerseActivity extends Activity {
 	public void viewPath(String path, String queryStr, Bundle extras,
 			Bundle savedInstanceState) {
 		// Stop any running WorkThread before we continue.
+        terp.say("viewPath: path=" + path);
+        terp.say("viewPath: queryStr=" + queryStr);
+        terp.say("viewPath: extras=" + extras);
+        terp.say("viewPath: saved=" + savedInstanceState);
 		viewPath1prepare(path, queryStr);
 		viewPath2parseQuery(queryStr, extras);
 
@@ -623,6 +630,14 @@ public class TerseActivity extends Activity {
 	}
 
 	private void viewPath9display(String path, LayoutParams widgetParams) {
+        if (path==null) {
+            terp.say("viewPath9display: Ignoring Null Path");
+            return;
+        }
+        if (path==null  || path.length() == 0) {
+            terp.say("viewPath9display: Ignoring Empty Path");
+            return;
+        }
 		String explain;
 		if (terp_error != null) {
 			explain = "terp_error = " + terp_error;
@@ -866,15 +881,20 @@ public class TerseActivity extends Activity {
 				} else if (type.str.equals("html")) {
 					final WebView webview = new WebView(this);
 					// webview.loadData(value.toString(), "text/html", null);
-					webview.loadDataWithBaseURL("terse://terse",
-							value.toString(), "text/html", "UTF-8", null);
+                    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                    //#webview.loadDataWithBaseURL("terse://terse",
+                    //#        value.toString(), "text/html", "UTF-8", null);
+                    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    webview.loadDataWithBaseURL("http://localhost/",
+                            value.toString(), "text/html", "UTF-8", null);
+                    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 					webview.setWebViewClient(new WebViewClient() {
 						@Override
 						public boolean shouldOverrideUrlLoading(WebView view,
 								String url) {
-							// terp.say("WebView UrlLoading: url=%s", url);
+							terp.say("WebView UrlLoading: url=%s", url);
 							URI uri = URI.create("" + url);
-							// terp.say("WebView UrlLoading: URI=%s", uri);
+							terp.say("WebView UrlLoading: URI=%s", uri);
 							terp.say("WebView UrlLoading: getPath=%s",
 									uri.getPath());
 							terp.say("WebView UrlLoading: getQuery=%s",
@@ -1308,7 +1328,7 @@ public class TerseActivity extends Activity {
 		}
 	}
 	
-	public class DualView extends FrameLayout {
+	public class DualView extends android.widget.FrameLayout {
 		FnordView fv;
 		OverView ov;
 		ArrayList<DdNode> accumulateDd;
@@ -1338,7 +1358,7 @@ public class TerseActivity extends Activity {
 			});
 		}
 
-		public class FnordView extends GLSurfaceView {
+		public class FnordView extends android.opengl.GLSurfaceView {
 			// Thanks
 			// http://developer.android.com/resources/tutorials/opengl/opengl-es10.html
 
