@@ -347,7 +347,7 @@ meth Browse handle:query:
   IF( wl == 2 )THEN(
     cn= ww at: 1 .  "class name"
     co= clss at: cn lower .   "class object"
-    v ap: ( ('|link|/', cn, '|[[RUN]]|')jam, '[RUN]').
+    v ap: ( ('|link|/', cn, '|[[RUN]]|')jam, '[[RUN]]').
 
     v ap: ( ('|link|/Browse.', cn, '|== CLASS ', cn, ' ==|')jam,
             ('==== class ', cn, ' ====')jam ).
@@ -1251,9 +1251,9 @@ meth Foo z:
   z = a. me
 
 meth Foo one
-  me x: 10
-  me y: 100
-  me z: 1000
+  me x: 10.
+  me y: 100.
+  me z: 1000.
 
 cls Bar Foo 
 vars Bar 
@@ -2105,11 +2105,8 @@ meth GameTroids setup
   ship= (me newShip $px: wid/2 $py: hei/2 $vx: 0 $vy: 0).
 
 meth GameTroids step
-  me clear: COND(
-      ship ttl < 0 @ 400,
-      aa len < 1 @ 40,
-      1 @ 202,
-  ).
+  me clear: IF(ship ttl < 0 )THEN(400)
+            ELSE(IF(aa len < 1 )THEN(40) ELSE(202)).
   FOR{ast: aa} DO{
     ast step: me.
     ast draw: me.
