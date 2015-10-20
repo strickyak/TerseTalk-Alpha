@@ -80,6 +80,11 @@ proc WrapMarkedItemsInJavaFile {file} {
            set lpp [llength $pp]
            puts "    // CMD $cmd TYPE $type NAME $name PARAMS $pp"
            puts "    // CLS $cls GROUP \"$group\" METH $kws REMARK \"$remark\""
+
+           # DocGen
+           set ::Clss($cls) 1
+           set ::ClsMeths($cls/$kws) [list $cmd $type $name $pp $cls $group $kws $remark]
+           lappend ::Meths($kws) $cls
 	   puts ""
 	   puts "    new JavaMeth($FIELD.cls$cls, \"$kw0\", \"$kw1\") {"
 	   puts "      public Ur apply(Frame frame, Ur me, Ur\[\] args) {"
@@ -389,3 +394,17 @@ if {$CLASS != "Wrap"} {
 puts "
 \}
 "
+
+set w [open __doc w]
+foreach c [lsort -nocase [array names ::Clss]] {
+  puts $w "$c"
+  foreach cm [lsort -nocase [array names ::ClsMeths $c/*]] {
+    foreach {_cmd _type _name _pp _cls _group _kws _remark} $::ClsMeths($cm) break
+    puts $w "        $_kws            ($_type) $_name ( $_pp ) ------ $_remark"
+  }
+}
+puts $w "===================================================================="
+foreach m [lsort -nocase [array names ::Meths]] {
+  puts $w "$m    ::::    [lsort -nocase -uniq $::Meths($m)]"
+}
+close $w
